@@ -1,1 +1,1 @@
-# amadeus
+# AMADEUS: AutoMAteD secUrity penteSting
