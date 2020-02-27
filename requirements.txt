@@ -1,0 +1,2 @@
+beautifulsoup4==4.8.2
+cpe==1.2.1
