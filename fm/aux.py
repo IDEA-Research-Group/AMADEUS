@@ -1,4 +1,9 @@
-from structures import HashableCPE
+'''
+    Mock data used to test functions related to
+    Feature Model construction.
+'''
+
+from fm.structures import HashableCPE
 
 def generate_mock_complex_CPEs():
     res = list()

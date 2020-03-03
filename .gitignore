@@ -41,6 +41,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+venv/
 build/
 develop-eggs/
 dist/
@@ -136,6 +137,7 @@ dmypy.json
 .pyre/
 
 ### VisualStudioCode ###
+.vscode/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json

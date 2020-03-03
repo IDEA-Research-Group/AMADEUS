@@ -9,6 +9,7 @@ __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 
 from cpe import CPE
 from enum import Enum
+from collections import defaultdict
 
 class ConfigType(Enum):
     
@@ -35,17 +36,19 @@ class CpeListType(Enum):
     VULNERABLE = "VULNERABLE"
     NON_VULNERABLE = "NON_VULNERABLE"
 
-def extract_semimodel(json: dict) -> dict:
+def extract_semimodel(json: dict) -> (dict, list):
 
     '''
         Creates an intermediate representation between a JSON file 
         containing the CPEs of a given CVE and its Feature Model.
 
-        Generates a dictionary containing:
-            \t "CPEs": A list of the different CPEs grouped by Configuration
+        Generates a dictionary and a list, containing:
+            \t (dict) cpes: Dictionary containing the different CPEs (str) of a CVE
+            and a reference to their running configurations, grouped by vendor
+            and product.
 
-            \t "RUNNING_ON": A list of the different Running Enviroments 
-            \t grouped by Configuration
+            \t (list) running_configurations: List containing the different running configurations
+            a group of CPEs may have, expressed as CPEs (str) and grouped by vendor and product
         
         :param json: Parsed JSON Object containing information about the CPEs of
         a given vulnerability
@@ -53,13 +56,12 @@ def extract_semimodel(json: dict) -> dict:
 
     # First, we need to check the arguments
 
-    if not json or type(json) is not dict:
-        raise ValueError("json must be a non-empty Parsed JSON Object")
+    if not json or type(json) is not list:
+        raise ValueError("json must be a non-empty Parsed list contaning JSON Objects")
 
-    res = {
-        "CPEs": [],
-        "RUNNING_ON": []
-    }
+    cpes = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    running_configs = list()
+    rc_count = -1
 
     # Outer structure wraps different Configurations
     for config in json:
@@ -87,19 +89,32 @@ def extract_semimodel(json: dict) -> dict:
             elif container["ConfigType"] == ConfigType.RUNNING_ON.name:
                 print("[-] Detected Configuration Type: RUNNING_ON")
                 simple_cpes, running_on = process_running_on_configuration(container)
-            
+                rc_count += 1
+                running_configs.append(running_on)
+
             # CONFIGURATION = ADVANCED
             else:
                 print("[-] Detected Configuration Type: ADVANCED")
                 simple_cpes = process_advanced_configuration(container)
 
         # Append results to dictionary
-        res['CPEs'].append(simple_cpes)
-        res['RUNNING_ON'].append(running_on)
+        for vendor, products in simple_cpes.items():
+            # Iterate over all products of a vendor
+            for product, s_cpes in products.items():
 
-    return res
+                # Iterate over all new CPEs
+                for cpe in s_cpes:
 
-def process_basic_configuration(container: dict) -> list:
+                    # This line retrieves the specific CPE if exists
+                    # and creates a new entry if it doesn't
+                    res_cpe = cpes[vendor][product][cpe]
+
+                    if container["ConfigType"] == ConfigType.RUNNING_ON.name:
+                        res_cpe.append(rc_count)
+                        
+    return cpes, running_configs
+
+def process_basic_configuration(container: dict) -> dict:
     '''
         Extracts, expands and conditionally expand the CPEs records
         of a Configuration Container of type BASIC.
@@ -116,14 +131,15 @@ def process_basic_configuration(container: dict) -> list:
     if container["ConfigType"] != ConfigType.BASIC.name or container['Cpes'] is None:
         raise ValueError("container must be a valid structure of type: {} ".format(ConfigType.BASIC.name))
 
-    res = list()
+    res = defaultdict(lambda: defaultdict(set))
 
     for complex_cpe in container['Cpes']:
-        res.append(expand(complex_cpe))
+        aux = CPE(complex_cpe['Uri'])
+        res[aux.get_vendor()[0]][aux.get_product()[0]].update(expand(complex_cpe))
     
     return res
 
-def process_running_on_configuration(container: dict) -> (list, list):
+def process_running_on_configuration(container: dict) -> (dict, dict):
 
     '''
         Extracts, expands and conditionally expand the CPEs records
@@ -143,25 +159,27 @@ def process_running_on_configuration(container: dict) -> (list, list):
     if container["ConfigType"] != ConfigType.RUNNING_ON.name or container['Containers'] is None:
         raise ValueError("container must be a valid structure of type: {} ".format(ConfigType.RUNNING_ON.name))
 
-    simple_cpes = list()
-    running_on = list()
+    simple_cpes = defaultdict(lambda: defaultdict(set))
+    running_on = defaultdict(lambda: defaultdict(set))
 
     for subcontainer in container['Containers']:
 
         if subcontainer['CpeListType'] == "VULNERABLE":
             
             for complex_cpe in subcontainer['Cpes']:
-                simple_cpes.append(expand(complex_cpe))
+                aux = CPE(complex_cpe['Uri'])
+                simple_cpes[aux.get_vendor()[0]][aux.get_product()[0]].update(expand(complex_cpe))
 
         else:
             
             # NON_VULNERABLE
             for complex_cpe in subcontainer['Cpes']:
-                running_on.append(expand(complex_cpe))
+                aux = CPE(complex_cpe['Uri'])
+                running_on[aux.get_vendor()[0]][aux.get_product()[0]].update(expand(complex_cpe))
 
     return simple_cpes, running_on
 
-def process_advanced_configuration(container: dict) -> list:
+def process_advanced_configuration(container: dict) -> dict:
 
     '''
         Extracts, expands and conditionally expand the CPEs records
@@ -183,13 +201,14 @@ def process_advanced_configuration(container: dict) -> list:
     if container["ConfigType"] != ConfigType.ADVANCED.name or container['Containers'] is None:
        raise ValueError("container must be a valid structure of type: {} ".format(ConfigType.ADVANCED.name))
 
-    res = list()
+    res = defaultdict(lambda: defaultdict(set))
 
     for subcontainer in container['Containers']:
-        res.append(process_advanced_configuration(subcontainer))
+        res.update(process_advanced_configuration(subcontainer))
     
     for complex_cpe in container['Cpes']:
-        res.append(expand(complex_cpe))
+        aux = CPE(complex_cpe['Uri'])
+        res[aux.get_vendor()[0]][aux.get_product()[0]].update(expand(complex_cpe))
     
     return res
 
@@ -223,8 +242,8 @@ def expand(complex_cpe: dict) -> dict:
             print("[-] Deprecated CPE detected ({}). Substituting...".format(cpeItem["Uri"]))
 
             for updated_cpe in cpeItem["ResultingCpes"]:
-                res.append(CPE(updated_cpe["Uri"]))
+                res.append(updated_cpe["Uri"])
         else:
-            res.append(CPE(cpeItem["Uri"]))
+            res.append(cpeItem["Uri"])
     
     return res

@@ -5,27 +5,33 @@
 
 __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 
-from serializers import FamaSerializer
-from structures import RestrictionNode
 from collections import defaultdict
-from aux import generate_mock_complex_CPEs, generate_mock_simple_CPEs
 
-CVE = "CVE-2019-17573"
+from fm.serializers import FamaSerializer
+from fm.structures import RestrictionNode, HashableCPE
+from fm.aux import generate_mock_complex_CPEs, generate_mock_simple_CPEs
 
 ###############################
 ###          T TREE         ###
 ###############################
-def generate_tree():
+def generate_tree(cve: str, semi_model: dict, semi_model_rc: dict):
 
     '''
         Creates a fully well-formed feature model tree T representing all possible
         configurations given a list of CPEs (even the ones that are not affected) by
-        a CVE
+        a CVE.
+
+        :param cve: CVE identifier
+
+        :param semi_model: A dictionary structure containing a semi-representation of the
+        final FeatureModel, which must include all simple CPEs that are going to be analysed.
+
+        :param semi_model_rc: A dictionary structure containing a semi-representation of the
+        Running Configuration of the final FeatureModel, which must include all simple CPEs
+        that are going to be analysed.
     '''
 
-    fmSerializer = FamaSerializer(CVE)
-    # TODO: Use real CPEs retrieved from NVD
-    c_cpes = generate_mock_complex_CPEs()
+    fmSerializer = FamaSerializer(cve)
     s_cpes = set()
 
     # CPE fields
@@ -34,35 +40,25 @@ def generate_tree():
     cpe_fields = (set(), set(), set(), set(), set(), set(), set(), set())
     cpe_fields_description = ('versions', 'updates', 'editions', 'languages', 'sw_editions', 'target_sws', 'target_hws', 'others')
 
-    tree_head = defaultdict(lambda: defaultdict(set))
-
-    # Final tree's top level structure will consist of the different Vendors
-    # and Products found in the CPE listing. Instead of looping through the whole,
-    # complete list of simple CPEs, we can retrieve this structure just by analysing
-    # the list of complex CPEs (as they will have these fields for sure).
-    #
-    # We build an early tree that successfully classifies complex CPEs in vendor and 
-    # products, making it easier to expand a specific set of CPEs into simple ones.
-    for cpe in c_cpes:
-        
-        vendor = cpe.get_vendor()[0]
-        product = cpe.get_product()[0]
-        tree_head[vendor][product].add(cpe)
-
-    fmSerializer.tree_add_vendors_to_root(tree_head.keys())
+    # First step to serialize is to indicate which vendors we are dealing
+    # with. Further information will hang from vendor nodes.
+    fmSerializer.tree_add_vendors_to_root(semi_model.keys())
 
     # Iterate over all vendors
-    for vendor, products in tree_head.items():
+    for vendor, products in semi_model.items():
 
+        # Indicate all the products a vendor has
         fmSerializer.tree_add_products_to_vendor(vendor, products)
 
         # Iterate over all products of a vendor
-        for product, c_cpes in products.items():
+        for product, cpes in products.items():
 
-            # Iterate over all complex CPES of a vendor's product and
-            # extract all simple CPEs to obtain the remaining attributes
-            for c_cpe in c_cpes:
-                s_cpes.update(generate_mock_simple_CPEs(c_cpe.cpe_str))
+            # Create actual CPE instances using its
+            # 2.3 FS string representation.
+            # Create a collection containing all CPE instances
+            # of the current vendor+product
+            for cpe, rcs in cpes.items():
+                s_cpes.add(HashableCPE(cpe))
             
             # For each simple CPE, we analyse its attrs in order
             # to extract common features
@@ -84,6 +80,8 @@ def generate_tree():
                 if len(field) == 1 and '*' in field:
                     field.clear()
 
+            # Features that have been identified and their values are a must to have
+            # in our Feature Model
             mandatory_features = []
 
             for i, field in enumerate(cpe_fields):
@@ -103,16 +101,17 @@ def generate_tree():
             sortedFieldsIndexes = sorted(range(len(cpe_fields)), key=lambda x: len(cpe_fields[x]), reverse=True)
 
             # TODO: Add constraints to serializer
-            constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "Miau", cpe_fields, cpe_fields_description)
+            constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "[]", cpe_fields, cpe_fields_description)
 
             # Reset all accumulators for next product
             for field in cpe_fields:
                 field.clear()
             s_cpes.clear()
 
+    print("\n \t *** FEATURE MODEL *** \n")
     print(fmSerializer.tree_get_model())
 
-def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list):
+def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list) -> RestrictionNode:
     
     '''
         Analyses a list of CPEs sharing common structure and creates a list of 
@@ -180,11 +179,9 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
         # Get the list of CPE that match the value of the attribute
         remainingCpes = [x for x in cpeListing if x.get_attribute(best_attr[:-1]) == v]
         restrictionNode = obtainConstraints(remainingCpes, sortedAttrListing.copy(), v, cpe_fields, cpe_fields_description)
-        subNodes.append(restrictionNode)
+        if restrictionNode is not None:
+            subNodes.append(restrictionNode)
     
     res = RestrictionNode(lastAttributeValue, subNodes=subNodes, xorAttributeSubNodes=best_attr)
 
     return res
-
-if __name__ == "__main__":
-    generate_tree()

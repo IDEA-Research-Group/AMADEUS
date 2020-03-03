@@ -10,19 +10,20 @@ __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 import ssl
 from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
+import urllib.parse
 
 # Common
 import re
 import json
 
 # Auxiliary JSON CPE Extractor
-from cpes_json import extract_semimodel
+from scrapping.cpes_json import extract_semimodel
 
 BASE_NVD_URI = "https://nvd.nist.gov/"
 VULN_QUERY_URI = BASE_NVD_URI + "vuln/search/results?form_type=Basic&results_type=overview&search_type=all&query={}&startIndex={}"
 CVE_CPES_URI = BASE_NVD_URI + "vuln/detail/{}/cpes?expandCpeRanges=true"
 
-CVE_PATTERN = "^CVE_"
+CVE_PATTERN = "^CVE-"
 
 def get_CVEs(keyword:str, page_num:int = 0) -> list:
 
@@ -54,7 +55,7 @@ def get_CVEs(keyword:str, page_num:int = 0) -> list:
     
     # Sends an HTTPS request to NVD and constructs a BS Object
     # to analyse the page
-    req = Request(VULN_QUERY_URI.format(keyword, startIndex))
+    req = Request(VULN_QUERY_URI.format(urllib.parse.quote(keyword), startIndex))
     res_page = urlopen(req, context=context)
     soup = BeautifulSoup(res_page, "html.parser")
 
@@ -120,6 +121,6 @@ def get_CPEs(cve_id:str) -> dict:
         print(err)
         return res
 
-    res = extract_semimodel(parsedJSON)
+    semi_model, running_conf = extract_semimodel(parsedJSON)
 
-    return res
+    return semi_model, running_conf

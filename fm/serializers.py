@@ -18,8 +18,15 @@ class FamaSerializer:
         FaMa Framework
     '''
 
+    LINE_TERMINATOR = ";\n"
+
     def __init__(self, CVE:str):
         
+        # First, we need to check the arguments
+
+        if not CVE or type(CVE) is not str:
+            raise ValueError("CVE must be a non-empty string")
+
         # A Feature Model contains info about a single CVE
         self.CVE = CVE
         
@@ -32,16 +39,16 @@ class FamaSerializer:
     ### SECTION
     ### Methods to add content to the different sections of a Feature Model file
     def tree_add_vendors_to_root(self, vendors: Union[Iterable, object]) -> None:
-        self.root += self.add_XOR(vendors) + ";\n"
+        self.root += self.add_XOR(vendors) + FamaSerializer.LINE_TERMINATOR
 
     def tree_add_products_to_vendor(self, vendor, products: Union[Iterable, object]) -> None:
-        self.vendors += vendor + ": " + self.add_XOR(products) + ";\n"
+        self.vendors += vendor + ": " + self.add_XOR(products) + FamaSerializer.LINE_TERMINATOR
     
     def tree_add_attributes_to_product(self, product: str, attributes: Union[Iterable, object]) -> None:
-        self.vendors_products += "{}: ".format(product) + self.add_mandatory(attributes) + ";\n"
+        self.vendors_products += "{}: ".format(product) + self.add_mandatory(attributes) + FamaSerializer.LINE_TERMINATOR
 
     def tree_add_values_to_attribute(self, product: str, attribute:str, values: Union[Iterable, object]) -> None:
-        self.product_attributes += "{}-{}: ".format(product, attribute) + self.add_XOR(values) + ";\n"
+        self.product_attributes += "{}-{}: ".format(product, attribute) + self.add_XOR(values) + FamaSerializer.LINE_TERMINATOR
     ### END OF SECTION
 
     def sanitize(self, toSanitize: Union[str, Iterable], prefix='v', dot_replacer='_') -> Union[str, Iterable]:

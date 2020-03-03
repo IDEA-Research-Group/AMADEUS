@@ -1,3 +1,5 @@
+__author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
+
 from cpe import CPE
 
 # CPE Class does not provide a hash function by default
@@ -6,6 +8,16 @@ from cpe import CPE
 # on it.
 # TODO: Review this
 class HashableCPE(CPE):
+
+    '''
+        CPE subclass that provides extended features not found in the
+        original module:
+
+            * Hash function based on the CPE URI (useful when
+            creating sets or other similar datatypes)
+
+            * Generic getter based on attribute names 
+    '''
 
     def __new__(cls, cpe_str, version=None, *args, **kwargs):
 
@@ -36,7 +48,7 @@ class HashableCPE(CPE):
             res = self.get_software_edition()[0]
         elif name == 'target_sw':
             res = self.get_target_software()[0]
-        elif name == 'target_hws':
+        elif name == 'target_hw':
             res = self.get_target_hardware()[0]
         elif name == 'other':
             res = self.get_other()[0] 
@@ -44,9 +56,25 @@ class HashableCPE(CPE):
         return res
 
 class RestrictionNode():
+
+    '''
+        Recursive data structure that models the different restrictions found on an
+        advanced FeatureModel, using a tree-like approach. 
+    '''
     
     def __init__(self, value: str, subNodes: list = list(), xorAttributeSubNodes: str = None, requirements: list = list()):
         
+        '''
+            :param value: The value required for a feature to have. Root node's value is not important.
+
+            :param subNodes: More specific subrestrictions
+
+            :param xorAttributeSubNodes: Attribute to which to apply an XOR selection
+
+            :param requirements: AND restrictions
+
+        '''
+
         self.value = value
         self.subNodes = subNodes
         self.xorAttributeSubNodes = xorAttributeSubNodes
