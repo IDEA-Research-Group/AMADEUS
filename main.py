@@ -8,7 +8,7 @@ if __name__ == "__main__":
     keyword = input("Enter a keyword to search releated vulnerabilities:")
 
     # Get CVEs that are related with the query
-    related_cves = get_CVEs(keyword)
+    related_cves = get_CVEs(keyword, exact_match=True)
 
     if related_cves:
         

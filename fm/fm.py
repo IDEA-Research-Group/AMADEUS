@@ -14,7 +14,7 @@ from fm.aux import generate_mock_complex_CPEs, generate_mock_simple_CPEs
 ###############################
 ###          T TREE         ###
 ###############################
-def generate_tree(cve: str, semi_model: dict, semi_model_rc: dict):
+def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
 
     '''
         Creates a fully well-formed feature model tree T representing all possible
@@ -30,6 +30,22 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: dict):
         Running Configuration of the final FeatureModel, which must include all simple CPEs
         that are going to be analysed.
     '''
+
+    # First, we need to check the arguments
+
+    if not cve or type(cve) is not str:
+        raise ValueError("cve must be a non-empty string")
+
+    if not isinstance(semi_model, dict):
+        raise ValueError("semi_model must be a dictionary like structure containing a semi model")
+
+    if type(semi_model_rc) is not list:
+        raise ValueError("semi_model_rc must be a dictionary like structure containing a semi model for \
+            running configurations")
+
+    if not semi_model:
+        print("[-] No semi_model was provided, skipping FM Tree generation")
+        return None
 
     fmSerializer = FamaSerializer(cve)
     s_cpes = set()
@@ -77,6 +93,13 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: dict):
             # contains a token representing all possible values ('*'). We empty sets
             # that only consists of a single '*'
             for field in cpe_fields:
+
+                # There is also the case of 'Not Applicable', which in our context
+                # is exchangeable to any
+                if '-' in field:
+                    field.remove('-')
+                    field.add('*')
+
                 if len(field) == 1 and '*' in field:
                     field.clear()
 
@@ -86,7 +109,7 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: dict):
 
             for i, field in enumerate(cpe_fields):
                 if field:
-                    mandatory_features.append("{}-{}".format(product, cpe_fields_description[i]))
+                    mandatory_features.append(cpe_fields_description[i])
                     fmSerializer.tree_add_values_to_attribute(product, cpe_fields_description[i], field)                 
 
             if mandatory_features:
@@ -110,6 +133,7 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: dict):
 
     print("\n \t *** FEATURE MODEL *** \n")
     print(fmSerializer.tree_get_model())
+    fmSerializer.save_model(cve)
 
 def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list) -> RestrictionNode:
     

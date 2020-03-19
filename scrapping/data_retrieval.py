@@ -25,7 +25,7 @@ CVE_CPES_URI = BASE_NVD_URI + "vuln/detail/{}/cpes?expandCpeRanges=true"
 
 CVE_PATTERN = "^CVE-"
 
-def get_CVEs(keyword:str, page_num:int = 0) -> list:
+def get_CVEs(keyword:str, page_num:int = 0, exact_match:bool = False) -> list:
 
     '''
         Searches NVD in order to fetch vulnerabilities related with 
@@ -36,6 +36,9 @@ def get_CVEs(keyword:str, page_num:int = 0) -> list:
         :param page_num: Number of the page from where to extract CVEs. A 
         query may produce more than one page of results. By default, page 
         size is 20.
+
+        :param exact_match: Whether the user wants to perform a search using 
+        exact keyword match
     '''
 
     # First, we need to check the arguments
@@ -48,6 +51,11 @@ def get_CVEs(keyword:str, page_num:int = 0) -> list:
 
     res = list()
     startIndex = page_num * 20
+    query_url = VULN_QUERY_URI
+
+    # If the user wants to perform a search where the keyword exactly matches
+    if exact_match:
+        query_url += "&queryType=phrase"
 
     # In some Python ENVs it is mandatory to provide a SSL context when accessing HTTPS sites
     # TODO: Change this to use user's OS built-in cas (pip certifi)
@@ -55,7 +63,7 @@ def get_CVEs(keyword:str, page_num:int = 0) -> list:
     
     # Sends an HTTPS request to NVD and constructs a BS Object
     # to analyse the page
-    req = Request(VULN_QUERY_URI.format(urllib.parse.quote(keyword), startIndex))
+    req = Request(query_url.format(urllib.parse.quote(keyword), startIndex))
     res_page = urlopen(req, context=context)
     soup = BeautifulSoup(res_page, "html.parser")
 
@@ -91,7 +99,7 @@ def get_CPEs(cve_id:str) -> dict:
     if not re.compile(CVE_PATTERN).match(cve_id):
         raise ValueError("cve_id must be a valid CVE identifier")
 
-    res = dict()
+    res = ({}, [])
 
     # In some Python ENVs it is mandatory to provide a SSL context when accessing HTTPS sites
     # TODO: Change this to use user's OS built-in cas (pip certifi)

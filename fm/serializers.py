@@ -8,8 +8,13 @@ __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 
 
 import re
+import os
 from typing import Union
 from collections.abc import Iterable
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODELS_FOLDER = "models"
+EXPORT_PATH = os.path.join(BASE_DIR, MODELS_FOLDER)
 
 class FamaSerializer:
 
@@ -45,13 +50,15 @@ class FamaSerializer:
         self.vendors += vendor + ": " + self.add_XOR(products) + FamaSerializer.LINE_TERMINATOR
     
     def tree_add_attributes_to_product(self, product: str, attributes: Union[Iterable, object]) -> None:
-        self.vendors_products += "{}: ".format(product) + self.add_mandatory(attributes) + FamaSerializer.LINE_TERMINATOR
+        formatted_attributes = ["{}-{}".format(product, k) for k in attributes]
+        self.vendors_products += "{}: ".format(product) + self.add_mandatory(formatted_attributes) + FamaSerializer.LINE_TERMINATOR
 
     def tree_add_values_to_attribute(self, product: str, attribute:str, values: Union[Iterable, object]) -> None:
-        self.product_attributes += "{}-{}: ".format(product, attribute) + self.add_XOR(values) + FamaSerializer.LINE_TERMINATOR
+        formatted_values = ["{}-{}-{}".format(product, attribute, k) for k in values]
+        self.product_attributes += "{}-{}: ".format(product, attribute) + self.add_XOR(formatted_values) + FamaSerializer.LINE_TERMINATOR
     ### END OF SECTION
 
-    def sanitize(self, toSanitize: Union[str, Iterable], prefix='v', dot_replacer='_') -> Union[str, Iterable]:
+    def sanitize(self, toSanitize: Union[str, Iterable], prefix='v', dot_replacer='_', asterisk_replacer='any') -> Union[str, Iterable]:
             
         '''
             Sanitizes retrieved content so as to avoid invalid characters in FaMa
@@ -75,6 +82,7 @@ class FamaSerializer:
                 res = prefix + res
             
             res = res.replace(".", dot_replacer)
+            res = res.replace("*", asterisk_replacer)
 
         elif isinstance(toSanitize, Iterable):
             res = [self.sanitize(x) for x in toSanitize]
@@ -96,6 +104,22 @@ class FamaSerializer:
         res += self.product_attributes
 
         return res
+    
+    def save_model(self, file_name: str) -> str:
+
+        if not os.path.exists(EXPORT_PATH):
+            os.makedirs(EXPORT_PATH)
+        
+        
+        fm_file = os.path.join(EXPORT_PATH, "{}.fm".format(file_name))
+
+        with open(fm_file, mode='w', encoding='utf-8') as feat_model:
+
+            feat_model.writelines(self.tree_get_model())
+            feat_model.flush()
+            feat_model.close()
+        
+        print("FaMa Model Saved!")
 
     ### SECTION
     ### Methods to implement the different type of relationships in a Feature Model
