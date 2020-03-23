@@ -39,7 +39,7 @@ class FamaSerializer:
         
         # Different sections of a Feature Model file
         self.root = self.CVE + ": "
-        self.rc = ""
+        self.rcs = ""
         self.vendors = ""
         self.vendors_products = ""
         self.product_attributes = ""
@@ -47,57 +47,65 @@ class FamaSerializer:
     ### SECTION
     ### Methods to add content to the different sections of a Feature Model file
     def tree_add_rcs_to_root(self, num_of_configs:int) -> None:
-        self.root = self.root.replace(FamaSerializer.LINE_TERMINATOR, '') + ' ' + self.add_optional(FamaSerializer.RUNNING_CONFIG_NODE_NAME) + FamaSerializer.LINE_TERMINATOR
-        self.rc += "{}: ".format(FamaSerializer.RUNNING_CONFIG_NODE_NAME) + \
+
+        # Line Terminator is not appended until the very end, to make the addition of new
+        # root children nodes possible
+        self.root += ' ' + self.add_optional(FamaSerializer.RUNNING_CONFIG_NODE_NAME)
+
+        self.rcs += "{}: ".format(FamaSerializer.RUNNING_CONFIG_NODE_NAME) + \
             self.add_XOR([FamaSerializer.RUNNING_CONFIG_PREFIX.format(i) for i in range(num_of_configs)]) + \
             FamaSerializer.LINE_TERMINATOR
 
     def tree_add_vendors_to_rc(self, rc:int, vendors: Union[Iterable, object]) -> None:
-        format_string = FamaSerializer.RUNNING_CONFIG_PREFIX + "-{}"
-        formatted_vendors = [format_string.format(rc, k) for k in vendors]
+        fs = FamaSerializer.RUNNING_CONFIG_PREFIX + "-{}"
+        formatted_vendors = [fs.format(rc, k) for k in vendors]
         
-        self.rc += FamaSerializer.RUNNING_CONFIG_PREFIX.format(rc) + ': ' + \
+        self.rcs += FamaSerializer.RUNNING_CONFIG_PREFIX.format(rc) + ': ' + \
             self.add_XOR(formatted_vendors) + FamaSerializer.LINE_TERMINATOR
 
-    def tree_add_products_to_vendor_rc(self, rc:int, vendor, products: Union[Iterable, object]) -> None:
-        format_string = FamaSerializer.RUNNING_CONFIG_PREFIX + "-{}"
-        formatted_vendor = format_string.format(rc, vendor)
-        formatted_products = [format_string.format(rc, k) for k in products]
-
-        self.vendors += formatted_vendor + ": " + self.add_XOR(formatted_products) + FamaSerializer.LINE_TERMINATOR
-    
-    def tree_add_attributes_to_product_rc(self, rc:int, product: str, attributes: Union[Iterable, object]) -> None:
-        format_string_attributes = FamaSerializer.RUNNING_CONFIG_PREFIX + "-{}-{}"
-        format_string_product = FamaSerializer.RUNNING_CONFIG_PREFIX + "-{}"
-        formatted_product = format_string_product.format(rc, product)
-        formatted_attributes = [format_string_attributes.format(rc, product, k) for k in attributes]
-
-        self.vendors_products += "{}: ".format(formatted_product) + self.add_mandatory(formatted_attributes) + FamaSerializer.LINE_TERMINATOR
-
-    def tree_add_values_to_attribute_rc(self, rc:int, product: str, attribute:str, values: Union[Iterable, object]) -> None:
-        format_string_values = FamaSerializer.RUNNING_CONFIG_PREFIX + "-{}-{}-{}"
-        format_string_attribute = FamaSerializer.RUNNING_CONFIG_PREFIX + "-{}-{}"
-        formatted_values = [format_string_values.format(rc, product, attribute, k) for k in values]
-        formatted_attribute = format_string_attribute.format(rc, product, attribute)
-        
-        self.product_attributes += "{}: ".format(formatted_attribute) + self.add_XOR(formatted_values) + FamaSerializer.LINE_TERMINATOR
-
     def tree_add_vendors_to_root(self, vendors: Union[Iterable, object]) -> None:
-        self.root += self.add_XOR(vendors) + FamaSerializer.LINE_TERMINATOR
+        self.__tree_add_vendors_to_root(vendors)
 
-    def tree_add_products_to_vendor(self, vendor, products: Union[Iterable, object]) -> None:
+    def tree_add_products_to_vendor(self, vendor, products: Union[Iterable, object], rc:int = None) -> None:
+        prefix =  "" if rc is None else FamaSerializer.RUNNING_CONFIG_PREFIX.format(rc) + "-"
+
+        formatted_vendor = prefix + vendor
+        formatted_products = [prefix+k for k in products]
+
+        self.__tree_add_products_to_vendor(formatted_vendor, formatted_products)
+
+    def tree_add_attributes_to_product(self, product: str, attributes: Union[Iterable, object], rc:int = None) -> None:
+        prefix =  "" if rc is None else FamaSerializer.RUNNING_CONFIG_PREFIX.format(rc) + "-"
+        
+        formatted_attributes = ["{}{}-{}".format(prefix, product, k) for k in attributes]
+        formatted_product = prefix + product
+
+        self.__tree_add_attributes_to_product(formatted_product, formatted_attributes)
+
+    def tree_add_values_to_attribute(self, product: str, attribute:str, values: Union[Iterable, object], rc:int = None) -> None:
+        prefix =  "" if rc is None else FamaSerializer.RUNNING_CONFIG_PREFIX.format(rc) + "-"
+
+        formatted_values = ["{}{}-{}-{}".format(prefix, product, attribute, k) for k in values]
+        formatted_attribute = "{}{}-{}".format(prefix, product, attribute)
+
+        self.__tree_add_values_to_attribute(formatted_attribute, formatted_values)
+
+    def __tree_add_vendors_to_root(self, vendors: Union[Iterable, object]) -> None:
+        # Line Terminator is not appended until the very end, to make the addition of new
+        # root children nodes possible
+        self.root += self.add_XOR(vendors)
+
+    def __tree_add_products_to_vendor(self, vendor, products: Union[Iterable, object]) -> None:
         self.vendors += vendor + ": " + self.add_XOR(products) + FamaSerializer.LINE_TERMINATOR
     
-    def tree_add_attributes_to_product(self, product: str, attributes: Union[Iterable, object]) -> None:
-        formatted_attributes = ["{}-{}".format(product, k) for k in attributes]
-        self.vendors_products += "{}: ".format(product) + self.add_mandatory(formatted_attributes) + FamaSerializer.LINE_TERMINATOR
+    def __tree_add_attributes_to_product(self, product: str, attributes: Union[Iterable, object]) -> None:
+        self.vendors_products += product + ": " + self.add_mandatory(attributes) + FamaSerializer.LINE_TERMINATOR
 
-    def tree_add_values_to_attribute(self, product: str, attribute:str, values: Union[Iterable, object]) -> None:
-        formatted_values = ["{}-{}-{}".format(product, attribute, k) for k in values]
-        self.product_attributes += "{}-{}: ".format(product, attribute) + self.add_XOR(formatted_values) + FamaSerializer.LINE_TERMINATOR
+    def __tree_add_values_to_attribute(self, attribute:str, values: Union[Iterable, object]) -> None:
+        self.product_attributes += attribute + ": " + self.add_XOR(values) + FamaSerializer.LINE_TERMINATOR
     ### END OF SECTION
 
-    def sanitize(self, toSanitize: Union[str, Iterable], prefix='v', dot_replacer='_', asterisk_replacer='any') -> Union[str, Iterable]:
+    def sanitize(self, toSanitize: Union[str, Iterable], num_prefix:str='v', replacers:tuple=(('.', '_'),('*','any'))) -> Union[str, Iterable]:
             
         '''
             Sanitizes retrieved content so as to avoid invalid characters in FaMa
@@ -106,22 +114,23 @@ class FamaSerializer:
             :param toSanitize: String or Iterable containing strings that are intended 
             to be sanitized
 
-            :param prefix: Character to use as a prefix for string starting with a number
+            :param num_prefix: Character to use as a prefix for string starting with a number
 
-            :param dot_replacer: Character that will substitute dots in the string
+            :param replacers: Tuple containing pairs which first item is the special character to replace
+            and the second the new expression.
         '''
 
         if type(toSanitize) is str:
             
-            regex = re.compile(r"^\d")
+            starts_with_number_regex = re.compile(r"^\d")
             res = toSanitize
 
             # Check whether the string starts with a number or not
-            if regex.match(res):
-                res = prefix + res
+            if starts_with_number_regex.match(res):
+                res = num_prefix + res
             
-            res = res.replace(".", dot_replacer)
-            res = res.replace("*", asterisk_replacer)
+            for t in replacers:
+                res = res.replace(t[0], t[1])
 
         elif isinstance(toSanitize, Iterable):
             res = [self.sanitize(x) for x in toSanitize]
@@ -137,11 +146,11 @@ class FamaSerializer:
         '''
 
         res = "%Relationships \n"
-        res += self.root + "\n"
-        res += self.rc + "\n"
+        res += self.root + FamaSerializer.LINE_TERMINATOR + "\n"
+        res += self.rcs + "\n"
         res += self.vendors + "\n"
         res += self.vendors_products + "\n"
-        res += self.product_attributes + "\n"
+        res += self.product_attributes
 
         return res
     
@@ -159,7 +168,7 @@ class FamaSerializer:
             feat_model.flush()
             feat_model.close()
         
-        print("FaMa Model Saved!")
+        print("FaMa Model Saved! Check {}".format(fm_file))
 
     ### SECTION
     ### Methods to implement the different type of relationships in a Feature Model
