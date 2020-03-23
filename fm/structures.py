@@ -26,6 +26,7 @@ class HashableCPE(CPE):
         # Customization zone
         CPE.__hash__ = HashableCPE.__hash__
         CPE.get_attribute = HashableCPE.get_attribute
+        hashableCPE.rcs = list()
 
         return hashableCPE
 
@@ -51,7 +52,9 @@ class HashableCPE(CPE):
         elif name == 'target_hw':
             res = self.get_target_hardware()[0]
         elif name == 'other':
-            res = self.get_other()[0] 
+            res = self.get_other()[0]
+        elif name == 'rc':
+            res = tuple(self.rcs) 
         
         return res
 

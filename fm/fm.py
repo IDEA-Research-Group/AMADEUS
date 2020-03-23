@@ -48,92 +48,127 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
         return None
 
     fmSerializer = FamaSerializer(cve)
+
+    processSemiModel([semi_model], fmSerializer)
+    processSemiModel(semi_model_rc, fmSerializer, isRC=True)
+
+    
+    print("\n \t *** FEATURE MODEL *** \n")
+    print(fmSerializer.tree_get_model())
+    
+    fmSerializer.save_model(cve)
+
+# TODO: Change to FMSerializer abstract class
+def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, isRC:bool = False):
+    
     s_cpes = set()
 
     # CPE fields
     # Used to have a registry of all the possible and different values
     # that every field can have
-    cpe_fields = (set(), set(), set(), set(), set(), set(), set(), set())
-    cpe_fields_description = ('versions', 'updates', 'editions', 'languages', 'sw_editions', 'target_sws', 'target_hws', 'others')
+    cpe_fields = (set(), set(), set(), set(), set(), set(), set(), set(), set())
+    cpe_fields_description = ('versions', 'updates', 'editions', 'languages', 'sw_editions', 'target_sws', 'target_hws', 'others', 'rcs')
+
+    if isRC:
+        fmSerializer.tree_add_rcs_to_root(len(semi_model_container))
 
     # First step to serialize is to indicate which vendors we are dealing
     # with. Further information will hang from vendor nodes.
-    fmSerializer.tree_add_vendors_to_root(semi_model.keys())
 
-    # Iterate over all vendors
-    for vendor, products in semi_model.items():
+    for rc_i, semi_model in enumerate(semi_model_container):
+        
+        if isRC:
+            fmSerializer.tree_add_vendors_to_rc(rc_i, semi_model.keys())
+        else:
+            fmSerializer.tree_add_vendors_to_root(semi_model.keys())
 
-        # Indicate all the products a vendor has
-        fmSerializer.tree_add_products_to_vendor(vendor, products)
+        # Iterate over all vendors
+        for vendor, products in semi_model.items():
 
-        # Iterate over all products of a vendor
-        for product, cpes in products.items():
+            # Indicate all the products a vendor has
+            if isRC:
+                fmSerializer.tree_add_products_to_vendor_rc(rc_i, vendor, products)      
+            else:
+                fmSerializer.tree_add_products_to_vendor(vendor, products)
 
-            # Create actual CPE instances using its
-            # 2.3 FS string representation.
-            # Create a collection containing all CPE instances
-            # of the current vendor+product
-            for cpe, rcs in cpes.items():
-                s_cpes.add(HashableCPE(cpe))
-            
-            # For each simple CPE, we analyse its attrs in order
-            # to extract common features
-            for s_cpe in s_cpes:
+            # Iterate over all products of a vendor
+            for product, cpes in products.items():
+
+                # Create actual CPE instances using its
+                # 2.3 FS string representation.
+                # Create a collection containing all CPE instances
+                # of the current vendor+product
+                if isRC:
+                    for cpe in cpes:
+                        s_cpes.add(HashableCPE(cpe))
+                else:
+                    for cpe, rcs in cpes.items():
+                        h_cpe = HashableCPE(cpe)
+                        h_cpe.rcs.extend(rcs)
+                        s_cpes.add(h_cpe)
                 
-                cpe_fields[0].add(s_cpe.get_version()[0])
-                cpe_fields[1].add(s_cpe.get_update()[0])
-                cpe_fields[2].add(s_cpe.get_edition()[0])
-                cpe_fields[3].add(s_cpe.get_language()[0])
-                cpe_fields[4].add(s_cpe.get_software_edition()[0])
-                cpe_fields[5].add(s_cpe.get_target_software()[0])
-                cpe_fields[6].add(s_cpe.get_target_hardware()[0])
-                cpe_fields[7].add(s_cpe.get_other()[0])
-            
-            # When an attribute does not have any relevant information, the set only
-            # contains a token representing all possible values ('*'). We empty sets
-            # that only consists of a single '*'
-            for field in cpe_fields:
+                # For each simple CPE, we analyse its attrs in order
+                # to extract common features
+                for s_cpe in s_cpes:
+                    
+                    cpe_fields[0].add(s_cpe.get_version()[0])
+                    cpe_fields[1].add(s_cpe.get_update()[0])
+                    cpe_fields[2].add(s_cpe.get_edition()[0])
+                    cpe_fields[3].add(s_cpe.get_language()[0])
+                    cpe_fields[4].add(s_cpe.get_software_edition()[0])
+                    cpe_fields[5].add(s_cpe.get_target_software()[0])
+                    cpe_fields[6].add(s_cpe.get_target_hardware()[0])
+                    cpe_fields[7].add(s_cpe.get_other()[0])
+                    cpe_fields[8].add(tuple(s_cpe.rcs))
+                
+                # When an attribute does not have any relevant information, the set only
+                # contains a token representing all possible values ('*'). We empty sets
+                # that only consists of a single '*'
+                for field in cpe_fields:
 
-                # There is also the case of 'Not Applicable', which in our context
-                # is exchangeable to any
-                if '-' in field:
-                    field.remove('-')
-                    field.add('*')
+                    # There is also the case of 'Not Applicable', which in our context
+                    # is exchangeable to any
+                    if '-' in field:
+                        field.remove('-')
+                        field.add('*')
 
-                if len(field) == 1 and '*' in field:
+                    if len(field) == 1 and '*' in field:
+                        field.clear()
+
+                # Features that have been identified and their values are a must to have
+                # in our Feature Model
+                mandatory_features = []
+
+                for i, field in enumerate(cpe_fields):
+                    if field:
+                        mandatory_features.append(cpe_fields_description[i])
+                        if isRC:
+                            fmSerializer.tree_add_values_to_attribute_rc(rc_i, product, cpe_fields_description[i], field)
+                        else:
+                            fmSerializer.tree_add_values_to_attribute(product, cpe_fields_description[i], field) 
+                                         
+
+                if mandatory_features:
+                    if isRC:
+                        fmSerializer.tree_add_attributes_to_product_rc(rc_i, product, mandatory_features)
+                    else:
+                        fmSerializer.tree_add_attributes_to_product(product, mandatory_features)
+                    
+                # In order to write optimized restrictions, we need to start with those fields that 
+                # have the greater amount of values -> they provide better data segregation
+                #
+                # Instead of reordering the actual list, we make a new list consisting of the indexes and
+                # apply the reordering to it.
+                # TODO: Remove vendor and product attributes
+                sortedFieldsIndexes = sorted(range(len(cpe_fields)), key=lambda x: len(cpe_fields[x]), reverse=True)
+
+                # TODO: Add constraints to serializer
+                constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "[]", cpe_fields, cpe_fields_description)
+
+                # Reset all accumulators for next product
+                for field in cpe_fields:
                     field.clear()
-
-            # Features that have been identified and their values are a must to have
-            # in our Feature Model
-            mandatory_features = []
-
-            for i, field in enumerate(cpe_fields):
-                if field:
-                    mandatory_features.append(cpe_fields_description[i])
-                    fmSerializer.tree_add_values_to_attribute(product, cpe_fields_description[i], field)                 
-
-            if mandatory_features:
-                fmSerializer.tree_add_attributes_to_product(product, mandatory_features)
-
-            # In order to write optimized restrictions, we need to start with those fields that 
-            # have the greater amount of values -> they provide better data segregation
-            #
-            # Instead of reordering the actual list, we make a new list consisting of the indexes and
-            # apply the reordering to it.
-            # TODO: Remove vendor and product attributes
-            sortedFieldsIndexes = sorted(range(len(cpe_fields)), key=lambda x: len(cpe_fields[x]), reverse=True)
-
-            # TODO: Add constraints to serializer
-            constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "[]", cpe_fields, cpe_fields_description)
-
-            # Reset all accumulators for next product
-            for field in cpe_fields:
-                field.clear()
-            s_cpes.clear()
-
-    print("\n \t *** FEATURE MODEL *** \n")
-    print(fmSerializer.tree_get_model())
-    fmSerializer.save_model(cve)
+                s_cpes.clear()
 
 def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list) -> RestrictionNode:
     
