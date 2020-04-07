@@ -11,6 +11,7 @@ import re
 import os
 from typing import Union
 from collections.abc import Iterable
+from .structures import RestrictionNode
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_FOLDER = "models"
@@ -43,6 +44,9 @@ class FamaSerializer:
         self.vendors = ""
         self.vendors_products = ""
         self.product_attributes = ""
+        
+        # Restrictions
+        self.restrictions = ""
 
     ### SECTION
     ### Methods to add content to the different sections of a Feature Model file
@@ -50,24 +54,24 @@ class FamaSerializer:
 
         # Line Terminator is not appended until the very end, to make the addition of new
         # root children nodes possible
-        self.root += ' ' + self.add_optional(FamaSerializer.RUNNING_CONFIG_NODE_NAME)
+        self.root += ' ' + self.add_optional(self.RUNNING_CONFIG_NODE_NAME)
 
-        self.rcs += "{}: ".format(FamaSerializer.RUNNING_CONFIG_NODE_NAME) + \
-            self.add_XOR([FamaSerializer.RUNNING_CONFIG_PREFIX.format(i) for i in range(num_of_configs)]) + \
-            FamaSerializer.LINE_TERMINATOR
+        self.rcs += "{}: ".format(self.RUNNING_CONFIG_NODE_NAME) + \
+            self.add_XOR([self.RUNNING_CONFIG_PREFIX.format(i) for i in range(num_of_configs)]) + \
+            self.LINE_TERMINATOR
 
     def tree_add_vendors_to_rc(self, rc:int, vendors: Union[Iterable, object]) -> None:
-        fs = FamaSerializer.RUNNING_CONFIG_PREFIX + "-{}"
+        fs = self.RUNNING_CONFIG_PREFIX + "-{}"
         formatted_vendors = [fs.format(rc, k) for k in vendors]
         
-        self.rcs += FamaSerializer.RUNNING_CONFIG_PREFIX.format(rc) + ': ' + \
-            self.add_XOR(formatted_vendors) + FamaSerializer.LINE_TERMINATOR
+        self.rcs += self.RUNNING_CONFIG_PREFIX.format(rc) + ': ' + \
+            self.add_XOR(formatted_vendors) + self.LINE_TERMINATOR
 
     def tree_add_vendors_to_root(self, vendors: Union[Iterable, object]) -> None:
         self.__tree_add_vendors_to_root(vendors)
 
     def tree_add_products_to_vendor(self, vendor, products: Union[Iterable, object], rc:int = None) -> None:
-        prefix =  "" if rc is None else FamaSerializer.RUNNING_CONFIG_PREFIX.format(rc) + "-"
+        prefix =  "" if rc is None else self.RUNNING_CONFIG_PREFIX.format(rc) + "-"
 
         formatted_vendor = prefix + vendor
         formatted_products = [prefix+k for k in products]
@@ -75,7 +79,7 @@ class FamaSerializer:
         self.__tree_add_products_to_vendor(formatted_vendor, formatted_products)
 
     def tree_add_attributes_to_product(self, product: str, attributes: Union[Iterable, object], rc:int = None) -> None:
-        prefix =  "" if rc is None else FamaSerializer.RUNNING_CONFIG_PREFIX.format(rc) + "-"
+        prefix =  "" if rc is None else self.RUNNING_CONFIG_PREFIX.format(rc) + "-"
         
         formatted_attributes = ["{}{}-{}".format(prefix, product, k) for k in attributes]
         formatted_product = prefix + product
@@ -83,12 +87,85 @@ class FamaSerializer:
         self.__tree_add_attributes_to_product(formatted_product, formatted_attributes)
 
     def tree_add_values_to_attribute(self, product: str, attribute:str, values: Union[Iterable, object], rc:int = None) -> None:
-        prefix =  "" if rc is None else FamaSerializer.RUNNING_CONFIG_PREFIX.format(rc) + "-"
+        prefix =  "" if rc is None else self.RUNNING_CONFIG_PREFIX.format(rc) + "-"
 
         formatted_values = ["{}{}-{}-{}".format(prefix, product, attribute, k) for k in values]
         formatted_attribute = "{}{}-{}".format(prefix, product, attribute)
 
         self.__tree_add_values_to_attribute(formatted_attribute, formatted_values)
+    
+    def tree_add_constraints(self, product: str, restrictionNode:RestrictionNode) -> None:
+        self.restrictions += self.serialize_constraints(product, restrictionNode, 0) + self.LINE_TERMINATOR
+
+    def serialize_constraints(self, product: str, restrictionNode:RestrictionNode, depth:int) -> str:
+        
+        res = ''
+
+        if restrictionNode:
+
+            # The value of the precedent requirement, or the product if depth = 0 
+            super_value = restrictionNode.value if depth > 0 else product
+
+            if restrictionNode.isLeaf:
+                
+                # BASE CASE
+
+                VALUE_REQ_CONNECTOR = ' REQUIRES ' if depth <= 1 else ' AND '
+                aux = list()
+                need_brackets = False
+
+                for (attr, val) in restrictionNode.requirements:
+                    
+                    if attr == 'rcs':
+                        # Generate requirements for the running configurations
+                        rcs = ' XOR '.join([self.RUNNING_CONFIG_PREFIX.format(k) for k in val])
+
+                        # We add brackets if there are more than one rc, to create a logical group
+                        if len(val) > 1:
+                            rcs = '(' + rcs + ')'
+                        else:
+                            need_brackets = True
+                        
+                        aux.append(rcs)
+
+                    else:
+                        # Generate requirements for the rest of attributes (standard attr)
+                        aux.append("{}-{}-{}".format(product, attr[:-1], val))
+                        need_brackets = True
+
+                need_brackets = depth <= 1 and need_brackets
+                
+                res = ' AND '.join(aux)
+
+                if need_brackets:
+                    res = '(' + res + ')'
+                
+                res = super_value + VALUE_REQ_CONNECTOR + res
+                res = self.sanitize(res)
+
+                return res
+
+            else:
+
+                split_attr = restrictionNode.xorAttributeSubNodes[:-1]
+                aux = list()
+                
+                for sn in restrictionNode.subNodes:
+                    # Explore all the subnodes recursively
+                    aux.append('{}-{}-'.format(product, split_attr) + self.serialize_constraints(product, sn, depth=depth+1))
+
+                if depth == 0:
+                    res = self.LINE_TERMINATOR.join(aux) 
+                elif depth == 1:
+                    res = super_value + ' REQUIRES ' + '((' + ') XOR ('.join(aux) + '))'
+                else:
+                    res = ' XOR '.join(aux)
+                
+                res = self.sanitize(res)
+
+                return res
+
+        return res    
 
     def __tree_add_vendors_to_root(self, vendors: Union[Iterable, object]) -> None:
         # Line Terminator is not appended until the very end, to make the addition of new
@@ -96,13 +173,13 @@ class FamaSerializer:
         self.root += self.add_XOR(vendors)
 
     def __tree_add_products_to_vendor(self, vendor, products: Union[Iterable, object]) -> None:
-        self.vendors += vendor + ": " + self.add_XOR(products) + FamaSerializer.LINE_TERMINATOR
+        self.vendors += vendor + ": " + self.add_XOR(products) + self.LINE_TERMINATOR
     
     def __tree_add_attributes_to_product(self, product: str, attributes: Union[Iterable, object]) -> None:
-        self.vendors_products += product + ": " + self.add_mandatory(attributes) + FamaSerializer.LINE_TERMINATOR
+        self.vendors_products += product + ": " + self.add_mandatory(attributes) + self.LINE_TERMINATOR
 
     def __tree_add_values_to_attribute(self, attribute:str, values: Union[Iterable, object]) -> None:
-        self.product_attributes += attribute + ": " + self.add_XOR(values) + FamaSerializer.LINE_TERMINATOR
+        self.product_attributes += attribute + ": " + self.add_XOR(values) + self.LINE_TERMINATOR
     ### END OF SECTION
 
     def sanitize(self, toSanitize: Union[str, Iterable], num_prefix:str='v', replacers:tuple=(('.', '_'),('*','any'))) -> Union[str, Iterable]:
@@ -146,7 +223,7 @@ class FamaSerializer:
         '''
 
         res = "%Relationships \n"
-        res += self.root + FamaSerializer.LINE_TERMINATOR + "\n"
+        res += self.root + self.LINE_TERMINATOR + "\n"
         res += self.rcs + "\n"
         res += self.vendors + "\n"
         res += self.vendors_products + "\n"
@@ -161,6 +238,7 @@ class FamaSerializer:
         
         
         fm_file = os.path.join(EXPORT_PATH, "{}.fm".format(file_name))
+        restriction_file = os.path.join(EXPORT_PATH, "{}.fmr".format(file_name))
 
         with open(fm_file, mode='w', encoding='utf-8') as feat_model:
 
@@ -168,7 +246,15 @@ class FamaSerializer:
             feat_model.flush()
             feat_model.close()
         
+        with open(restriction_file, mode='w', encoding='utf-8') as restriction_lines:
+
+            restriction_lines.write("%Restrictions \n")
+            restriction_lines.writelines(self.restrictions)
+            restriction_lines.flush()
+            restriction_lines.close()
+        
         print("FaMa Model Saved! Check {}".format(fm_file))
+        print("FaMa Restrictions for Model Saved! Check {}".format(restriction_file))
 
     ### SECTION
     ### Methods to implement the different type of relationships in a Feature Model

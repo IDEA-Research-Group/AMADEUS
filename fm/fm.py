@@ -156,7 +156,8 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
                 # TODO: Add constraints to serializer and take into account the need to add 
                 # constraints pointing to RCs even if 'constraints' is empty: CVE-2020-0833
                 constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "[]", cpe_fields, cpe_fields_description)
-
+                fmSerializer.tree_add_constraints(product, constraints)
+                
                 # Reset all accumulators for next product
                 for field in cpe_fields:
                     field.clear()
@@ -200,7 +201,10 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
         # If an field only has one option from where to choose (i.e. target_sw=windows), there is
         # no need to make a REQ statament as it is the only option. Furthermore, by enforcing 
         # this restriction, we get rid of fields that does not have any value at all (* or -)
-        requiredAttributes = list(filter(lambda x: len(cpe_fields[cpe_fields_description.index(cpe_fields_description[x])]) > 1, sortedAttrListing))
+        requiredAttributes = list(filter(lambda x: len(cpe_fields[cpe_fields_description.index(cpe_fields_description[x])]) > 1, sortedAttrListing[:-1]))
+        if cpe_fields[-1] and () not in cpe_fields[-1]:
+            requiredAttributes.append(sortedAttrListing[-1])
+
 
         if requiredAttributes:
 
@@ -214,9 +218,6 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
             requirements = [(cpe_fields_description[x], cpe.get_attribute(cpe_fields_description[x][:-1])) for x in requiredAttributes]
 
             res = RestrictionNode(lastAttributeValue,requirements=requirements)
-
-        else:
-            res = RestrictionNode(lastAttributeValue)
         
         return res
     
@@ -233,6 +234,7 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
         if restrictionNode is not None:
             subNodes.append(restrictionNode)
     
-    res = RestrictionNode(lastAttributeValue, subNodes=subNodes, xorAttributeSubNodes=best_attr)
+    if subNodes:
+        res = RestrictionNode(lastAttributeValue, subNodes=subNodes, xorAttributeSubNodes=best_attr)
 
     return res
