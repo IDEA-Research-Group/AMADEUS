@@ -52,13 +52,14 @@ class FamaSerializer:
     ### Methods to add content to the different sections of a Feature Model file
     def tree_add_rcs_to_root(self, num_of_configs:int) -> None:
 
-        # Line Terminator is not appended until the very end, to make the addition of new
-        # root children nodes possible
-        self.root += ' ' + self.add_optional(self.RUNNING_CONFIG_NODE_NAME)
+        if num_of_configs > 0:
+            # Line Terminator is not appended until the very end, to make the addition of new
+            # root children nodes possible
+            self.root += ' ' + self.add_optional(self.RUNNING_CONFIG_NODE_NAME)
 
-        self.rcs += "{}: ".format(self.RUNNING_CONFIG_NODE_NAME) + \
-            self.add_XOR([self.RUNNING_CONFIG_PREFIX.format(i) for i in range(num_of_configs)]) + \
-            self.LINE_TERMINATOR
+            self.rcs += "{}: ".format(self.RUNNING_CONFIG_NODE_NAME) + \
+                self.add_XOR([self.RUNNING_CONFIG_PREFIX.format(i) for i in range(num_of_configs)]) + \
+                self.LINE_TERMINATOR
 
     def tree_add_vendors_to_rc(self, rc:int, vendors: Union[Iterable, object]) -> None:
         fs = self.RUNNING_CONFIG_PREFIX + "-{}"
@@ -95,7 +96,9 @@ class FamaSerializer:
         self.__tree_add_values_to_attribute(formatted_attribute, formatted_values)
     
     def tree_add_constraints(self, product: str, restrictionNode:RestrictionNode) -> None:
-        self.restrictions += self.serialize_constraints(product, restrictionNode, 0) + self.LINE_TERMINATOR
+        r = self.serialize_constraints(product, restrictionNode, 0)
+        if r != "":
+            self.restrictions +=  r + self.LINE_TERMINATOR
 
     def serialize_constraints(self, product: str, restrictionNode:RestrictionNode, depth:int) -> str:
         
@@ -224,7 +227,8 @@ class FamaSerializer:
 
         res = "%Relationships \n"
         res += self.root + self.LINE_TERMINATOR + "\n"
-        res += self.rcs + "\n"
+        if self.rcs != "":
+            res += self.rcs + "\n"
         res += self.vendors + "\n"
         res += self.vendors_products + "\n"
         res += self.product_attributes
@@ -246,15 +250,17 @@ class FamaSerializer:
             feat_model.flush()
             feat_model.close()
         
-        with open(restriction_file, mode='w', encoding='utf-8') as restriction_lines:
-
-            restriction_lines.write("%Restrictions \n")
-            restriction_lines.writelines(self.restrictions)
-            restriction_lines.flush()
-            restriction_lines.close()
-        
         print("FaMa Model Saved! Check {}".format(fm_file))
-        print("FaMa Restrictions for Model Saved! Check {}".format(restriction_file))
+
+        if self.restrictions != "":
+            with open(restriction_file, mode='w', encoding='utf-8') as restriction_lines:
+
+                restriction_lines.write("%Restrictions \n")
+                restriction_lines.writelines(self.restrictions)
+                restriction_lines.flush()
+                restriction_lines.close()
+        
+            print("FaMa Restrictions for Model Saved! Check {}".format(restriction_file))
 
     ### SECTION
     ### Methods to implement the different type of relationships in a Feature Model
