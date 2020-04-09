@@ -138,8 +138,8 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
 
                 for i, field in enumerate(cpe_fields[:-1]):
                     if field:
-                        mandatory_features.append(cpe_fields_description[i])
-                        fmSerializer.tree_add_values_to_attribute(product, cpe_fields_description[i], field, rc=rc_i)
+                        mandatory_features.append(cpe_fields_description[i][:-1])
+                        fmSerializer.tree_add_values_to_attribute(product, cpe_fields_description[i][:-1], field, rc=rc_i)
                                          
 
                 if mandatory_features:

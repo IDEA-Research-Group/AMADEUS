@@ -107,7 +107,7 @@ class FamaSerializer:
         if restrictionNode:
 
             # The value of the precedent requirement, or the product if depth = 0 
-            super_value = restrictionNode.value if depth > 0 else product
+            super_value = restrictionNode.value if depth > 0 else self.sanitize(product)
 
             if restrictionNode.isLeaf:
                 
@@ -144,7 +144,7 @@ class FamaSerializer:
                     res = '(' + res + ')'
                 
                 res = super_value + VALUE_REQ_CONNECTOR + res
-                res = self.sanitize(res)
+                res = res
 
                 return res
 
@@ -255,7 +255,7 @@ class FamaSerializer:
         if self.restrictions != "":
             with open(restriction_file, mode='w', encoding='utf-8') as restriction_lines:
 
-                restriction_lines.write("%Restrictions \n")
+                restriction_lines.write("%Constraints \n")
                 restriction_lines.writelines(self.restrictions)
                 restriction_lines.flush()
                 restriction_lines.close()
