@@ -75,32 +75,32 @@ class FamaSerializer:
         prefix =  "" if rc is None else self.RUNNING_CONFIG_PREFIX.format(rc) + "-"
 
         formatted_vendor = prefix + vendor
-        formatted_products = [prefix+k for k in products]
+        formatted_products = ["{}{}-{}".format(prefix, vendor, k) for k in products]
 
         self.__tree_add_products_to_vendor(formatted_vendor, formatted_products)
 
-    def tree_add_attributes_to_product(self, product: str, attributes: Union[Iterable, object], rc:int = None) -> None:
+    def tree_add_attributes_to_product(self, vendor:str, product: str, attributes: Union[Iterable, object], rc:int = None) -> None:
         prefix =  "" if rc is None else self.RUNNING_CONFIG_PREFIX.format(rc) + "-"
         
-        formatted_attributes = ["{}{}-{}".format(prefix, product, k) for k in attributes]
-        formatted_product = prefix + product
+        formatted_attributes = ["{}{}-{}-{}".format(prefix, vendor, product, k) for k in attributes]
+        formatted_product = prefix + vendor + "-" + product
 
         self.__tree_add_attributes_to_product(formatted_product, formatted_attributes)
 
-    def tree_add_values_to_attribute(self, product: str, attribute:str, values: Union[Iterable, object], rc:int = None) -> None:
+    def tree_add_values_to_attribute(self, vendor:str, product: str, attribute:str, values: Union[Iterable, object], rc:int = None) -> None:
         prefix =  "" if rc is None else self.RUNNING_CONFIG_PREFIX.format(rc) + "-"
 
-        formatted_values = ["{}{}-{}-{}".format(prefix, product, attribute, k) for k in values]
-        formatted_attribute = "{}{}-{}".format(prefix, product, attribute)
+        formatted_values = ["{}{}-{}-{}-{}".format(prefix, vendor, product, attribute, k) for k in values]
+        formatted_attribute = "{}{}-{}-{}".format(prefix, vendor, product, attribute)
 
         self.__tree_add_values_to_attribute(formatted_attribute, formatted_values)
     
-    def tree_add_constraints(self, product: str, restrictionNode:RestrictionNode) -> None:
-        r = self.serialize_constraints(product, restrictionNode, 0)
+    def tree_add_constraints(self, vendor:str, product: str, restrictionNode:RestrictionNode) -> None:
+        r = self.serialize_constraints(vendor, product, restrictionNode, 0)
         if r != "":
             self.restrictions +=  r + self.LINE_TERMINATOR
 
-    def serialize_constraints(self, product: str, restrictionNode:RestrictionNode, depth:int) -> str:
+    def serialize_constraints(self, vendor:str, product: str, restrictionNode:RestrictionNode, depth:int) -> str:
         
         res = ''
 
@@ -133,7 +133,7 @@ class FamaSerializer:
 
                     else:
                         # Generate requirements for the rest of attributes (standard attr)
-                        aux.append("{}-{}-{}".format(product, attr[:-1], val))
+                        aux.append("{}-{}-{}-{}".format(vendor, product, attr[:-1], val))
                         need_brackets = True
 
                 need_brackets = depth <= 1 and need_brackets
@@ -155,7 +155,7 @@ class FamaSerializer:
                 
                 for sn in restrictionNode.subNodes:
                     # Explore all the subnodes recursively
-                    aux.append('{}-{}-'.format(product, split_attr) + self.serialize_constraints(product, sn, depth=depth+1))
+                    aux.append('{}-{}-{}-'.format(vendor, product, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
 
                 if depth == 0:
                     res = self.LINE_TERMINATOR.join(aux) 

@@ -139,11 +139,11 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
                 for i, field in enumerate(cpe_fields[:-1]):
                     if field:
                         mandatory_features.append(cpe_fields_description[i][:-1])
-                        fmSerializer.tree_add_values_to_attribute(product, cpe_fields_description[i][:-1], field, rc=rc_i)
+                        fmSerializer.tree_add_values_to_attribute(vendor, product, cpe_fields_description[i][:-1], field, rc=rc_i)
                                          
 
                 if mandatory_features:
-                    fmSerializer.tree_add_attributes_to_product(product, mandatory_features, rc=rc_i)
+                    fmSerializer.tree_add_attributes_to_product(vendor, product, mandatory_features, rc=rc_i)
                     
                 # In order to write optimized restrictions, we need to start with those fields that 
                 # have the greater amount of values -> they provide better data segregation
@@ -156,7 +156,7 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
                 # TODO: Add constraints to serializer and take into account the need to add 
                 # constraints pointing to RCs even if 'constraints' is empty: CVE-2020-0833
                 constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "[]", cpe_fields, cpe_fields_description)
-                fmSerializer.tree_add_constraints(product, constraints)
+                fmSerializer.tree_add_constraints(vendor, product, constraints)
                 
                 # Reset all accumulators for next product
                 for field in cpe_fields:
