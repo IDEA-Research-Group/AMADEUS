@@ -6,7 +6,7 @@
 __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 
 from collections import defaultdict
-
+import time
 from fm.serializers import FamaSerializer
 from fm.structures import RestrictionNode, HashableCPE
 from fm.aux import generate_mock_complex_CPEs, generate_mock_simple_CPEs
@@ -33,6 +33,8 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
 
     # First, we need to check the arguments
 
+    b_b_1 = time.time()
+
     if not cve or type(cve) is not str:
         raise ValueError("cve must be a non-empty string")
 
@@ -49,17 +51,32 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
 
     fmSerializer = FamaSerializer(cve)
 
-    processSemiModel([semi_model], fmSerializer, isRC=False)
-    processSemiModel(semi_model_rc, fmSerializer, isRC=True)
+    a_b_1 = time.time()
 
-    print("\n \t *** FEATURE MODEL *** \n")
-    print(fmSerializer.tree_get_model())
+    t_b = a_b_1 - b_b_1
+    t_c = 0
+
+    aux_b, aux_c = processSemiModel([semi_model], fmSerializer, isRC=False)
+
+    t_b += aux_b
+    t_c += aux_c
+
+    aux_b, aux_c = processSemiModel(semi_model_rc, fmSerializer, isRC=True)
+
+    t_b += aux_b
+    t_c += aux_c
+
+    #print("\n \t *** FEATURE MODEL *** \n")
+    #print(fmSerializer.tree_get_model())
     
-    fmSerializer.save_model(cve)
+    #fmSerializer.save_model(cve)
+    return t_b, t_c
 
 # TODO: Change to FMSerializer abstract class
 def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, isRC:bool):
     
+    b_b_2 = time.time()
+
     s_cpes = set()
 
     # CPE fields
@@ -71,8 +88,15 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
 
     if isRC:
         fmSerializer.tree_add_rcs_to_root(len(semi_model_container))
+    
+    a_b_2 = time.time()
+
+    t_b = a_b_2 - b_b_2
+    t_c = 0
 
     for rc_i, semi_model in enumerate(semi_model_container):
+        
+        b_b_3 = time.time()
         
         # First step to serialize is to indicate which vendors we are dealing
         # with. Further information will hang from vendor nodes.
@@ -82,14 +106,27 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
             fmSerializer.tree_add_vendors_to_root(semi_model.keys())
             rc_i = None
 
+        a_b_3 = time.time()
+
+        t_b += a_b_3 - b_b_3
+
         # Iterate over all vendors
         for vendor, products in semi_model.items():
+            
+            b_b_4 = time.time()
 
             # Indicate all the products a vendor has  
             fmSerializer.tree_add_products_to_vendor(vendor, products, rc_i)
+            
+            a_b_4 = time.time()
+
+            t_b += a_b_4 - b_b_4
+
 
             # Iterate over all products of a vendor
             for product, cpes in products.items():
+
+                b_b_5 = time.time()
 
                 # Create actual CPE instances using its
                 # 2.3 FS string representation.
@@ -155,13 +192,30 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
 
                 # TODO: Add constraints to serializer and take into account the need to add 
                 # constraints pointing to RCs even if 'constraints' is empty: CVE-2020-0833
+                a_b_5 = time.time()
+
+                t_b += a_b_5 - b_b_5
+
+                b_c = time.time()
                 constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "[]", cpe_fields, cpe_fields_description)
                 fmSerializer.tree_add_constraints(vendor, product, constraints)
-                
+                a_c = time.time()
+
+                t_c += a_c - b_c
+
+                b_b_6 = time.time()
                 # Reset all accumulators for next product
                 for field in cpe_fields:
                     field.clear()
                 s_cpes.clear()
+
+                a_b_6 = time.time()
+
+                t_b += a_b_6 - b_b_6
+    
+    return t_b, t_c
+
+
 
 def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list) -> RestrictionNode:
     
