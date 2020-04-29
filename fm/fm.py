@@ -205,7 +205,7 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
         if cpe_fields[-1] and () not in cpe_fields[-1]:
             requiredAttributes.append(sortedAttrListing[-1])
 
-
+        requirements = []
         if requiredAttributes:
 
             cpe = cpeListing.pop()
@@ -217,7 +217,7 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
             #   ('language', 'fr')
             requirements = [(cpe_fields_description[x], cpe.get_attribute(cpe_fields_description[x][:-1])) for x in requiredAttributes]
 
-            res = RestrictionNode(lastAttributeValue,requirements=requirements)
+        res = RestrictionNode(lastAttributeValue, requirements=requirements)
         
         return res
     

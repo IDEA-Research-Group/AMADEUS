@@ -143,8 +143,10 @@ class FamaSerializer:
                 if need_brackets:
                     res = '(' + res + ')'
                 
-                res = super_value + VALUE_REQ_CONNECTOR + res
-                res = res
+                if len(restrictionNode.requirements):
+                    res = super_value + VALUE_REQ_CONNECTOR + res
+                else:
+                    res = super_value
 
                 return res
 
@@ -160,7 +162,18 @@ class FamaSerializer:
                 if depth == 0:
                     res = self.LINE_TERMINATOR.join(aux) 
                 elif depth == 1:
-                    res = super_value + ' REQUIRES ' + '((' + ') XOR ('.join(aux) + '))'
+
+                    res = ''
+                    for i, e in enumerate(aux):
+                        if i == 0:
+                            res = ' REQUIRES ' + '(' + '(' * ("AND" in e) 
+                        if i < (len(aux) - 1) :
+                            res += e + ')' * ("AND" in e) + ' XOR ' + '(' * ("AND" in aux[i+1])
+                        else:
+                            res += e
+                            res += ')' + ')' * ("AND" in e)  
+
+
                 else:
                     res = ' XOR '.join(aux)
                 
