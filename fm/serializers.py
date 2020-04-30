@@ -145,7 +145,7 @@ class FamaSerializer:
                 
                 if len(restrictionNode.requirements):
                     res = super_value + VALUE_REQ_CONNECTOR + res
-                else:
+                elif depth > 0:
                     res = super_value
 
                 return res
@@ -163,10 +163,10 @@ class FamaSerializer:
                     res = self.LINE_TERMINATOR.join(aux) 
                 elif depth == 1:
 
-                    res = ''
+                    res = super_value
                     for i, e in enumerate(aux):
                         if i == 0:
-                            res = ' REQUIRES ' + '(' + '(' * ("AND" in e) 
+                            res += ' REQUIRES ' + '(' + '(' * ("AND" in e) 
                         if i < (len(aux) - 1) :
                             res += e + ')' * ("AND" in e) + ' XOR ' + '(' * ("AND" in aux[i+1])
                         else:

@@ -155,7 +155,8 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
 
                 # TODO: Add constraints to serializer and take into account the need to add 
                 # constraints pointing to RCs even if 'constraints' is empty: CVE-2020-0833
-                constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "[]", cpe_fields, cpe_fields_description)
+                value_entropy_count = [1 for x in sortedFieldsIndexes]
+                constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "[]", cpe_fields, cpe_fields_description, value_entropy_count)
                 fmSerializer.tree_add_constraints(vendor, product, constraints)
                 
                 # Reset all accumulators for next product
@@ -163,7 +164,7 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
                     field.clear()
                 s_cpes.clear()
 
-def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list) -> RestrictionNode:
+def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list, value_entropy_count: list) -> RestrictionNode:
     
     '''
         Analyses a list of CPEs sharing common structure and creates a list of 
@@ -201,7 +202,7 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
         # If an field only has one option from where to choose (i.e. target_sw=windows), there is
         # no need to make a REQ statament as it is the only option. Furthermore, by enforcing 
         # this restriction, we get rid of fields that does not have any value at all (* or -)
-        requiredAttributes = list(filter(lambda x: len(cpe_fields[cpe_fields_description.index(cpe_fields_description[x])]) > 1, sortedAttrListing[:-1]))
+        requiredAttributes = list(filter(lambda x: len(cpe_fields[cpe_fields_description.index(cpe_fields_description[x])]) > value_entropy_count[x], sortedAttrListing[:-1]))
         if cpe_fields[-1] and () not in cpe_fields[-1]:
             requiredAttributes.append(sortedAttrListing[-1])
 
@@ -230,7 +231,12 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
         
         # Get the list of CPE that match the value of the attribute
         remainingCpes = [x for x in cpeListing if x.get_attribute(best_attr[:-1]) == v]
-        restrictionNode = obtainConstraints(remainingCpes, sortedAttrListing.copy(), v, cpe_fields, cpe_fields_description)
+
+        if len(remainingCpes) == 1 and lastAttributeValue != "[]":
+            for i in sortedAttrListing:
+                value_entropy_count[i] = len(set([x.get_attribute(cpe_fields_description[i][:-1]) for x in cpeListing]))
+
+        restrictionNode = obtainConstraints(remainingCpes, sortedAttrListing.copy(), v, cpe_fields, cpe_fields_description, value_entropy_count)
         if restrictionNode is not None:
             subNodes.append(restrictionNode)
     
