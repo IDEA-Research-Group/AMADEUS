@@ -1,1 +1,1 @@
-# AMADEUS: AutoMAteD secUrity penteSting
+# AMADEUS: AutoMAteD secUrity teSting
