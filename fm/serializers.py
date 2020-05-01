@@ -148,6 +148,9 @@ class FamaSerializer:
                 elif depth > 0:
                     res = super_value
 
+                if depth == 0:
+                    res = vendor + "-" + res
+
                 return res
 
             else:

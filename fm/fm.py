@@ -155,8 +155,7 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
 
                 # TODO: Add constraints to serializer and take into account the need to add 
                 # constraints pointing to RCs even if 'constraints' is empty: CVE-2020-0833
-                value_entropy_count = [1 for x in sortedFieldsIndexes]
-                constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "[]", cpe_fields, cpe_fields_description, value_entropy_count)
+                constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "[]", cpe_fields, cpe_fields_description)
                 fmSerializer.tree_add_constraints(vendor, product, constraints)
                 
                 # Reset all accumulators for next product
@@ -164,7 +163,7 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
                     field.clear()
                 s_cpes.clear()
 
-def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list, value_entropy_count: list) -> RestrictionNode:
+def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list) -> RestrictionNode:
     
     '''
         Analyses a list of CPEs sharing common structure and creates a list of 
@@ -202,11 +201,10 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
         # If an field only has one option from where to choose (i.e. target_sw=windows), there is
         # no need to make a REQ statament as it is the only option. Furthermore, by enforcing 
         # this restriction, we get rid of fields that does not have any value at all (* or -)
-        requiredAttributes = list(filter(lambda x: len(cpe_fields[cpe_fields_description.index(cpe_fields_description[x])]) > value_entropy_count[x], sortedAttrListing[:-1]))
+        requiredAttributes = list(filter(lambda x: len(cpe_fields[cpe_fields_description.index(cpe_fields_description[x])]) > 1, sortedAttrListing[:-1]))
         if cpe_fields[-1] and () not in cpe_fields[-1]:
             requiredAttributes.append(sortedAttrListing[-1])
 
-        requirements = []
         if requiredAttributes:
 
             cpe = cpeListing.pop()
@@ -217,8 +215,7 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
             # Requirements will me modeled as a tuple (field_name, value). For example:
             #   ('language', 'fr')
             requirements = [(cpe_fields_description[x], cpe.get_attribute(cpe_fields_description[x][:-1])) for x in requiredAttributes]
-
-        res = RestrictionNode(lastAttributeValue, requirements=requirements)
+            res = RestrictionNode(lastAttributeValue, requirements=requirements)
         
         return res
     
@@ -226,21 +223,24 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
     best_attr_values = cpe_fields[cpe_fields_description.index(best_attr)]
 
     subNodes = list()
+    effectiveSubvalues = []
 
     for v in best_attr_values:
         
         # Get the list of CPE that match the value of the attribute
         remainingCpes = [x for x in cpeListing if x.get_attribute(best_attr[:-1]) == v]
+        
+        if len(remainingCpes) > 0:
+            effectiveSubvalues.append(v)
 
-        if len(remainingCpes) == 1 and lastAttributeValue != "[]":
-            for i in sortedAttrListing:
-                value_entropy_count[i] = len(set([x.get_attribute(cpe_fields_description[i][:-1]) for x in cpeListing]))
-
-        restrictionNode = obtainConstraints(remainingCpes, sortedAttrListing.copy(), v, cpe_fields, cpe_fields_description, value_entropy_count)
+        restrictionNode = obtainConstraints(remainingCpes, sortedAttrListing.copy(), v, cpe_fields, cpe_fields_description)
         if restrictionNode is not None:
             subNodes.append(restrictionNode)
     
-    if subNodes:
-        res = RestrictionNode(lastAttributeValue, subNodes=subNodes, xorAttributeSubNodes=best_attr)
+    if  not subNodes and len(effectiveSubvalues) < len(best_attr_values):
+        for v in effectiveSubvalues:
+            subNodes.append(RestrictionNode(v, requirements=list()))
+
+    res = RestrictionNode(lastAttributeValue, subNodes=subNodes, xorAttributeSubNodes=best_attr)
 
     return res
