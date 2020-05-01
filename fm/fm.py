@@ -237,10 +237,11 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
         if restrictionNode is not None:
             subNodes.append(restrictionNode)
     
-    if  not subNodes and len(effectiveSubvalues) < len(best_attr_values):
+    if subNodes:
+        res = RestrictionNode(lastAttributeValue, subNodes=subNodes, xorAttributeSubNodes=best_attr)
+    elif len(effectiveSubvalues) < len(best_attr_values):
         for v in effectiveSubvalues:
             subNodes.append(RestrictionNode(v, requirements=list()))
-
-    res = RestrictionNode(lastAttributeValue, subNodes=subNodes, xorAttributeSubNodes=best_attr)
+        res = RestrictionNode(lastAttributeValue, subNodes=subNodes, xorAttributeSubNodes=best_attr)
 
     return res
