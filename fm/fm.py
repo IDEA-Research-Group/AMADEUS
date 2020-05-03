@@ -47,13 +47,15 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
         print("[-] No semi_model was provided, skipping FM Tree generation")
         return None
 
+    print("\n \t **** {} ****".format(cve))
+
     fmSerializer = FamaSerializer(cve)
 
     processSemiModel([semi_model], fmSerializer, isRC=False)
     processSemiModel(semi_model_rc, fmSerializer, isRC=True)
 
-    print("\n \t *** FEATURE MODEL *** \n")
-    print(fmSerializer.tree_get_model())
+    # print("\n \t *** FEATURE MODEL *** \n")
+    # print(fmSerializer.tree_get_model())
     
     fmSerializer.save_model(cve)
 
