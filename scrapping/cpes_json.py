@@ -234,16 +234,19 @@ def expand(complex_cpe: dict) -> dict:
 
     isExpansionByRange = True if complex_cpe['RangeDescription'] else False
     simple_cpes = complex_cpe["RangeCpes"] if isExpansionByRange else complex_cpe["MatchCpes"]
+        
+    if simple_cpes:
+        for cpeItem in simple_cpes:
 
-    for cpeItem in simple_cpes:
+            if cpeItem["Status"] == "DEPRECATED":
 
-        if cpeItem["Status"] == "DEPRECATED":
+                print("[-] Deprecated CPE detected ({}). Substituting...".format(cpeItem["Uri"]))
 
-            print("[-] Deprecated CPE detected ({}). Substituting...".format(cpeItem["Uri"]))
-
-            for updated_cpe in cpeItem["ResultingCpes"]:
-                res.append(updated_cpe["Uri"])
-        else:
-            res.append(cpeItem["Uri"])
+                for updated_cpe in cpeItem["ResultingCpes"]:
+                    res.append(updated_cpe["Uri"].replace(':-', ':*'))
+            else:
+                res.append(cpeItem["Uri"].replace(':-', ':*'))
+    else:
+        res.append(complex_cpe["Uri"].replace(':-', ':*'))
     
     return res

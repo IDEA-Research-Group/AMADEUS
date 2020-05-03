@@ -207,7 +207,6 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
         if cpe_fields[-1] and () not in cpe_fields[-1]:
             requiredAttributes.append(sortedAttrListing[-1])
 
-
         if requiredAttributes:
 
             cpe = cpeListing.pop()
@@ -218,8 +217,7 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
             # Requirements will me modeled as a tuple (field_name, value). For example:
             #   ('language', 'fr')
             requirements = [(cpe_fields_description[x], cpe.get_attribute(cpe_fields_description[x][:-1])) for x in requiredAttributes]
-
-            res = RestrictionNode(lastAttributeValue,requirements=requirements)
+            res = RestrictionNode(lastAttributeValue, requirements=requirements)
         
         return res
     
@@ -227,16 +225,25 @@ def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeVa
     best_attr_values = cpe_fields[cpe_fields_description.index(best_attr)]
 
     subNodes = list()
+    effectiveSubvalues = []
 
     for v in best_attr_values:
         
         # Get the list of CPE that match the value of the attribute
         remainingCpes = [x for x in cpeListing if x.get_attribute(best_attr[:-1]) == v]
+        
+        if len(remainingCpes) > 0:
+            effectiveSubvalues.append(v)
+
         restrictionNode = obtainConstraints(remainingCpes, sortedAttrListing.copy(), v, cpe_fields, cpe_fields_description)
         if restrictionNode is not None:
             subNodes.append(restrictionNode)
     
     if subNodes:
+        res = RestrictionNode(lastAttributeValue, subNodes=subNodes, xorAttributeSubNodes=best_attr)
+    elif len(effectiveSubvalues) < len(best_attr_values):
+        for v in effectiveSubvalues:
+            subNodes.append(RestrictionNode(v, requirements=list()))
         res = RestrictionNode(lastAttributeValue, subNodes=subNodes, xorAttributeSubNodes=best_attr)
 
     return res
