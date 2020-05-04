@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
         # Let's validate the target IP
         # https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
-        ip_regex = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+        ip_regex = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\/\d+)?$"
         validate = re.compile(ip_regex)
         
         ip = parser_results.target[0]
