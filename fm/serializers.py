@@ -163,7 +163,7 @@ class FamaSerializer:
                     aux.append('{}-{}-{}-'.format(vendor, product, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
 
                 if depth == 0:
-                    res = self.LINE_TERMINATOR.join(aux) 
+                    res = self.LINE_TERMINATOR.join(self.sanitize(k) for k in aux) 
                 elif depth == 1:
 
                     res = super_value
@@ -179,8 +179,6 @@ class FamaSerializer:
 
                 else:
                     res = ' XOR '.join(aux)
-                
-                res = self.sanitize(res)
 
                 return res
 
