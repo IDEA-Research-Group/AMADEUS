@@ -114,7 +114,8 @@ def get_CPEs(cve_id:str) -> dict:
     # This webpage is dynamically rendered. CPEs are generated from a serialized JSON
     # found in the DOM. We retrieve and parse that JSON in order to extract the different
     # CPEs
-    serializedJSON = soup.find("input", id="cveTreeJsonDataHidden").attrs["value"]
+    serializedJSON = soup.find("input", id="cveTreeJsonDataHidden")
+    serializedJSON = None if not serializedJSON else serializedJSON.attrs["value"]
 
     # Maybe the CVE does not have any associated CPEs, so we may return an empty dict
     if not serializedJSON or serializedJSON == "[]":

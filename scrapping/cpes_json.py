@@ -69,24 +69,24 @@ def extract_semimodel(json: dict) -> (dict, list):
         simple_cpes = list()
         running_on = None
 
-        print("Configuration {}: {}".format(config["ID"], config["DataTestId"]))
+        print("Configuration {}: {}".format(config["id"], config["dataTestId"]))
 
         # Each configuration comes with a single Container with further
         # information about it. After some analysis, no more than one
         # Container has been found for the same configuration. However, we
         # still iterate over this attribute just in case.
-        for container in config["Containers"]:
+        for container in config["containers"]:
 
             # Identify which type of configuration we 
             # are dealing with
 
             # CONFIGURATION = BASIC
-            if container["ConfigType"] == ConfigType.BASIC.name:
+            if container["configType"] == ConfigType.BASIC.name:
                 print("[-] Detected Configuration Type: BASIC")
                 simple_cpes = process_basic_configuration(container)
 
             # CONFIGURATION = RUNNING_ON
-            elif container["ConfigType"] == ConfigType.RUNNING_ON.name:
+            elif container["configType"] == ConfigType.RUNNING_ON.name:
                 print("[-] Detected Configuration Type: RUNNING_ON")
                 simple_cpes, running_on = process_running_on_configuration(container)
                 rc_count += 1
@@ -109,7 +109,7 @@ def extract_semimodel(json: dict) -> (dict, list):
                     # and creates a new entry if it doesn't
                     res_cpe = cpes[vendor][product][cpe]
 
-                    if container["ConfigType"] == ConfigType.RUNNING_ON.name:
+                    if container["configType"] == ConfigType.RUNNING_ON.name:
                         res_cpe.append(rc_count)
                         
     return cpes, running_configs
@@ -128,13 +128,13 @@ def process_basic_configuration(container: dict) -> dict:
     if not container or type(container) is not dict:
         raise ValueError("container must be a non-empty Parsed JSON Object")
 
-    if container["ConfigType"] != ConfigType.BASIC.name or container['Cpes'] is None:
+    if container["configType"] != ConfigType.BASIC.name or container['cpes'] is None:
         raise ValueError("container must be a valid structure of type: {} ".format(ConfigType.BASIC.name))
 
     res = defaultdict(lambda: defaultdict(set))
 
-    for complex_cpe in container['Cpes']:
-        aux = CPE(complex_cpe['Uri'])
+    for complex_cpe in container['cpes']:
+        aux = CPE(complex_cpe['cpe23Uri'])
         res[aux.get_vendor()[0]][aux.get_product()[0]].update(expand(complex_cpe))
     
     return res
@@ -156,25 +156,25 @@ def process_running_on_configuration(container: dict) -> (dict, dict):
     if not container or type(container) is not dict:
         raise ValueError("container must be a non-empty Parsed JSON Object")
 
-    if container["ConfigType"] != ConfigType.RUNNING_ON.name or container['Containers'] is None:
+    if container["configType"] != ConfigType.RUNNING_ON.name or container['containers'] is None:
         raise ValueError("container must be a valid structure of type: {} ".format(ConfigType.RUNNING_ON.name))
 
     simple_cpes = defaultdict(lambda: defaultdict(set))
     running_on = defaultdict(lambda: defaultdict(set))
 
-    for subcontainer in container['Containers']:
+    for subcontainer in container['containers']:
 
-        if subcontainer['CpeListType'] == "VULNERABLE":
+        if subcontainer['cpeListType'] == "VULNERABLE":
             
-            for complex_cpe in subcontainer['Cpes']:
-                aux = CPE(complex_cpe['Uri'])
+            for complex_cpe in subcontainer['cpes']:
+                aux = CPE(complex_cpe['cpe23Uri'])
                 simple_cpes[aux.get_vendor()[0]][aux.get_product()[0]].update(expand(complex_cpe))
 
         else:
             
             # NON_VULNERABLE
-            for complex_cpe in subcontainer['Cpes']:
-                aux = CPE(complex_cpe['Uri'])
+            for complex_cpe in subcontainer['cpes']:
+                aux = CPE(complex_cpe['cpe23Uri'])
                 running_on[aux.get_vendor()[0]][aux.get_product()[0]].update(expand(complex_cpe))
 
     return simple_cpes, running_on
@@ -198,16 +198,16 @@ def process_advanced_configuration(container: dict) -> dict:
     if not container or type(container) is not dict:
         raise ValueError("container must be a non-empty Parsed JSON Object")
 
-    if container["ConfigType"] != ConfigType.ADVANCED.name or container['Containers'] is None:
+    if container["configType"] != ConfigType.ADVANCED.name or container['containers'] is None:
        raise ValueError("container must be a valid structure of type: {} ".format(ConfigType.ADVANCED.name))
 
     res = defaultdict(lambda: defaultdict(set))
 
-    for subcontainer in container['Containers']:
+    for subcontainer in container['containers']:
         res.update(process_advanced_configuration(subcontainer))
     
-    for complex_cpe in container['Cpes']:
-        aux = CPE(complex_cpe['Uri'])
+    for complex_cpe in container['cpes']:
+        aux = CPE(complex_cpe['cpe23Uri'])
         res[aux.get_vendor()[0]][aux.get_product()[0]].update(expand(complex_cpe))
     
     return res
@@ -227,26 +227,26 @@ def expand(complex_cpe: dict) -> dict:
     if not complex_cpe or type(complex_cpe) is not dict:
         raise ValueError("complex_cpe must be a non-empty Parsed JSON Object")
 
-    if complex_cpe["RangeCpes"] is None and complex_cpe["MatchCpes"] is None:
+    if complex_cpe["rangeCpes"] is None and complex_cpe["matchCpes"] is None:
        raise ValueError("container must be a valid structure of type: {} ".format(ConfigType.ADVANCED.name))
     
     res = list()
 
-    isExpansionByRange = True if complex_cpe['RangeDescription'] else False
-    simple_cpes = complex_cpe["RangeCpes"] if isExpansionByRange else complex_cpe["MatchCpes"]
+    isExpansionByRange = True if complex_cpe['rangeDescription'] else False
+    simple_cpes = complex_cpe["rangeCpes"] if isExpansionByRange else complex_cpe["matchCpes"]
         
     if simple_cpes:
         for cpeItem in simple_cpes:
 
-            if cpeItem["Status"] == "DEPRECATED":
+            if cpeItem["status"] == "DEPRECATED":
 
-                print("[-] Deprecated CPE detected ({}). Substituting...".format(cpeItem["Uri"]))
+                print("[-] Deprecated CPE detected ({}). Substituting...".format(cpeItem["cpe23Uri"]))
 
-                for updated_cpe in cpeItem["ResultingCpes"]:
-                    res.append(updated_cpe["Uri"].replace(':-', ':*'))
+                for updated_cpe in cpeItem["resultingCpes"]:
+                    res.append(updated_cpe["cpe23Uri"].replace(':-', ':*'))
             else:
-                res.append(cpeItem["Uri"].replace(':-', ':*'))
+                res.append(cpeItem["cpe23Uri"].replace(':-', ':*'))
     else:
-        res.append(complex_cpe["Uri"].replace(':-', ':*'))
+        res.append(complex_cpe["cpe23Uri"].replace(':-', ':*'))
     
     return res
