@@ -7,6 +7,9 @@ import re
 from scrapping.data_retrieval import get_CVEs, get_CPEs
 from fm.fm import generate_tree
 
+from dotenv import load_dotenv
+load_dotenv()
+
 def launch_nmap(target_ip):
 
     res = None
