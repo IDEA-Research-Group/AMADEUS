@@ -7,9 +7,9 @@ __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 
 from collections import defaultdict
 
-from fm.serializers import FamaSerializer
-from fm.structures import RestrictionNode, HashableCPE
-from fm.aux import generate_mock_complex_CPEs, generate_mock_simple_CPEs
+from .serializers import FamaSerializer
+from .structures import RestrictionNode, HashableCPE
+from ._aux import generate_mock_complex_CPEs, generate_mock_simple_CPEs
 
 ###############################
 ###          T TREE         ###

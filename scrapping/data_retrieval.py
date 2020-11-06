@@ -17,7 +17,7 @@ import re
 import json
 
 # Auxiliary JSON CPE Extractor
-from scrapping.cpes_json import extract_semimodel
+from cpes_json import extract_semimodel
 
 BASE_NVD_URI = "https://nvd.nist.gov/"
 VULN_QUERY_URI = BASE_NVD_URI + "vuln/search/results?form_type=Basic&results_type=overview&search_type=all&query={}&startIndex={}"
@@ -133,3 +133,6 @@ def get_CPEs(cve_id:str) -> dict:
     semi_model, running_conf = extract_semimodel(parsedJSON)
 
     return semi_model, running_conf
+
+x = get_CPEs("CVE-2020-6829")
+print(x)

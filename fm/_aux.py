@@ -3,7 +3,7 @@
     Feature Model construction.
 '''
 
-from fm.structures import HashableCPE
+from .structures import HashableCPE
 
 def generate_mock_complex_CPEs():
     res = list()
