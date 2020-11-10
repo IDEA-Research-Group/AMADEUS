@@ -78,7 +78,6 @@ def get_CVEs(keyword:str, cookies, csrftoken) -> list:
             entryId = entryIdElem.get('href')[4:]
             entryCVE = entry.select_one('a[target="cve"]').text
             vulnerabilities.append((entryId, entryCVE))
-            print(entryId + " - " + entryCVE)
 
     return vulnerabilities
 
@@ -118,8 +117,15 @@ def get_CPEs(vuldb_id:str, cookie) -> dict:
 
     cpeResults = []
 
+    notifiedOmittedCPEs = False
+
     for entry in cpeEntries:
         cpeText = entry.text
+        if cpeText == "cpe:x.x:x:xxxxxx:xxxx:x.xx.x:*:*:*:*:*:*:*":
+            if not notifiedOmittedCPEs:
+                print("[WARN] Some CPEs were omitted")
+                notifiedOmittedCPEs = True
+            continue
         cpeResults.append(cpeText)
 
     semi_model = defaultdict(lambda: defaultdict(lambda: list()))
@@ -131,9 +137,8 @@ def get_CPEs(vuldb_id:str, cookie) -> dict:
 
     return semi_model, running_conf
 
-cookie, _ = getLoginCookieAndToken()
+cookie, csrftoken = getLoginCookieAndToken()
 
-s, r = get_CPEs("164010", cookie)
+#l = get_CVEs("Mozilla", cookie, csrftoken)
+s, r = get_CPEs("162188", cookie)
 print(s)
-
-#get_CVEs("ma", 0)
