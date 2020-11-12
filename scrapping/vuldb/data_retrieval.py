@@ -20,7 +20,7 @@ from collections import defaultdict
 
 
 
-class VulDbScraper:
+class VuldbScraper:
 
     VULDB_BASE_URI = "https://vuldb.com/"
     VULDB_LOGIN_URI = VULDB_BASE_URI + "?login"
@@ -28,12 +28,12 @@ class VulDbScraper:
     VULDB_ID_URI = VULDB_BASE_URI + "?id."
 
     def __init__(self):
-        self.cookie, self.csrftoken = VulDbScraper.__getLoginCookieAndToken()
+        self.cookie, self.csrftoken = VuldbScraper.__getLoginCookieAndToken()
 
     @staticmethod
     def __getLoginCookieAndToken():
         loginInfo = { 'user': os.getenv('VULDB_USER'), 'password': os.getenv('VULDB_PASSWORD') }
-        resp = requests.post(VulDbScraper.VULDB_LOGIN_URI, loginInfo)
+        resp = requests.post(VuldbScraper.VULDB_LOGIN_URI, loginInfo)
 
         if "Login failed. Please try again." in resp.text:
             raise Exception("Error logging to VulDB. Check environment variables.")
@@ -59,7 +59,7 @@ class VulDbScraper:
             raise ValueError("keyword must be a non-empty string")
         
         searchPayload = {'search': keyword, 'csrftoken': self.csrftoken }
-        searchResponse = requests.post(VulDbScraper.VULDB_SEARCH_URI, searchPayload, cookies= self.cookie)
+        searchResponse = requests.post(VuldbScraper.VULDB_SEARCH_URI, searchPayload, cookies= self.cookie)
 
         if 'You have been using too many search requests lately' in searchResponse.text:
             print("rate limited")
@@ -94,7 +94,7 @@ class VulDbScraper:
         if not vuldb_id or type(vuldb_id) is not str:
             raise ValueError("vuldb_id must be a non-empty string")
 
-        resp = requests.get(VulDbScraper.VULDB_ID_URI + vuldb_id, cookies= self.cookie)
+        resp = requests.get(VuldbScraper.VULDB_ID_URI + vuldb_id, cookies= self.cookie)
 
         if "🔒" in resp.text:
             print("Invalid login cookie")

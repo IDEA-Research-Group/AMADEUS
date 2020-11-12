@@ -4,7 +4,9 @@ import subprocess
 import argparse
 import re
 
-from scrapping.data_retrieval import get_CVEs, get_CPEs
+from scrapping.nvd.data_retrieval import NvdScraper
+from scrapping.vuldb.data_retrieval import VuldbScraper
+
 from fm.fm import generate_tree
 
 from dotenv import load_dotenv
@@ -62,7 +64,7 @@ def construct_cpe_model(related_cves):
     
     if related_cves:
         for cve in related_cves[0]:
-            semi_model, running_conf = get_CPEs(cve)
+            semi_model, running_conf = NvdScraper.get_CPEs(cve)
             generate_tree(cve, semi_model, running_conf)
             time.sleep(5)
 
@@ -88,7 +90,7 @@ if __name__ == "__main__":
     # If the user wants to perfom a manual search
     if parser_results.keyword:
         # Get CVEs that are related with the query
-        related_cves = get_CVEs(parser_results.keyword[0], exact_match=parser_results.e)
+        related_cves = NvdScraper.get_CVEs(parser_results.keyword[0], exact_match=parser_results.e)
 
         if related_cves:
             construct_cpe_model(related_cves)
@@ -99,7 +101,7 @@ if __name__ == "__main__":
 
         # Let's validate the target IP
         # https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
-        ip_regex = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\/\d+)?$"
+        ip_regex = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\/\d+)?$"
         validate = re.compile(ip_regex)
         
         ip = parser_results.target[0]
@@ -121,7 +123,7 @@ if __name__ == "__main__":
                 related_cves = None
                 for i in reversed(range(1, len(itemize)+1)):
                     nvd_query = " ".join(itemize[0:i])
-                    related_cves = get_CVEs(nvd_query, exact_match=parser_results.e)
+                    related_cves = NvdScraper.get_CVEs(nvd_query, exact_match=parser_results.e)
 
                     if related_cves:
                         print("CVEs founds for query: {}".format(nvd_query))
