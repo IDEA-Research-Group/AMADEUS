@@ -18,21 +18,17 @@ import json
 import os
 from collections import defaultdict
 
-# Auxiliary JSON CPE Extractor
-#from ..cpes_json import extract_semimodel
-
-BASE_NVD_URI = "https://nvd.nist.gov/"
-VULN_QUERY_URI = BASE_NVD_URI + "vuln/search/results?form_type=Basic&results_type=overview&search_type=all&query={}&startIndex={}"
-CVE_CPES_URI = BASE_NVD_URI + "vuln/detail/{}/cpes?expandCpeRanges=true"
+VULDB_BASE_URI = "https://vuldb.com/"
+VULDB_LOGIN_URI = VULDB_BASE_URI + "?login"
+VULDB_SEARCH_URI = VULDB_BASE_URI + "?search"
+VULDB_ID_URI = VULDB_BASE_URI + "?id."
 
 CVE_PATTERN = "^CVE-"
-
-#loggedIn = False
 
 def getLoginCookieAndToken():
     loginInfo = { 'user': os.getenv('VULDB_USER'), 'password': os.getenv('VULDB_PASSWORD') }
 
-    resp = requests.post("https://vuldb.com/?login", loginInfo)
+    resp = requests.post(VULDB_LOGIN_URI, loginInfo)
 
     if "Login failed. Please try again." in resp.text:
         print("Error logging to VulDB")
@@ -50,6 +46,8 @@ def get_CVEs(keyword:str, cookies, csrftoken) -> list:
         the keyword.
 
         :param keyword: Query that will be performed against the VulDB server
+        :param cookies: Login cookie returned by getLoginCookieAndToken method
+        :param csrftoken: CSRFToken returned by getLoginCookieAndToken method 
     '''
 
     # First, we need to check the arguments
@@ -60,8 +58,8 @@ def get_CVEs(keyword:str, cookies, csrftoken) -> list:
     if not cookies or not csrftoken:
         raise ValueError("Cookies and Csrf token must be provided")
     
-    searchPayload = {'search': 'Mozilla Firefox', 'csrftoken': csrftoken }
-    searchResponse = requests.post("https://vuldb.com/?search", searchPayload, cookies=cookies)
+    searchPayload = {'search': keyword, 'csrftoken': csrftoken }
+    searchResponse = requests.post(VULDB_SEARCH_URI, searchPayload, cookies=cookies)
 
     if 'You have been using too many search requests lately' in searchResponse.text:
         print("rate limited")
@@ -89,7 +87,7 @@ def get_CPEs(vuldb_id:str, cookie) -> dict:
             \t "RUNNING_ON": A list of the different Running Enviroments 
             grouped by Configuration
         
-        :param vuldb_id: The ID of the vulnerability
+        :param vuldb_id: The VULDB ID of the vulnerability
         :param cookie: The login cookie
     '''
 
@@ -99,7 +97,7 @@ def get_CPEs(vuldb_id:str, cookie) -> dict:
     if not cookie:
         raise ValueError("cookie must be a RequestCookieJar")
 
-    resp = requests.get("https://vuldb.com/?id."+vuldb_id, cookies=cookie)
+    resp = requests.get(VULDB_ID_URI + vuldb_id, cookies=cookie)
 
     if "🔒" in resp.text:
         print("Invalid login cookie")

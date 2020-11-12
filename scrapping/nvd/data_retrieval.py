@@ -133,6 +133,3 @@ def get_CPEs(cve_id:str) -> dict:
     semi_model, running_conf = extract_semimodel(parsedJSON)
 
     return semi_model, running_conf
-
-x = get_CPEs("CVE-2020-6829")
-print(x)
