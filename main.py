@@ -4,8 +4,10 @@ import subprocess
 import argparse
 import re
 
-from scrapping.nvd.data_retrieval import NvdScraper
-from scrapping.vuldb.data_retrieval import VuldbScraper
+from scrapping.scraper import VulnerabilityScraper
+from scrapping.structures import CVE
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from fm.fm import generate_tree
 
@@ -60,19 +62,25 @@ def process_nmap_out(out):
     
     return res
 
+def construct_cpe_model_for_cve(cve: CVE):
+    semi_model, running_conf = scraper.get_CPEs(cve)
+    generate_tree(cve, semi_model, running_conf)
+    print("Wrote tree for " + cve.cve_id)
+    time.sleep(5) # Wait until releasing worker to reduce load...?
+
 def construct_cpe_model(related_cves):
     
     if related_cves:
-        for cve in related_cves[0]:
-            semi_model, running_conf = NvdScraper.get_CPEs(cve)
-            generate_tree(cve, semi_model, running_conf)
-            time.sleep(5)
+        for cve in related_cves:
+            construct_cpe_model_for_cve(cve)
+        print("Finished")
+        
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-k", "--keyword", nargs=1, help="Keyword used to perform a manual CVE search on NVD")
-    parser.add_argument("-e", action='store_true', help="If the results from NVD must be an EXACT match of the keywords or just contain them")
+    parser.add_argument("-k", "--keyword", nargs=1, help="Keyword used to perform a manual CVE search on vulnerability databases")
+    parser.add_argument("-e", action='store_true', help="If the results from databases must be an EXACT match of the keywords or just contain them")
     parser.add_argument("-a", action='store_true', help="Launches NMAP to perform an automatic search of vulnerabilities")
     parser.add_argument("-t", "--target", nargs=1, help="CIDR block or host target of the automatic analysis")
     parser_results = parser.parse_args()
@@ -87,12 +95,14 @@ if __name__ == "__main__":
     if parser_results.keyword is None and not parser_results.a:
         parser.error("You must enter either a keyword or launch an automatic search against a target IP")
 
+    scraper = VulnerabilityScraper()
+
     # If the user wants to perfom a manual search
     if parser_results.keyword:
         # Get CVEs that are related with the query
-        related_cves = NvdScraper.get_CVEs(parser_results.keyword[0], exact_match=parser_results.e)
-
+        related_cves = scraper.get_CVEs(parser_results.keyword[0], exact_match=parser_results.e)
         if related_cves:
+            print(str(len(related_cves)) + " related CVEs found")
             construct_cpe_model(related_cves)
         else:
             print("Unable to retrieve any CVEs using the term: {}".format(parser_results.keyword[0]))
@@ -115,7 +125,7 @@ if __name__ == "__main__":
 
             for e in results:
                 e = e.replace("(", "").replace(")", "")
-                print("Querying NVD using the following terms")
+                print("Querying vulnerability databases using the following terms")
                 print(e.split(" "))
                 
                 itemize = [item for item in e.split(" ")]
@@ -123,13 +133,14 @@ if __name__ == "__main__":
                 related_cves = None
                 for i in reversed(range(1, len(itemize)+1)):
                     nvd_query = " ".join(itemize[0:i])
-                    related_cves = NvdScraper.get_CVEs(nvd_query, exact_match=parser_results.e)
+                    related_cves = scraper.get_CVEs(nvd_query, exact_match=parser_results.e)
 
                     if related_cves:
                         print("CVEs founds for query: {}".format(nvd_query))
                         break
                 
                 if related_cves:
+                    print(str(len(related_cves)) + " related CVEs found")
                     construct_cpe_model(related_cves)
                 else:
                     print("Unable to retrieve any CVEs using the terms")

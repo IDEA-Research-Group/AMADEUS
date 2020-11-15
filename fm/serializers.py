@@ -13,6 +13,8 @@ from typing import Union
 from collections.abc import Iterable
 from .structures import RestrictionNode
 
+from scrapping.structures import CVE
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_FOLDER = "models"
 EXPORT_PATH = os.path.join(BASE_DIR, MODELS_FOLDER)
@@ -28,12 +30,12 @@ class FamaSerializer:
     RUNNING_CONFIG_NODE_NAME = "configs"
     RUNNING_CONFIG_PREFIX = "rc{}"
 
-    def __init__(self, CVE:str):
+    def __init__(self, CVE: str):
         
         # First, we need to check the arguments
 
         if not CVE or type(CVE) is not str:
-            raise ValueError("CVE must be a non-empty string")
+            raise ValueError("CVE must be a valid CVE object")
 
         # A Feature Model contains info about a single CVE
         self.CVE = CVE

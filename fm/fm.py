@@ -11,17 +11,19 @@ from .serializers import FamaSerializer
 from .structures import RestrictionNode, HashableCPE
 from ._aux import generate_mock_complex_CPEs, generate_mock_simple_CPEs
 
+from scrapping.structures import CVE
+
 ###############################
 ###          T TREE         ###
 ###############################
-def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
+def generate_tree(cve: CVE, semi_model: dict, semi_model_rc: list):
 
     '''
         Creates a fully well-formed feature model tree T representing all possible
         configurations given a list of CPEs (even the ones that are not affected) by
         a CVE.
 
-        :param cve: CVE identifier
+        :param cve: CVE identifier object
 
         :param semi_model: A dictionary structure containing a semi-representation of the
         final FeatureModel, which must include all simple CPEs that are going to be analysed.
@@ -33,8 +35,8 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
 
     # First, we need to check the arguments
 
-    if not cve or type(cve) is not str:
-        raise ValueError("cve must be a non-empty string")
+    if not cve or type(cve) is not CVE:
+        raise ValueError("cve must be a valid CVE object")
 
     if not isinstance(semi_model, dict):
         raise ValueError("semi_model must be a dictionary like structure containing a semi model")
@@ -47,9 +49,9 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
         print("[-] No semi_model was provided, skipping FM Tree generation")
         return None
 
-    print("\n \t **** {} ****".format(cve))
+    print("\n \t **** {} ****".format(cve.cve_id))
 
-    fmSerializer = FamaSerializer(cve)
+    fmSerializer = FamaSerializer(cve.cve_id)
 
     processSemiModel([semi_model], fmSerializer, isRC=False)
     processSemiModel(semi_model_rc, fmSerializer, isRC=True)
@@ -57,7 +59,7 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
     # print("\n \t *** FEATURE MODEL *** \n")
     # print(fmSerializer.tree_get_model())
     
-    fmSerializer.save_model(cve)
+    fmSerializer.save_model(cve.cve_id)
 
 # TODO: Change to FMSerializer abstract class
 def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, isRC:bool):

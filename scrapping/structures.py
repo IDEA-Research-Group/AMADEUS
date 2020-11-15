@@ -69,3 +69,23 @@ class RestrictionNode():
         self.requirements = requirements
 
         self.isLeaf = True if xorAttributeSubNodes is None else False
+
+class CVE():
+    
+    def __init__(self, cve_id: str, vul_name: str = "unknown", vul_description: str = None, source: str = "unknown", vuldb_id: str = None, configuration: str = None):
+        self.cve_id = cve_id
+        self.vul_name = vul_name
+        self.vul_description = vul_description
+        self.vuldb_id = vuldb_id
+        self.source = source
+        self.configuration = configuration
+
+    def __hash__(self):
+        return hash(self.cve_id)
+    
+    def __str__(self):
+        return self.cve_id
+
+    def __repr__(self):
+        return str(self)
+    

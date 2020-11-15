@@ -16,8 +16,11 @@ import urllib.parse
 import re
 import json
 
+# Structures
+from scrapping.structures import CVE
+
 # Auxiliary JSON CPE Extractor
-from cpes_json import extract_semimodel
+from .cpes_json import extract_semimodel
 
 class NvdScraper:
 
@@ -27,8 +30,7 @@ class NvdScraper:
 
     CVE_PATTERN = "^CVE-"
 
-    @staticmethod
-    def get_CVEs(keyword:str, page_num:int = 0, exact_match:bool = False) -> list:
+    def get_CVEs(self, keyword:str, page_num:int = 0, exact_match:bool = False) -> list:
 
         '''
             Searches NVD in order to fetch vulnerabilities related with 
@@ -77,14 +79,13 @@ class NvdScraper:
         # Had the table been found (= results were found), we would extract the CVEs
         if vulns_table:
             vulns = vulns_table.find_all("tr", {"data-testid" : re.compile("^vuln-row-")})
-            res.append(map(lambda v: v.th.strong.a.text, vulns))
+            res.append(map(lambda v: CVE(v.th.strong.a.text, source="nvd", vul_description=v.td.p.text), vulns))
         else:
-            print("No results were found in the database")
+            print("No results were found in NVD database")
 
-        return res
+        return list(res[0])
 
-    @staticmethod
-    def get_CPEs(cve_id:str) -> dict:
+    def get_CPEs(self, cve: CVE) -> (dict, dict):
 
         '''
             Retrieves the CPEs of a given CVE, generating a dictionary containing:
@@ -97,10 +98,10 @@ class NvdScraper:
 
         # First, we need to check the arguments
 
-        if not cve_id or type(cve_id) is not str:
-            raise ValueError("cve_id must be a non-empty string")
+        if not cve or type(cve) is not CVE:
+            raise ValueError("cve must be a valid CVE object")
 
-        if not re.compile(NvdScraper.CVE_PATTERN).match(cve_id):
+        if not re.compile(NvdScraper.CVE_PATTERN).match(cve.cve_id):
             raise ValueError("cve_id must be a valid CVE identifier")
 
         res = ({}, [])
@@ -111,7 +112,7 @@ class NvdScraper:
 
         # Sends an HTTPS request to NVD and constructs a BS Object
         # to analyse the page
-        req = Request(NvdScraper.CVE_CPES_URI.format(cve_id))
+        req = Request(NvdScraper.CVE_CPES_URI.format(cve.cve_id))
         res_page = urlopen(req, context=context)
         soup = BeautifulSoup(res_page, "html.parser")
 
