@@ -61,7 +61,7 @@ class VuldbScraper:
         searchResponse = requests.post(VuldbScraper.VULDB_SEARCH_URI, searchPayload, cookies= self.cookie)
 
         if 'You have been using too many search requests lately' in searchResponse.text:
-            print("VulDB rate limited")
+            print("[WARN] VulDB CVE search rate limited")
             return
         
         soup = BeautifulSoup(searchResponse.text, "html.parser")
@@ -108,6 +108,10 @@ class VuldbScraper:
             print("Invalid login cookie")
             return
 
+        if "We have detected an extended amount of requests from your user account." in resp.text:
+            print("[WARN] VulDB CPE rate limited")
+            return
+
         soup = BeautifulSoup(resp.text, "html.parser")
         
         cpeH1s = soup.select('h2#cpe')
@@ -124,15 +128,18 @@ class VuldbScraper:
 
         for entry in cpeEntries:
             cpeText = entry.text
-            if cpeText == "cpe:x.x:x:xxxxxx:xxxx:x.xx.x:*:*:*:*:*:*:*":
+            if "cpe:x.x:x:xxxxxx" in cpeText:
                 if not notifiedOmittedCPEs:
                     print("[WARN] Vuldb - Some CPEs were omitted - premium")
                     notifiedOmittedCPEs = True
                 continue
             cpeResults.append(cpeText)
 
-        semi_model = defaultdict(lambda: defaultdict(lambda: list()))
+        semi_model = defaultdict(lambda: defaultdict(lambda: defaultdict()))
         for cpe in cpeResults:
+            if cpe == '🔍':
+                print("[WARN] Vuldb - CPEs for this CVE are not being shown - premium")
+                break
             split = cpe.split(':')
             semi_model[split[3]][split[4]][cpe] = list()
 
