@@ -72,20 +72,44 @@ class RestrictionNode():
 
 class CVE():
     
-    def __init__(self, cve_id: str, vul_name: str = "unknown", vul_description: str = None, source: str = "unknown", vuldb_id: str = None, configuration: str = None):
+    def __init__(self, cve_id: str, vul_name: str = "unknown", vul_description: str = None, sources: list = [], vuldb_id: str = None, configuration: str = None):
         self.cve_id = cve_id
         self.vul_name = vul_name
         self.vul_description = vul_description
         self.vuldb_id = vuldb_id
-        self.source = source
+        self.sources = sources
         self.configuration = configuration
 
     def __hash__(self):
         return hash(self.cve_id)
+
+    def __eq__(self, other):
+        return isinstance(other, CVE) and self.cve_id == other.cve_id
     
     def __str__(self):
         return self.cve_id
 
     def __repr__(self):
         return str(self)
+
+    def joinData(self, other):
+        '''
+        Takes attributes from a CVE with the same id, and adds them to the instance to get a more complete CVE object
+        '''
+        if not isinstance(other, CVE):
+            raise TypeError("other must be of type CVE")
+        if other.cve_id != self.cve_id:
+            raise ValueError("other must have the same CVE id")
+        
+        if self.vul_name == "unknown":
+            self.vul_name = other.vul_name
+        if self.vul_description == None:
+            self.vul_description = other.vul_description
+        if self.vuldb_id == None and other.vuldb_id != None:
+            self.vuldb_id = other.vuldb_id
+        if self.configuration == None:
+            self.configuration = other.configuration
+
+        self.sources = list(set(self.sources + other.sources))
+        return self
     

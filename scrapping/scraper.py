@@ -36,8 +36,17 @@ class VulnerabilityScraper():
             futureVuldb = pool.submit(self.vuldbScraper.get_CVEs, keyword, exact_match=exact_match)
             futures = [futureNvd, futureVuldb]
             results = [x.result() for x in as_completed(futures)]
-            cves = {cve for l in results if l for cve in l}
-            return cves
+
+            cves = dict()
+
+            for r in results:
+                for cve in r:
+                    if cve.cve_id not in cves:
+                        cves[cve.cve_id] = cve
+                    else:
+                        cves[cve.cve_id].joinData(cve)
+
+            return cves.values()
     
     def get_CPEs(self, cve: CVE) -> (dict, dict): 
         '''

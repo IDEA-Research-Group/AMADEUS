@@ -79,7 +79,7 @@ class NvdScraper:
         # Had the table been found (= results were found), we would extract the CVEs
         if vulns_table:
             vulns = vulns_table.find_all("tr", {"data-testid" : re.compile("^vuln-row-")})
-            res.append(map(lambda v: CVE(v.th.strong.a.text, source="nvd", vul_description=v.td.p.text), vulns))
+            res.append(map(lambda v: CVE(v.th.strong.a.text, sources=["nvd"], vul_description=v.td.p.text), vulns))
         else:
             print("No results were found in NVD database")
 

@@ -80,7 +80,7 @@ class VuldbScraper:
                         continue
                     entryId = entryIdElem.get('href')[4:]
                     entryCVE = entry.select_one('a[target="cve"]').text
-                    vulnerabilities.append(CVE(entryCVE, source= "vuldb", vul_name= entryVulName, vuldb_id= entryId, configuration= titleConfiguration))
+                    vulnerabilities.append(CVE(entryCVE, sources= ["vuldb"], vul_name= entryVulName, vuldb_id= entryId, configuration= titleConfiguration))
 
         return vulnerabilities
 
