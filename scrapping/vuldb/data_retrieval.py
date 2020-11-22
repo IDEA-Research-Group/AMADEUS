@@ -128,7 +128,7 @@ class VuldbScraper:
 
         for entry in cpeEntries:
             cpeText = entry.text
-            if "cpe:x.x:x:xxxxxx" in cpeText:
+            if "cpe:x.x" in cpeText:
                 if not notifiedOmittedCPEs:
                     print("[WARN] Vuldb - Some CPEs were omitted - premium")
                     notifiedOmittedCPEs = True
