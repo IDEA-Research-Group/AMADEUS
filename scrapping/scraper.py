@@ -9,11 +9,15 @@ __author__ = "Nicolás de Ory (deorynicolas@gmail.com)"
 # Concurrency
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# Regex
+import re
+
 # Scrapers
 from .nvd.data_retrieval import NvdScraper
 from .vuldb.data_retrieval import VuldbScraper
 
 from .structures import CVE
+
 
 class VulnerabilityScraper():
 
@@ -51,6 +55,7 @@ class VulnerabilityScraper():
     def get_CPEs(self, cve: CVE) -> (dict, dict): 
         '''
             Returns a list of CPEs matching the given CVE, using available web scrapers
+            Note: Mutates given cve, appending found configurations in CPEs (Application, Hardware or Operating System)
 
             :param cve: cve to look for
         '''
@@ -72,7 +77,29 @@ class VulnerabilityScraper():
                         finalSemimodel[k][m] = dict()
                     cpes = semimodel[k][m]
                     for cpe in cpes:
+                        self.getConfigurationFromCPE(cpe, cve)
                         if cpe not in finalSemimodel[k][m]:
                             finalSemimodel[k][m][cpe] = list()
         
         return (finalSemimodel, runningConf1)
+
+    def getConfigurationFromCPE(self, cpe: str, cve: CVE):
+        '''
+        Reads the given CPE type and assigns it to the given CPE if it doesn't already have that configuration
+        '''
+        partRegex = r'cpe:2.3:\/?([\w])+:'
+        match = re.match(partRegex, cpe)
+        if not match:
+            print("Unrecognized CPE " + cpe)
+        else:
+            matches = match.groups()
+            if len(matches) > 0:
+                part = matches[0]
+                if part == "a" and "Application" not in cve.configurations:
+                    cve.configurations.append("Application")
+                elif part == "h" and "Hardware" not in cve.configurations:
+                    cve.configurations.append("Hardware")
+                elif part == "o" and "Operating System" not in cve.configurations:
+                    cve.configurations.append("Operating System")
+                else:
+                    print("Unrecognized part code'" + part + "' in CPE " + cpe)
