@@ -51,7 +51,7 @@ def generate_tree(cve: CVE, semi_model: dict, semi_model_rc: list):
 
     print("\n \t **** {} ****".format(cve.cve_id))
 
-    fmSerializer = FamaSerializer(cve.cve_id)
+    fmSerializer = FamaSerializer(cve)
 
     processSemiModel([semi_model], fmSerializer, isRC=False)
     processSemiModel(semi_model_rc, fmSerializer, isRC=True)

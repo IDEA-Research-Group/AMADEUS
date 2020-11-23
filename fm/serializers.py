@@ -30,18 +30,26 @@ class FamaSerializer:
     RUNNING_CONFIG_NODE_NAME = "configs"
     RUNNING_CONFIG_PREFIX = "rc{}"
 
-    def __init__(self, CVE: str):
+    CVE_SOURCES_NODE_NAME = "sources"
+    CVE_CONFIGURATIONS_NODE_NAME = "types"
+    CVE_VULDB_ID_NODE_NAME = "vuldb_id"
+    CVE_VUL_NAME_NODE_NAME = "vul_name"
+    CVE_VUL_DESC_NODE_NAME = "vul_description"
+
+    def __init__(self, cve: CVE):
         
         # First, we need to check the arguments
 
-        if not CVE or type(CVE) is not str:
+        if not cve or type(cve) is not CVE:
             raise ValueError("CVE must be a valid CVE object")
 
         # A Feature Model contains info about a single CVE
-        self.CVE = CVE
-        
+        self.CVE = cve
         # Different sections of a Feature Model file
-        self.root = self.CVE + ": "
+        self.root = self.CVE.cve_id + ": "
+        self.cve_attributes = ""
+        self.tree_add_CVE_attributes_to_root()
+
         self.rcs = ""
         self.vendors = ""
         self.vendors_products = ""
@@ -49,6 +57,7 @@ class FamaSerializer:
         
         # Restrictions
         self.restrictions = ""
+
 
     ### SECTION
     ### Methods to add content to the different sections of a Feature Model file
@@ -72,6 +81,24 @@ class FamaSerializer:
 
     def tree_add_vendors_to_root(self, vendors: Union[Iterable, object]) -> None:
         self.__tree_add_vendors_to_root(vendors)
+
+    def tree_add_CVE_attributes_to_root(self) -> None:
+        self.root += " ".join([self.add_optional(self.CVE_CONFIGURATIONS_NODE_NAME),self.add_optional(self.CVE_SOURCES_NODE_NAME)])
+        self.cve_attributes += self.CVE_CONFIGURATIONS_NODE_NAME + ": " + self.add_mandatory(["'{}'".format(x) for x in self.CVE.configurations]) + self.LINE_TERMINATOR
+        self.cve_attributes += self.CVE_SOURCES_NODE_NAME + ": " + self.add_mandatory(self.CVE.sources) + self.LINE_TERMINATOR
+
+        if self.CVE.vul_name:
+            self.root += " " + self.add_optional(self.CVE_VUL_NAME_NODE_NAME)
+            self.cve_attributes += self.CVE_VUL_NAME_NODE_NAME + ":" + self.add_mandatory("'{}'".format(self.CVE.vul_name)) + self.LINE_TERMINATOR
+        if self.CVE.vul_description:
+            self.root += " " + self.add_optional(self.CVE_VUL_DESC_NODE_NAME)
+            self.cve_attributes += self.CVE_VUL_DESC_NODE_NAME + ":" + self.add_mandatory("'{}'".format(self.CVE.vul_description)) + self.LINE_TERMINATOR
+        if self.CVE.vuldb_id:
+            self.root += " " + self.add_optional(self.CVE_VULDB_ID_NODE_NAME)
+            self.cve_attributes += self.CVE_VULDB_ID_NODE_NAME + ":" + self.add_mandatory(self.CVE.vuldb_id) + self.LINE_TERMINATOR
+        
+        self.root += " "
+        
 
     def tree_add_products_to_vendor(self, vendor, products: Union[Iterable, object], rc:int = None) -> None:
         prefix =  "" if rc is None else self.RUNNING_CONFIG_PREFIX.format(rc) + "-"
@@ -243,6 +270,7 @@ class FamaSerializer:
 
         res = "%Relationships \n"
         res += self.root + self.LINE_TERMINATOR + "\n"
+        res += self.cve_attributes + "\n"
         if self.rcs != "":
             res += self.rcs + "\n"
         res += self.vendors + "\n"

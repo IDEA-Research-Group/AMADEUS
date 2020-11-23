@@ -101,5 +101,3 @@ class VulnerabilityScraper():
                     cve.configurations.append("Hardware")
                 elif part == "o" and "Operating System" not in cve.configurations:
                     cve.configurations.append("Operating System")
-                else:
-                    print("Unrecognized part code'" + part + "' in CPE " + cpe)

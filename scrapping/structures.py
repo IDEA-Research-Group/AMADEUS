@@ -72,7 +72,7 @@ class RestrictionNode():
 
 class CVE():
     
-    def __init__(self, cve_id: str, vul_name: str = "unknown", vul_description: str = None, sources: list = [], vuldb_id: str = None, configurations: list = []):
+    def __init__(self, cve_id: str, vul_name: str = None, vul_description: str = None, sources: list = [], vuldb_id: str = None, configurations: list = []):
         self.cve_id = cve_id
         self.vul_name = vul_name
         self.vul_description = vul_description
@@ -101,7 +101,7 @@ class CVE():
         if other.cve_id != self.cve_id:
             raise ValueError("other must have the same CVE id")
         
-        if self.vul_name == "unknown":
+        if self.vul_name == None:
             self.vul_name = other.vul_name
         if self.vul_description == None:
             self.vul_description = other.vul_description
