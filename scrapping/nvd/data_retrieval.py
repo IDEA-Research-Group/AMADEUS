@@ -24,6 +24,7 @@ from .cpes_json import extract_semimodel
 
 class NvdScraper:
 
+    SCRAPER_NAME = "nvd"
     BASE_NVD_URI = "https://nvd.nist.gov/"
     VULN_QUERY_URI = BASE_NVD_URI + "vuln/search/results?form_type=Basic&results_type=overview&search_type=all&query={}&startIndex={}"
     CVE_CPES_URI = BASE_NVD_URI + "vuln/detail/{}/cpes?expandCpeRanges=true"

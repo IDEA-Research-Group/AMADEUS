@@ -96,19 +96,26 @@ class CVE():
         '''
         Takes attributes from a CVE with the same id, and adds them to the instance to get a more complete CVE object
         '''
-        if not isinstance(other, CVE):
-            raise TypeError("other must be of type CVE")
-        if other.cve_id != self.cve_id:
-            raise ValueError("other must have the same CVE id")
-        
-        if self.vul_name == None:
-            self.vul_name = other.vul_name
-        if self.vul_description == None:
-            self.vul_description = other.vul_description
-        if self.vuldb_id == None and other.vuldb_id != None:
-            self.vuldb_id = other.vuldb_id
+        if not isinstance(other, CVE) and not isinstance(other, list):
+            raise TypeError("other must be of type CVE or list")
 
-        self.configurations = list(set(self.configurations + other.configurations))
-        self.sources = list(set(self.sources + other.sources))
+        if isinstance(other, list):
+            for o in other:
+                self.__joinData(o)
+        else:
+            self.__joinData(other)
+
+    def __joinData(self, otherCve):
+        if otherCve.cve_id != self.cve_id:
+            return
+        if self.vul_name == None:
+            self.vul_name = otherCve.vul_name
+        if self.vul_description == None:
+            self.vul_description = otherCve.vul_description
+        if self.vuldb_id == None and otherCve.vuldb_id != None:
+            self.vuldb_id = otherCve.vuldb_id
+
+        self.configurations = list(set(self.configurations + otherCve.configurations))
+        self.sources = list(set(self.sources + otherCve.sources))
         return self
     

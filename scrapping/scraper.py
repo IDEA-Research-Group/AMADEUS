@@ -24,6 +24,7 @@ class VulnerabilityScraper():
     def __init__(self):
         self.nvdScraper = NvdScraper()
         self.vuldbScraper = VuldbScraper()
+        self.scrapers = [self.nvdScraper, self.vuldbScraper]
     
     
     def get_CVEs(self, keyword: str, exact_match: bool=False):
@@ -49,6 +50,12 @@ class VulnerabilityScraper():
                         cves[cve.cve_id] = cve
                     else:
                         cves[cve.cve_id].joinData(cve)
+            
+            # Populate CVE info from as many sources as possible
+            for cve in cves.values():
+                for scraper in [s for s in self.scrapers if s.SCRAPER_NAME not in cve.sources]:
+                    newCves = scraper.get_CVEs(cve.cve_id, exact_match= True)
+                    cves[cve.cve_id].joinData(newCves)
 
             return cves.values()
     

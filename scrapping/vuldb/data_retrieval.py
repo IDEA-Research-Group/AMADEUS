@@ -23,6 +23,7 @@ from scrapping.structures import CVE
 
 class VuldbScraper:
 
+    SCRAPER_NAME = "vuldb"
     VULDB_BASE_URI = "https://vuldb.com/"
     VULDB_LOGIN_URI = VULDB_BASE_URI + "?login"
     VULDB_SEARCH_URI = VULDB_BASE_URI + "?search"
@@ -59,7 +60,14 @@ class VuldbScraper:
         
         searchPayload = {'search': keyword, 'csrftoken': self.csrftoken }
         searchResponse = requests.post(VuldbScraper.VULDB_SEARCH_URI, searchPayload, cookies= self.cookie)
-
+        
+        if 'CSRF token invalid' in searchResponse.text:
+            print("VulDB CSRF token invalid, regenerating")
+            # regenerate tokens
+            self.__init__()
+            searchPayload = {'search': keyword, 'csrftoken': self.csrftoken }
+            searchResponse = requests.post(VuldbScraper.VULDB_SEARCH_URI, searchPayload, cookies= self.cookie)
+        
         if 'You have been using too many search requests lately' in searchResponse.text:
             print("[WARN] VulDB CVE search rate limited")
             return
