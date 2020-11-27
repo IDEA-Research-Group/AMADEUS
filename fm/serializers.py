@@ -26,6 +26,7 @@ class FamaSerializer:
         FaMa Framework
     '''
 
+    COMMENT_CHARACTER = "# "
     LINE_TERMINATOR = ";\n"
     RUNNING_CONFIG_NODE_NAME = "configs"
     RUNNING_CONFIG_PREFIX = "rc{}"
@@ -46,7 +47,8 @@ class FamaSerializer:
         # A Feature Model contains info about a single CVE
         self.CVE = cve
         # Different sections of a Feature Model file
-        self.root = self.CVE.cve_id + ": "
+        self.comments = ""
+        self.root = self.CVE.cve_id + ":"
         self.cve_attributes = ""
         self.tree_add_CVE_attributes_to_root()
 
@@ -83,16 +85,17 @@ class FamaSerializer:
         self.__tree_add_vendors_to_root(vendors)
 
     def tree_add_CVE_attributes_to_root(self) -> None:
-        self.root += " ".join([self.add_optional(self.CVE_CONFIGURATIONS_NODE_NAME),self.add_optional(self.CVE_SOURCES_NODE_NAME)])
-        self.cve_attributes += self.CVE_CONFIGURATIONS_NODE_NAME + ": " + self.add_mandatory(["'{}'".format(x) for x in self.CVE.configurations]) + self.LINE_TERMINATOR
+        self.root += self.add_mandatory(self.CVE_CONFIGURATIONS_NODE_NAME)
+        self.root += self.add_mandatory(self.CVE_SOURCES_NODE_NAME)
+        self.cve_attributes += self.CVE_CONFIGURATIONS_NODE_NAME + ": " \
+                            + self.add_mandatory([x.lower().replace(" ", "-") for x in self.CVE.configurations]) \
+                            + self.LINE_TERMINATOR
         self.cve_attributes += self.CVE_SOURCES_NODE_NAME + ": " + self.add_mandatory(self.CVE.sources) + self.LINE_TERMINATOR
 
         if self.CVE.vul_name:
-            self.root += " " + self.add_optional(self.CVE_VUL_NAME_NODE_NAME)
-            self.cve_attributes += self.CVE_VUL_NAME_NODE_NAME + ":" + self.add_mandatory("'{}'".format(self.CVE.vul_name)) + self.LINE_TERMINATOR
+            self.comments += self.COMMENT_CHARACTER + self.CVE_VUL_NAME_NODE_NAME + ": " + self.CVE.vul_name + "\n\n"
         if self.CVE.vul_description:
-            self.root += " " + self.add_optional(self.CVE_VUL_DESC_NODE_NAME)
-            self.cve_attributes += self.CVE_VUL_DESC_NODE_NAME + ":" + self.add_mandatory("'{}'".format(self.CVE.vul_description)) + self.LINE_TERMINATOR
+            self.comments += self.COMMENT_CHARACTER + self.CVE_VUL_DESC_NODE_NAME + ": " + self.CVE.vul_description + "\n\n"
         if self.CVE.vuldb_id:
             self.root += " " + self.add_optional(self.CVE_VULDB_ID_NODE_NAME)
             self.cve_attributes += self.CVE_VULDB_ID_NODE_NAME + ":" + self.add_mandatory(self.CVE.vuldb_id) + self.LINE_TERMINATOR
@@ -268,7 +271,8 @@ class FamaSerializer:
             Creates a string with a FaMa Framework representation of a Feature Model
         '''
 
-        res = "%Relationships \n"
+        res = self.comments
+        res += "%Relationships \n"
         res += self.root + self.LINE_TERMINATOR + "\n"
         res += self.cve_attributes + "\n"
         if self.rcs != "":
