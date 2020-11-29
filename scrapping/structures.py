@@ -119,3 +119,19 @@ class CVE():
         self.sources = list(set(self.sources + otherCve.sources))
         return self
     
+
+class Exploit():
+    
+    ATTRIBUTES = ["id","description","type_id","platform_id","author_id","date_published",
+                "verified","application_path","application_md5","port","tags","code","type","platform","author"]
+
+    def __init__(self, json : dict):
+        '''
+        Takes a JSON Exploit object and creates an instance with the relevant attributes set.
+        '''
+        for k in json:
+            if k not in Exploit.ATTRIBUTES:
+                continue
+            setattr(self, k, json[k])
+
+        pass
