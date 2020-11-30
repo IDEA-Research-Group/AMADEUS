@@ -16,7 +16,7 @@ from scrapping.structures import CVE
 ###############################
 ###          T TREE         ###
 ###############################
-def generate_tree(cve: CVE, semi_model: dict, semi_model_rc: list):
+def generate_tree(cve: CVE, semi_model: dict, semi_model_rc: list, direct_exploits: list, indirect_exploits: dict):
 
     '''
         Creates a fully well-formed feature model tree T representing all possible
@@ -31,6 +31,11 @@ def generate_tree(cve: CVE, semi_model: dict, semi_model_rc: list):
         :param semi_model_rc: A dictionary structure containing a semi-representation of the
         Running Configuration of the final FeatureModel, which must include all simple CPEs
         that are going to be analysed.
+
+        :param direct_exploits: A list containing the exploits directly related to the CVE
+
+        :param indirect_exploits: A dictionary with structure {cpe: [exploit]} containing exploits related to other vulnerabilities, that affect
+        configurations also affected by this CVE
     '''
 
     # First, we need to check the arguments
@@ -55,6 +60,9 @@ def generate_tree(cve: CVE, semi_model: dict, semi_model_rc: list):
 
     processSemiModel([semi_model], fmSerializer, isRC=False)
     processSemiModel(semi_model_rc, fmSerializer, isRC=True)
+
+    process_direct_exploits(direct_exploits, fmSerializer)
+    process_indirect_exploits(indirect_exploits, fmSerializer)
 
     # print("\n \t *** FEATURE MODEL *** \n")
     # print(fmSerializer.tree_get_model())
@@ -166,6 +174,12 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
                 for field in cpe_fields:
                     field.clear()
                 s_cpes.clear()
+
+def process_direct_exploits(direct_exploits: list, fmSerializer: FamaSerializer):
+    fmSerializer.tree_add_direct_exploits(direct_exploits)
+
+def process_indirect_exploits(indirect_exploits: dict, fmSerializer: FamaSerializer):
+    fmSerializer.tree_add_indirect_exploits(indirect_exploits)
 
 def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list) -> RestrictionNode:
     

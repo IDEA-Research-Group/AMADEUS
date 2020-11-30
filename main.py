@@ -64,9 +64,35 @@ def process_nmap_out(out):
 
 def construct_cpe_model_for_cve(cve: CVE):
     semi_model, running_conf = scraper.get_CPEs(cve)
-    generate_tree(cve, semi_model, running_conf)
+    print("Finding direct exploits for {}".format(cve.cve_id))
+    direct_exploits = scraper.get_exploits_for_CVE(cve)
+    indirect_exploits = dict()
+    cpesToCheck = []
+    for v in semi_model:
+        for p in semi_model[v]:
+            for cpe in semi_model[v][p]:
+                cpesToCheck.append(cpe)
+    
+    print("Finding indirect exploits for {}. Checking {} CPEs".format(cve.cve_id, len(cpesToCheck)))
+    n = len(cpesToCheck)
+
+    with ThreadPoolExecutor(max_workers=50) as pool:
+        futures = {}
+        for cpe in cpesToCheck:
+            f = pool.submit(scraper.get_exploits_for_CPE, cpe)
+            futures[cpe] = f
+
+        n = len(futures)
+        for i, _ in enumerate(as_completed(futures.values())):
+            progress = int((i/n)*100)
+            if progress % 5 == 0:
+                print("Progress: {}%".format(progress))
+
+    indirect_exploits = {cpe: futures[cpe].result() for cpe in cpesToCheck}
+    
+    generate_tree(cve, semi_model, running_conf, direct_exploits, indirect_exploits)
     print("Wrote tree for " + cve.cve_id)
-    time.sleep(5) # Wait until releasing worker to reduce load...?
+   # time.sleep(5) # Wait until releasing worker to reduce load...?
 
 def construct_cpe_model(related_cves):
     

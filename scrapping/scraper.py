@@ -17,6 +17,7 @@ from .nvd.data_retrieval import NvdScraper
 from .vuldb.data_retrieval import VuldbScraper
 
 from .structures import CVE
+from .exploitdb_scraper import ExploitDbScraper
 
 
 class VulnerabilityScraper():
@@ -25,9 +26,11 @@ class VulnerabilityScraper():
         self.nvdScraper = NvdScraper()
         self.vuldbScraper = VuldbScraper()
         self.scrapers = [self.nvdScraper, self.vuldbScraper]
+        
+        self.exploitScraper = ExploitDbScraper()
     
     
-    def get_CVEs(self, keyword: str, exact_match: bool=False):
+    def get_CVEs(self, keyword: str, exact_match: bool=False, exclude_scrapers: list=[], no_print=False):
         '''
             Returns a list of CVEs matching the given keyword, using available web scrapers
 
@@ -35,17 +38,24 @@ class VulnerabilityScraper():
 
             :param exact_match: if results should be for the exact keyword
         '''
-        print("Search for CVEs")
+        if not no_print:
+            print("Search for CVEs")
         with ThreadPoolExecutor(max_workers=10) as pool:
             # TODO do NVD paging
-            futureNvd = pool.submit(self.nvdScraper.get_CVEs, keyword, exact_match=exact_match)
-            futureVuldb = pool.submit(self.vuldbScraper.get_CVEs, keyword, exact_match=exact_match)
-            futures = [futureNvd, futureVuldb]
+            futures = []
+            if "nvd" not in exclude_scrapers:
+                futureNvd = pool.submit(self.nvdScraper.get_CVEs, keyword, exact_match=exact_match)
+                futures.append(futureNvd)
+            if "vuldb" not in exclude_scrapers:
+                futureVuldb = pool.submit(self.vuldbScraper.get_CVEs, keyword, exact_match=exact_match)
+                futures.append(futureVuldb)
             results = [x.result() for x in as_completed(futures)]
 
             cves = dict()
 
             for r in results:
+                if not r:
+                    continue
                 for cve in r:
                     if cve.cve_id not in cves:
                         cves[cve.cve_id] = cve
@@ -53,14 +63,29 @@ class VulnerabilityScraper():
                         cves[cve.cve_id].joinData(cve)
             
             # Populate CVE info from as many sources as possible
-            print("Populating CVEs")
-            for cve in cves.values():
-                for scraper in [s for s in self.scrapers if s.SCRAPER_NAME not in cve.sources]:
+            if not no_print:
+                print("Populating CVEs")
+            number_of_cves = len(cves.values())
+            for i, cve in enumerate(cves.values()):
+                for scraper in [s for s in self.scrapers if s.SCRAPER_NAME not in cve.sources and s.SCRAPER_NAME not in exclude_scrapers]:
                     newCves = scraper.get_CVEs(cve.cve_id, exact_match= True) # NOTE: Might consume a lot of search quota
-                    cves[cve.cve_id].joinData(newCves)
+                    if newCves:
+                        cves[cve.cve_id].joinData(newCves)
+                    progress = int((i/number_of_cves)*100)
+                    if progress % 10 == 0 and not no_print:
+                        print("Progress: {}%".format(progress))
+                    
 
             return cves.values()
     
+    def get_CVEs_from_CPE(self, cpe: str):
+        '''
+        Searches for vulnerabilities that affect the specified CPE 2.3 string. Currently searches on NVD only.
+        
+        :param cpe: cpe to look for
+        '''
+        return self.get_CVEs(cpe, exact_match=True, exclude_scrapers=["vuldb"], no_print=True)
+
     def get_CPEs(self, cve: CVE) -> (dict, dict): 
         '''
             Returns a list of CPEs matching the given CVE, using available web scrapers
@@ -110,3 +135,21 @@ class VulnerabilityScraper():
                     cve.configurations.append("Hardware")
                 elif part == "o" and "Operating System" not in cve.configurations:
                     cve.configurations.append("Operating System")
+
+    def get_exploits_for_CVE(self, cve: CVE):
+        '''
+        Returns a list of exploits for the given CVE
+        '''
+        if not cve or not isinstance(cve, CVE):
+            raise TypeError("cve must be a valid CVE object")
+
+        return self.exploitScraper.get_exploits_for_CVE(cve.cve_id)
+    
+    def get_exploits_for_CPE(self, cpe: str):
+        '''
+        Returns a list of exploits that affect the given CPE configuration
+        '''
+        if not cpe or type(cpe) is not str:
+            raise TypeError("cve must be a valid CVE object")
+
+        return self.exploitScraper.get_exploits_for_CPE(cpe, self)

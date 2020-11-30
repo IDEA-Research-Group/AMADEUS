@@ -70,7 +70,11 @@ class NvdScraper:
         # Sends an HTTPS request to NVD and constructs a BS Object
         # to analyse the page
         req = Request(query_url.format(urllib.parse.quote(keyword), startIndex))
-        res_page = urlopen(req, context=context)
+        try:
+            res_page = urlopen(req, context=context)
+        except:
+            print("[WARN] NVD request failed for keyword {}. Possible rate limiting".format(keyword))
+            return
         soup = BeautifulSoup(res_page, "html.parser")
 
         # All CVEs are wrapped in a table (in fact the only one in the html) with an attribute

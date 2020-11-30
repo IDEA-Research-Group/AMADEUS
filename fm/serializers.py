@@ -52,6 +52,12 @@ class FamaSerializer:
         self.cve_attributes = ""
         self.tree_add_CVE_attributes_to_root()
 
+        self.root += self.add_mandatory("exploits") + " "
+        self.exploits = "exploits: [direct] [indirect]"
+        self.direct_exploits_ids = ""
+        self.direct_exploits = ""
+        self.indirect_exploit_cpes = ""
+        self.indirect_exploits = ""
         self.rcs = ""
         self.vendors = ""
         self.vendors_products = ""
@@ -73,6 +79,32 @@ class FamaSerializer:
             self.rcs += "{}: ".format(self.RUNNING_CONFIG_NODE_NAME) + \
                 self.add_XOR([self.RUNNING_CONFIG_PREFIX.format(i) for i in range(num_of_configs)]) + \
                 self.LINE_TERMINATOR
+
+    def tree_add_direct_exploits(self, exploits: list) -> None:
+        if len(exploits) > 0 and len(self.direct_exploits_ids) == 0:
+            self.direct_exploits_ids += "direct:"
+        self.direct_exploits_ids += self.add_mandatory(exploits)
+        for _ in exploits:
+            #self.direct_exploits += "exploit-{}:".format(exploit.id)
+            # TODO: Which attributes should be included in the tree?
+            pass
+
+    def tree_add_indirect_exploits(self, exploits: dict) -> None:
+        '''
+        :param exploits Should be a dict with the following structure {cpe string:  list of relevant exploits}
+        '''
+        cpesWithExploits = [cpe for cpe in exploits if len(exploits[cpe]) > 0]
+        if len(cpesWithExploits) == 0:
+            return
+        if len(self.indirect_exploit_cpes) == 0:
+            self.indirect_exploit_cpes += "indirect:"
+
+        self.indirect_exploit_cpes += self.add_mandatory(cpesWithExploits) + self.LINE_TERMINATOR
+
+        for cpe in exploits:
+            exploitIds = [expl.id for expl in exploits[cpe]]
+            if len(exploitIds) > 0:
+                self.indirect_exploits += "{}:".format(cpe) + self.add_mandatory(exploitIds) + self.LINE_TERMINATOR
 
     def tree_add_vendors_to_rc(self, rc:int, vendors: Union[Iterable, object]) -> None:
         fs = self.RUNNING_CONFIG_PREFIX + "-{}"
@@ -275,11 +307,18 @@ class FamaSerializer:
         res += "%Relationships \n"
         res += self.root + self.LINE_TERMINATOR + "\n"
         res += self.cve_attributes + "\n"
+        res += self.exploits + "\n"
         if self.rcs != "":
             res += self.rcs + "\n"
         res += self.vendors + "\n"
         res += self.vendors_products + "\n"
         res += self.product_attributes
+
+        res += self.direct_exploits_ids + "\n"
+        res += self.direct_exploits + "\n"
+        res += self.indirect_exploit_cpes + "\n"
+        res += self.indirect_exploits + "\n"
+
 
         return res
     
