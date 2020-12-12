@@ -126,7 +126,7 @@ if __name__ == "__main__":
     # If the user wants to perfom a manual search
     if parser_results.keyword:
         # Get CVEs that are related with the query
-        related_cves = scraper.get_CVEs(parser_results.keyword[0], exact_match=parser_results.e)
+        related_cves = scraper.get_CVEs(parser_results.keyword[0].strip(), exact_match=parser_results.e)
         if related_cves:
             print(str(len(related_cves)) + " related CVEs found")
             construct_cpe_model(related_cves)

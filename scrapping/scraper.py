@@ -12,6 +12,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # Regex
 import re
 
+# Redis
+from .redis_store import *
+
 # Scrapers
 from .nvd.data_retrieval import NvdScraper
 from .vuldb.data_retrieval import VuldbScraper
@@ -40,6 +43,11 @@ class VulnerabilityScraper():
         '''
         if not no_print:
             print("Search for CVEs")
+        
+        cachedResult = get_search_results(keyword)
+        if cachedResult != None:
+            return cachedResult
+        
         with ThreadPoolExecutor(max_workers=10) as pool:
             # TODO do NVD paging
             futures = []
@@ -75,7 +83,7 @@ class VulnerabilityScraper():
                     if progress % 10 == 0 and not no_print:
                         print("Progress: {}%".format(progress))
                     
-
+            store_search_results(keyword, list(cves.values()))
             return cves.values()
     
     def get_CVEs_from_CPE(self, cpe: str):
@@ -93,6 +101,14 @@ class VulnerabilityScraper():
 
             :param cve: cve to look for
         '''
+        cachedResult = get_cpes_from_cve(cve.cve_id)
+        if cachedResult != None:
+            for k in cachedResult[0]:
+                for m in cachedResult[0][k]:
+                    for cpe in cachedResult[0][k][m]:
+                        self.getConfigurationFromCPE(cpe, cve)
+            return cachedResult
+            
         semimodel1, runningConf1 = self.nvdScraper.get_CPEs(cve)
         vuldbResults = self.vuldbScraper.get_CPEs(cve)
         semimodel2, runningConf2 = vuldbResults if vuldbResults else (None, None)
@@ -115,6 +131,7 @@ class VulnerabilityScraper():
                         if cpe not in finalSemimodel[k][m]:
                             finalSemimodel[k][m][cpe] = list()
         
+        store_cpes_from_cve(cve.cve_id, (finalSemimodel, runningConf1))
         return (finalSemimodel, runningConf1)
 
     def getConfigurationFromCPE(self, cpe: str, cve: CVE):

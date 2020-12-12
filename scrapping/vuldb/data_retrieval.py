@@ -104,7 +104,7 @@ class VuldbScraper:
                     if exact_match and keyword not in entryVulName: # If exact_match is true, skip item if not a exact keyword match
                         continue
                     entryId = entryIdElem.get('href')[4:]
-                    entryCVE = entry.select_one('a[target="cve"]').text
+                    entryCVE = entry.select_one('a[target="cve"]').text.strip()
                     vulnerabilities.append(CVE(entryCVE, sources= ["vuldb"], vul_name= entryVulName, vuldb_id= entryId, configurations= [titleConfiguration]))
 
         return vulnerabilities
