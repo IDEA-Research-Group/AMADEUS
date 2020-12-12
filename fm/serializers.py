@@ -36,6 +36,9 @@ class FamaSerializer:
     CVE_VULDB_ID_NODE_NAME = "vuldb_id"
     CVE_VUL_NAME_NODE_NAME = "vul_name"
     CVE_VUL_DESC_NODE_NAME = "vul_description"
+    CVE_EXPLOIT_NODE_NAME = "exploits"
+    CVE_EXPLOIT_DIRECT_NODE_NAME = "direct"
+    CVE_EXPLOIT_INDIRECT_NODE_NAME = "indirect"
 
     def __init__(self, cve: CVE):
         
@@ -52,12 +55,12 @@ class FamaSerializer:
         self.cve_attributes = ""
         self.tree_add_CVE_attributes_to_root()
 
-        self.root += self.add_mandatory("exploits") + " "
-        self.exploits = "exploits: [direct] [indirect]"
+        self.root += self.add_mandatory(self.CVE_EXPLOIT_NODE_NAME) + " "
+        self.exploits = "{}: [{}] [{}]".format(self.CVE_EXPLOIT_NODE_NAME, self.CVE_EXPLOIT_DIRECT_NODE_NAME, self.CVE_EXPLOIT_INDIRECT_NODE_NAME)
         self.direct_exploits_ids = ""
         self.direct_exploits = ""
-        self.indirect_exploit_cpes = ""
         self.indirect_exploits = ""
+        #self.indirect_exploits = ""
         self.rcs = ""
         self.vendors = ""
         self.vendors_products = ""
@@ -82,12 +85,8 @@ class FamaSerializer:
 
     def tree_add_direct_exploits(self, exploits: list) -> None:
         if len(exploits) > 0 and len(self.direct_exploits_ids) == 0:
-            self.direct_exploits_ids += "direct:"
-        self.direct_exploits_ids += self.add_mandatory(exploits)
-        for _ in exploits:
-            #self.direct_exploits += "exploit-{}:".format(exploit.id)
-            # TODO: Which attributes should be included in the tree?
-            pass
+            self.direct_exploits_ids += "direct: "
+        self.direct_exploits_ids += self.add_OR((exploit.id for exploit in exploits))
 
     def tree_add_indirect_exploits(self, exploits: dict) -> None:
         '''
@@ -96,15 +95,17 @@ class FamaSerializer:
         cpesWithExploits = [cpe for cpe in exploits if len(exploits[cpe]) > 0]
         if len(cpesWithExploits) == 0:
             return
-        if len(self.indirect_exploit_cpes) == 0:
-            self.indirect_exploit_cpes += "indirect:"
+        if len(self.indirect_exploits) == 0:
+            self.indirect_exploits += "indirect: "
 
-        self.indirect_exploit_cpes += self.add_mandatory(cpesWithExploits) + self.LINE_TERMINATOR
-
+        indirectExploitIds = set()
+        
         for cpe in exploits:
             exploitIds = [expl.id for expl in exploits[cpe]]
-            if len(exploitIds) > 0:
-                self.indirect_exploits += "{}:".format(cpe) + self.add_mandatory(exploitIds) + self.LINE_TERMINATOR
+            for eid in exploitIds:
+                indirectExploitIds.add(eid)
+        
+        self.indirect_exploits += self.add_OR(indirectExploitIds) + self.LINE_TERMINATOR
 
     def tree_add_vendors_to_rc(self, rc:int, vendors: Union[Iterable, object]) -> None:
         fs = self.RUNNING_CONFIG_PREFIX + "-{}"
@@ -131,8 +132,6 @@ class FamaSerializer:
         if self.CVE.vuldb_id:
             self.root += " " + self.add_optional(self.CVE_VULDB_ID_NODE_NAME)
             self.cve_attributes += self.CVE_VULDB_ID_NODE_NAME + ":" + self.add_mandatory(self.CVE.vuldb_id) + self.LINE_TERMINATOR
-        
-        self.root += " "
         
 
     def tree_add_products_to_vendor(self, vendor, products: Union[Iterable, object], rc:int = None) -> None:
@@ -263,7 +262,7 @@ class FamaSerializer:
         self.product_attributes += attribute + ": " + self.add_XOR(values) + self.LINE_TERMINATOR
     ### END OF SECTION
 
-    def sanitize(self, toSanitize: Union[str, Iterable], num_prefix:str='v', replacers:tuple=(('.', '_'),('*','any'))) -> Union[str, Iterable]:
+    def sanitize(self, toSanitize: Union[str, Iterable], replacers:tuple=(('.', '_'),('*','any'))) -> Union[str, Iterable]:
             
         '''
             Sanitizes retrieved content so as to avoid invalid characters in FaMa
@@ -271,8 +270,6 @@ class FamaSerializer:
 
             :param toSanitize: String or Iterable containing strings that are intended 
             to be sanitized
-
-            :param num_prefix: Character to use as a prefix for string starting with a number
 
             :param replacers: Tuple containing pairs which first item is the special character to replace
             and the second the new expression.
@@ -284,8 +281,8 @@ class FamaSerializer:
             res = toSanitize
 
             # Check whether the string starts with a number or not
-            if starts_with_number_regex.match(res):
-                res = num_prefix + res
+            #if starts_with_number_regex.match(res):
+            #    res = num_prefix + res
             
             for t in replacers:
                 res = res.replace(t[0], t[1])
@@ -316,7 +313,6 @@ class FamaSerializer:
 
         res += self.direct_exploits_ids + "\n"
         res += self.direct_exploits + "\n"
-        res += self.indirect_exploit_cpes + "\n"
         res += self.indirect_exploits + "\n"
 
 
