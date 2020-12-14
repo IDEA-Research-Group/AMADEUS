@@ -16,6 +16,7 @@ import requests
 import re
 import json
 import os
+import time
 from collections import defaultdict
 
 from scrapping.structures import CVE
@@ -31,20 +32,18 @@ class VuldbScraper:
 
     def __init__(self):
         self.cookie, self.csrftoken = self.__getLoginCookieAndToken()
-        self.rate_limited = False
-        self.completely_rate_limited = False
 
     def __getLoginCookieAndToken(self):
         loginInfo = { 'user': os.getenv('VULDB_USER'), 'password': os.getenv('VULDB_PASSWORD') }
-        resp = requests.post(VuldbScraper.VULDB_LOGIN_URI, loginInfo)
-
-        if "Login failed. Please try again." in resp.text:
-            raise Exception("Error logging to VulDB. Check environment variables.")
-
-        if "DDoS Protection Message" in resp.text:
-            print("[WARN] Vuldb rate limit exceeded, for a few minutes. Vuldb won't be used in this session")
-            self.completely_rate_limited = True
-            return (None, None)
+        while True:
+            resp = requests.post(VuldbScraper.VULDB_LOGIN_URI, loginInfo)
+            if "Login failed. Please try again." in resp.text:
+                raise Exception("Error logging to VulDB. Check environment variables.")
+            elif "DDoS Protection Message" in resp.text:
+                print("[WARN] Vuldb rate limit exceeded, for a few minutes. Retrying in 10 seconds")
+                time.sleep(10)
+            else:
+                break
 
         soup = BeautifulSoup(resp.text, "html.parser")
         csrftoken = soup.select_one('input[name="csrftoken"]').get('value')
@@ -64,30 +63,23 @@ class VuldbScraper:
 
         if not keyword or type(keyword) is not str:
             raise ValueError("keyword must be a non-empty string")
-        
-        if self.completely_rate_limited == True:
-            return # Rate limited for a while, nothing to do here
 
-        searchPayload = {'search': keyword, 'csrftoken': self.csrftoken }
-        searchResponse = requests.post(VuldbScraper.VULDB_SEARCH_URI, searchPayload, cookies= self.cookie)
-        
-        if 'CSRF token invalid' in searchResponse.text:
-            print("VulDB CSRF token invalid, regenerating")
-            # regenerate tokens
-            self.__init__()
+        while True:
             searchPayload = {'search': keyword, 'csrftoken': self.csrftoken }
             searchResponse = requests.post(VuldbScraper.VULDB_SEARCH_URI, searchPayload, cookies= self.cookie)
-        
-        if 'You have been using too many search requests lately' in searchResponse.text:
-            if not self.rate_limited:
-                self.rate_limited = True
-                print("[WARN] VulDB CVE search rate limited")
-            return
-        
-        if "DDoS Protection Message" in searchResponse.text:
-            print("[WARN] Vuldb rate limit exceeded, for a few minutes. Vuldb won't be used in this session")
-            self.completely_rate_limited = True
-            return
+            if 'CSRF token invalid' in searchResponse.text:
+                print("VulDB CSRF token invalid, regenerating")
+                # regenerate tokens
+                self.__init__()
+                searchPayload = {'search': keyword, 'csrftoken': self.csrftoken }
+            elif 'You have been using too many search requests lately' in searchResponse.text:
+                print("[WARN] VulDB CVE search rate limited. Retrying")
+                time.sleep(5)
+            elif "DDoS Protection Message" in searchResponse.text:
+                print("[WARN] Vuldb rate limit exceeded, for a few minutes. Retrying in 10 seconds")
+                time.sleep(10)
+            else:
+                break
 
         soup = BeautifulSoup(searchResponse.text, "html.parser")
         tableEntries = soup.select_one('table').findChildren("tr", recursive=False)
@@ -127,25 +119,21 @@ class VuldbScraper:
             # No vuldb id, so we can't use this scraper for CPEs
             return
 
-        if self.completely_rate_limited == True:
-            return # Rate limited for a while, nothing to do here
-
-        resp = requests.get(VuldbScraper.VULDB_ID_URI + cve.vuldb_id, cookies= self.cookie)
-
-        if "🔒" in resp.text:
-            print("Invalid login cookie")
-            return
-
-        if "We have detected an extended amount of requests from your user account." in resp.text:
-            print("[WARN] VulDB CPE rate limited")
-            return
+        while True:
+            resp = requests.get(VuldbScraper.VULDB_ID_URI + cve.vuldb_id, cookies= self.cookie)
+            if "🔒" in resp.text:
+                raise Exception("Invalid login cookie")
+            elif "We have detected an extended amount of requests from your user account." in resp.text:
+                print("[WARN] VulDB CPE rate limited. Retrying")
+                time.sleep(5)
+            else:
+                break
 
         soup = BeautifulSoup(resp.text, "html.parser")
         
         cpeH1s = soup.select('h2#cpe')
         if len(cpeH1s) == 0:
-            print("Unexpected error parsing CPE data")
-            return
+            raise Exception("Unexpected error parsing CPE data.")
         
         cpev23H1 = list(cpeH1s)[0]
         cpeEntries = cpev23H1.findNext("ul").findChildren("a")

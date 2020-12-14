@@ -84,9 +84,10 @@ class FamaSerializer:
                 self.LINE_TERMINATOR
 
     def tree_add_direct_exploits(self, exploits: list) -> None:
-        if len(exploits) > 0 and len(self.direct_exploits_ids) == 0:
-            self.direct_exploits_ids += "direct: "
-        self.direct_exploits_ids += self.add_OR((exploit.id for exploit in exploits))
+        if len(exploits) > 0:
+            if len(self.direct_exploits_ids) == 0:
+                self.direct_exploits_ids += "direct: "
+            self.direct_exploits_ids += self.add_OR((exploit.id for exploit in exploits))
 
     def tree_add_indirect_exploits(self, exploits: dict) -> None:
         '''

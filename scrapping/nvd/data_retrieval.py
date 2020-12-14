@@ -15,6 +15,7 @@ import urllib.parse
 # Common
 import re
 import json
+import time
 
 # Structures
 from scrapping.structures import CVE
@@ -69,12 +70,15 @@ class NvdScraper:
         
         # Sends an HTTPS request to NVD and constructs a BS Object
         # to analyse the page
-        req = Request(query_url.format(urllib.parse.quote(keyword), startIndex))
-        try:
-            res_page = urlopen(req, context=context)
-        except:
-            print("[WARN] NVD request failed for keyword {}. Possible rate limiting".format(keyword))
-            return
+        while True:
+            req = Request(query_url.format(urllib.parse.quote(keyword), startIndex))
+            try:
+                res_page = urlopen(req, context=context)
+                break
+            except:
+                print("[WARN] NVD request failed for keyword {}. Possible rate limiting. Retrying".format(keyword))
+                time.sleep(5)
+        
         soup = BeautifulSoup(res_page, "html.parser")
 
         # All CVEs are wrapped in a table (in fact the only one in the html) with an attribute
