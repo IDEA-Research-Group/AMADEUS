@@ -13,7 +13,7 @@ from typing import Union
 from collections.abc import Iterable
 from .structures import RestrictionNode
 
-from scrapping.structures import CVE
+from scrapping.structures import CVE, HashableCPE
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_FOLDER = "models"
@@ -87,9 +87,9 @@ class FamaSerializer:
         if len(exploits) > 0:
             if len(self.direct_exploits_ids) == 0:
                 self.direct_exploits_ids += "direct: "
-            self.direct_exploits_ids += self.add_OR((exploit.id for exploit in exploits))
+            self.direct_exploits_ids += self.add_OR(("exploit-" + exploit.id for exploit in exploits))
 
-    def tree_add_indirect_exploits(self, exploits: dict) -> None:
+    def tree_add_indirect_exploits(self, exploits: dict, semi_model: dict) -> None:
         '''
         :param exploits Should be a dict with the following structure {cpe string:  list of relevant exploits}
         '''
@@ -104,7 +104,20 @@ class FamaSerializer:
         for cpe in exploits:
             exploitIds = [expl.id for expl in exploits[cpe]]
             for eid in exploitIds:
-                indirectExploitIds.add(eid)
+                indirectExploitIds.add("exploit-" + eid)
+                cpeObj = HashableCPE(cpe)
+                # Gets correct product value from cpe and semimodel. 
+                # Fixes discrepancies in naming of some products
+                # For example, thunderbird_esr appears as thunderbird in the semimodel,
+                # so we detect those discrepancies and use the correct name
+                for vendor in semi_model:
+                    for product in semi_model[vendor]:
+                        for c in semi_model[vendor][product]:
+                            if cpe == c and cpeObj.get_product()[0] != product:
+                                cpe = cpe.replace(cpeObj.get_product()[0], product)
+                                cpeObj = HashableCPE(cpe)
+                                break
+                self.tree_add_constraints('exploit',eid,RestrictionNode(eid, requirements=[('exploit',cpeObj)]))
         
         self.indirect_exploits += self.add_OR(indirectExploitIds) + self.LINE_TERMINATOR
 
@@ -194,7 +207,8 @@ class FamaSerializer:
                             need_brackets = True
                         
                         aux.append(rcs)
-
+                    elif attr == 'exploit':
+                        aux.append("{}-{}-{}-{}".format(val.get_vendor()[0],val.get_product()[0],'version',self.sanitize(val.get_version()[0])))
                     else:
                         # Generate requirements for the rest of attributes (standard attr)
                         aux.append("{}-{}-{}-{}".format(vendor, product, attr[:-1], val))

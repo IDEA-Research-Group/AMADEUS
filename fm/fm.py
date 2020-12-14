@@ -62,7 +62,7 @@ def generate_tree(cve: CVE, semi_model: dict, semi_model_rc: list, direct_exploi
     processSemiModel(semi_model_rc, fmSerializer, isRC=True)
 
     process_direct_exploits(direct_exploits, fmSerializer)
-    process_indirect_exploits(indirect_exploits, fmSerializer)
+    process_indirect_exploits(indirect_exploits, semi_model, fmSerializer)
 
     # print("\n \t *** FEATURE MODEL *** \n")
     # print(fmSerializer.tree_get_model())
@@ -178,8 +178,8 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
 def process_direct_exploits(direct_exploits: list, fmSerializer: FamaSerializer):
     fmSerializer.tree_add_direct_exploits(direct_exploits)
 
-def process_indirect_exploits(indirect_exploits: dict, fmSerializer: FamaSerializer):
-    fmSerializer.tree_add_indirect_exploits(indirect_exploits)
+def process_indirect_exploits(indirect_exploits: dict, semi_model: dict, fmSerializer: FamaSerializer):
+    fmSerializer.tree_add_indirect_exploits(indirect_exploits, semi_model)
 
 def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list) -> RestrictionNode:
     
