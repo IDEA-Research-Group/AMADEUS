@@ -162,11 +162,12 @@ class VulnerabilityScraper():
 
         return self.exploitScraper.get_exploits_for_CVE(cve.cve_id)
     
-    def get_exploits_for_CPE(self, cpe: str, excludeCVE: CVE = None):
+    def get_exploits_for_CPE(self, cpe: str, excludeCVE: CVE, cveExploitDict: dict):
         '''
         Returns a list of exploits that affect the given CPE configuration
+        :param cveExploitDict A dict that stores CVE: list(exploits) to prevent unnecesary work
         '''
         if not cpe or type(cpe) is not str:
             raise TypeError("cve must be a valid CVE object")
 
-        return self.exploitScraper.get_exploits_for_CPE(cpe, self, excludeCVE=excludeCVE)
+        return self.exploitScraper.get_exploits_for_CPE(cpe, self, excludeCVE, cveExploitDict)

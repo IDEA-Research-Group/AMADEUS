@@ -78,8 +78,9 @@ def construct_cpe_model_for_cve(cve: CVE):
 
     with ThreadPoolExecutor(max_workers=50) as pool:
         futures = {}
+        cveExploitDict = dict()
         for cpe in cpesToCheck:
-            f = pool.submit(scraper.get_exploits_for_CPE, cpe, cve)
+            f = pool.submit(scraper.get_exploits_for_CPE, cpe, cve, cveExploitDict)
             futures[cpe] = f
 
         n = len(futures)
