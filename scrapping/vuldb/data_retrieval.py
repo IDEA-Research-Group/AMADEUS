@@ -73,7 +73,7 @@ class VuldbScraper:
                 self.__init__()
                 searchPayload = {'search': keyword, 'csrftoken': self.csrftoken }
             elif 'You have been using too many search requests lately' in searchResponse.text:
-                print("[WARN] VulDB CVE search rate limited. Retrying")
+                print("[WARN] VulDB CVE search rate limited. Retrying. Try again later or disable Vuldb scraping")
                 time.sleep(5)
             elif "DDoS Protection Message" in searchResponse.text:
                 print("[WARN] Vuldb rate limit exceeded, for a few minutes. Retrying in 10 seconds")

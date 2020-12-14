@@ -48,8 +48,7 @@ class VulnerabilityScraper():
         if cachedResult != None:
             return cachedResult
         
-        with ThreadPoolExecutor(max_workers=10) as pool:
-            # TODO do NVD paging
+        with ThreadPoolExecutor(max_workers=50) as pool:
             futures = []
             if "nvd" not in exclude_scrapers:
                 futureNvd = pool.submit(self.nvdScraper.get_CVEs, keyword, exact_match=exact_match)

@@ -16,6 +16,10 @@ import urllib.parse
 import re
 import json
 import time
+import math
+
+# Concurrency
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Structures
 from scrapping.structures import CVE
@@ -92,7 +96,22 @@ class NvdScraper:
         else:
             print("No results were found in NVD database")
 
-        return list(res[0])
+        matchingRecords = int(soup.find("strong", {"data-testid":"vuln-matching-records-count"}).text.replace(',',''))
+        if matchingRecords > 20 and page_num == 0:
+            print("Found " + str(matchingRecords) + " results on NVD. Paginating")
+            with ThreadPoolExecutor(max_workers=50) as pool:
+                futures = []
+                for i in range(1, math.ceil(matchingRecords/20)):
+                    futureNvd = pool.submit(self.get_CVEs, keyword, exact_match=exact_match, page_num=i)
+                    futures.append(futureNvd)
+                results = [x.result() for x in as_completed(futures)]
+            totalList = []
+            for page in results:
+                for result in page:
+                    totalList.append(result)
+            return totalList
+        else:
+            return list(res[0])
 
     def get_CPEs(self, cve: CVE) -> (dict, dict):
 
