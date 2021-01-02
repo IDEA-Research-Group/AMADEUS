@@ -1,3 +1,8 @@
+'''
+Run this to index CVE data in redis. 
+You must have downloaded offline NVD data feeds, found in the following link
+https://nvd.nist.gov/vuln/data-feeds
+'''
 import ujson
 
 from redisearch import Client, TextField, IndexDefinition, Query
