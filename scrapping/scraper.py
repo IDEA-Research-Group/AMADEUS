@@ -54,8 +54,9 @@ class VulnerabilityScraper():
                 futureNvd = pool.submit(self.nvdScraper.get_CVEs, keyword, exact_match=exact_match)
                 futures.append(futureNvd)
             if "vuldb" not in exclude_scrapers:
-                futureVuldb = pool.submit(self.vuldbScraper.get_CVEs, keyword, exact_match=exact_match)
-                futures.append(futureVuldb)
+                #futureVuldb = pool.submit(self.vuldbScraper.get_CVEs, keyword, exact_match=exact_match)
+                #futures.append(futureVuldb)
+                pass
             results = [x.result() for x in as_completed(futures)]
 
             cves = dict()
@@ -74,7 +75,7 @@ class VulnerabilityScraper():
                 print("Populating CVEs")
             number_of_cves = len(cves.values())
             for i, cve in enumerate(cves.values()):
-                for scraper in [s for s in self.scrapers if s.SCRAPER_NAME not in cve.sources and s.SCRAPER_NAME not in exclude_scrapers]:
+                for scraper in [s for s in self.scrapers if s.SCRAPER_NAME not in cve.sources and s.SCRAPER_NAME not in exclude_scrapers and s.SCRAPER_NAME != 'vuldb']:
                     newCves = scraper.get_CVEs(cve.cve_id, exact_match= True) # NOTE: Might consume a lot of search quota
                     if newCves:
                         cves[cve.cve_id].joinData(newCves)
@@ -109,7 +110,8 @@ class VulnerabilityScraper():
             return cachedResult
             
         semimodel1, runningConf1 = self.nvdScraper.get_CPEs(cve)
-        vuldbResults = self.vuldbScraper.get_CPEs(cve)
+        #vuldbResults = self.vuldbScraper.get_CPEs(cve)
+        vuldbResults = None
         semimodel2, runningConf2 = vuldbResults if vuldbResults else (None, None)
         semimodels = [semimodel1, semimodel2]
         semimodels = [s for s in semimodels if s]

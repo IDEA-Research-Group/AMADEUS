@@ -20,6 +20,12 @@ Icon
 # fm models
 fm/models/CVE*
 
+# nvd data feeds
+/nvd_data_feeds
+
+# redis db
+dump.rdb
+
 # Files that might appear in the root of a volume
 .DocumentRevisions-V100
 .fseventsd

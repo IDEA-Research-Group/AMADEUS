@@ -96,7 +96,8 @@ class NvdScraper:
         else:
             print("No results were found in NVD database")
 
-        matchingRecords = int(soup.find("strong", {"data-testid":"vuln-matching-records-count"}).text.replace(',',''))
+       # matchingRecords = int(soup.find("strong", {"data-testid":"vuln-matching-records-count"}).text.replace(',',''))
+        matchingRecords = 0
         if matchingRecords > 20 and page_num == 0:
             print("Found " + str(matchingRecords) + " results on NVD. Paginating")
             with ThreadPoolExecutor(max_workers=50) as pool:
