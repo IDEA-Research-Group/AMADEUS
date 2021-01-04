@@ -38,11 +38,13 @@ def process_CVE_file(file):
         for cve_item in cve_items:
             cve_id = cve_item['cve']['CVE_data_meta']['ID']
             cve_desc = cve_item['cve']['description']['description_data'][0]['value']
+            cve_configurations = str(cve_item['configurations']['nodes'])
             # Indexing a document for RediSearch 2.0+
             client.redis.hset('cve:'+cve_id,
                             mapping={
                                 'id': cve_id,
-                                'description': cve_desc
+                                'description': cve_desc,
+                                'configurations': cve_configurations
                             })
         print("Processed " + file)
 
