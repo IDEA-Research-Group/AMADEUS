@@ -4,6 +4,9 @@ Redis helper functions. Needs a Redis server running locally.
 
 import redis
 import jsonpickle
+from redisearch import Client, TextField, IndexDefinition, Query
+
+from scrapping.structures import CVE
 
 conn = redis.Redis('localhost')
 
@@ -12,19 +15,53 @@ CVES_FROM_CPE_HASH_KEY = "cves_from_cpe_{}"
 CPES_FROM_CVE_HASH_KEY = "cpes_from_cve_{}"
 EXPLOITS_FROM_CVE_HASH_KEY = "exploits_from_cve_{}"
 
+client = Client("cveIndex")
+try:
+    client.info()
+except Exception as e:
+    if e.args[0] != "Unknown Index name":
+        print("You must be running a redis server with the redisearch module installed")
+        exit()
+
+
+'''
 def store_search_results(keyword: str, results: list):
-    '''
+    
     Stores search results from vulnerability databases (not exploits)
-    '''
+    
     key = SEARCH_RESULTS_HASH_KEY.format(keyword)
     jsonDict = jsonpickle.encode(results)
     conn.set(key, jsonDict)
     print("Stored {} related search results in cache".format(keyword))
+'''
 
 def get_search_results(keyword: str):
     '''
     Tries to retrieve search results from vulnerability databases, returns a list or None if record doesn't exist
     '''
+    # Simple search
+    if "CVE-" in keyword:
+        keyword = keyword.replace("CVE-", "").replace("-", " ") # Cve search, search is different
+    
+    # Sanitize special characters
+    keyword = keyword.replace(':','cc11').replace('.','pp22').replace('*','ss33')
+    query = Query(keyword).paging(0,1000000)
+    res = client.search(query)
+    for doc in res.docs:
+        sanitized = doc.configurations \
+        .replace("'",'"') \
+        .replace("True", "true") \
+        .replace("False", "false") \
+        .replace('cc11',':').replace('pp22','.').replace('ss33','*')
+        doc.configurations = jsonpickle.decode(sanitized)
+    
+    finalRes = [CVE(doc.id.replace('cve:',''), vul_description=doc.description, sources=['nvd'],cpeConfigurations=doc.configurations) for doc in res.docs]
+    return finalRes
+
+    # the result has the total number of results, and a list of documents
+    '''print(res.total) # "2"
+    print(res.docs[0].title) # "RediSearch"
+
     key = SEARCH_RESULTS_HASH_KEY.format(keyword)
     try:
         val = conn.get(key)
@@ -34,7 +71,23 @@ def get_search_results(keyword: str):
         print("Loaded {} related search results in cache".format(keyword))
         return jsonpickle.decode(val.decode('utf-8'))
     else:
-        return None
+        return None'''
+
+def get_expanded_cpe(cpe23Uri, versionStartIncluding=None, versionStartExcluding=None, versionEndIncluding=None, versionEndExcluding=None):
+    keyName = cpe23Uri
+    if versionStartIncluding:
+        keyName += ';;versionStartIncluding=' + versionStartIncluding
+    if versionStartExcluding:
+        keyName += ';;versionStartExcluding=' + versionStartExcluding
+    if versionEndIncluding:
+        keyName += ';;versionEndIncluding=' + versionEndIncluding
+    if versionEndExcluding:
+        keyName += ';;versionEndExcluding=' + versionEndExcluding
+    res = conn.get(keyName)
+    if res:
+        return res.decode('utf-8').split(';;')
+    else:
+        return []
 
 def store_cpes_from_cve(cveId: str, cpes: tuple):
     '''

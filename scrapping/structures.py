@@ -72,13 +72,14 @@ class RestrictionNode():
 
 class CVE():
     
-    def __init__(self, cve_id: str, vul_name: str = None, vul_description: str = None, sources: list = [], vuldb_id: str = None, configurations: list = []):
+    def __init__(self, cve_id: str, vul_name: str = None, vul_description: str = None, sources: list = [], vuldb_id: str = None, configurations: list = [], cpeConfigurations: list = []):
         self.cve_id = cve_id
         self.vul_name = vul_name
         self.vul_description = vul_description
         self.vuldb_id = vuldb_id
         self.sources = sources
         self.configurations = configurations
+        self.cpeConfigurations = cpeConfigurations
 
     def __hash__(self):
         return hash(self.cve_id)

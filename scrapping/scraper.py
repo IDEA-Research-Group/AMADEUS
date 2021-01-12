@@ -22,6 +22,9 @@ from .vuldb.data_retrieval import VuldbScraper
 from .structures import CVE
 from .exploitdb_scraper import ExploitDbScraper
 
+from cpe import CPE
+from enum import Enum
+from collections import defaultdict
 
 class VulnerabilityScraper():
 
@@ -94,6 +97,56 @@ class VulnerabilityScraper():
         '''
         return self.get_CVEs(cpe, exact_match=True, exclude_scrapers=["vuldb"], no_print=True)
 
+
+
+    def expand(self, complex_cpe):
+        '''
+        Expands and conditionally expands a complex CPE in order to obtain
+        simple and up-to-date CPEs.
+        
+        :param container: A valid dictionary-like representation
+        of a complex CPE
+        '''
+        res = list()
+        versionStartIncluding=complex_cpe.get('versionStartIncluding', False)
+        versionStartExcluding=complex_cpe.get('versionStartExcluding', False)
+        versionEndIncluding=complex_cpe.get('versionEndIncluding', False)
+        versionEndExcluding=complex_cpe.get('versionEndExcluding', False)
+        if versionStartIncluding != False or versionStartExcluding != False or versionEndIncluding != False or versionEndExcluding != False:
+            res = get_expanded_cpe(complex_cpe['cpe23Uri'], 
+                                versionStartIncluding=versionStartIncluding,
+                                versionStartExcluding=versionStartExcluding,
+                                versionEndIncluding=versionEndIncluding,
+                                versionEndExcluding=versionEndExcluding)
+            res = [r.replace(':-', ':*') for r in res]
+            return res
+        else:
+            return [complex_cpe['cpe23Uri'].replace(':-', ':*')]
+
+    def process_basic_configuration(self, node):
+        res = defaultdict(lambda: defaultdict(set))
+        for complex_cpe in node['cpe_match']:
+            aux = CPE(complex_cpe['cpe23Uri'])
+            res[aux.get_vendor()[0]][aux.get_product()[0]].update(self.expand(complex_cpe))
+        return res
+
+    def process_running_on_configuration(self, node):
+        simple_cpes = defaultdict(lambda: defaultdict(set))
+        running_on = defaultdict(lambda: defaultdict(set))
+        for subnode in node['children']:
+            isVulnerable = subnode['cpe_match'][0]['vulnerable']
+            if isVulnerable:
+                # simple cpe
+                for complex_cpe in subnode['cpe_match']:
+                    aux = CPE(complex_cpe['cpe23Uri'])
+                    simple_cpes[aux.get_vendor()[0]][aux.get_product()[0]].update(self.expand(complex_cpe))
+            else:
+                # running on
+                for complex_cpe in subnode['cpe_match']:
+                    aux = CPE(complex_cpe['cpe23Uri'])
+                    running_on[aux.get_vendor()[0]][aux.get_product()[0]].update(self.expand(complex_cpe))
+        return simple_cpes, running_on
+
     def get_CPEs(self, cve: CVE) -> (dict, dict): 
         '''
             Returns a list of CPEs matching the given CVE, using available web scrapers
@@ -108,7 +161,51 @@ class VulnerabilityScraper():
                     for cpe in cachedResult[0][k][m]:
                         self.getConfigurationFromCPE(cpe, cve)
             return cachedResult
+
+        cveInfo = get_search_results(cve.cve_id)[0]
+        configNodes = cveInfo.cpeConfigurations
+
+        cpes = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        running_configs = list()
+        rc_count = -1
+
+        for node in configNodes:
             
+            simple_cpes = list()
+            running_on = None
+
+            if node['operator'] == "OR":
+                # basic
+                print("[-] Detected Configuration Type: BASIC")
+                simple_cpes = self.process_basic_configuration(node)
+            elif node['operator'] == "AND":
+                # running on
+                print("[-] Detected Configuration Type: RUNNING_ON")
+                simple_cpes, running_on = self.process_running_on_configuration(node)
+                rc_count += 1
+                running_configs.append(running_on)
+            else:
+                raise ValueError("Unknown operator " + node['operator'])
+        
+        # Append results to dictionary
+        for vendor, products in simple_cpes.items():
+            # Iterate over all products of a vendor
+            for product, s_cpes in products.items():
+
+                # Iterate over all new CPEs
+                for cpe in s_cpes:
+
+                    # This line retrieves the specific CPE if exists
+                    # and creates a new entry if it doesn't
+                    res_cpe = cpes[vendor][product][cpe]
+                    self.getConfigurationFromCPE(cpe, cve)
+
+                    if node['operator'] == "AND":
+                        res_cpe.append(rc_count)
+                                
+        return cpes, running_configs
+
+        '''
         semimodel1, runningConf1 = self.nvdScraper.get_CPEs(cve)
         #vuldbResults = self.vuldbScraper.get_CPEs(cve)
         vuldbResults = None
@@ -134,6 +231,7 @@ class VulnerabilityScraper():
         
         store_cpes_from_cve(cve.cve_id, (finalSemimodel, runningConf1))
         return (finalSemimodel, runningConf1)
+        '''
 
     def getConfigurationFromCPE(self, cpe: str, cve: CVE):
         '''
