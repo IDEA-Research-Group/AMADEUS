@@ -167,11 +167,10 @@ class VulnerabilityScraper():
 
         cpes = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         running_configs = list()
+        simple_cpes = list()
         rc_count = -1
 
         for node in configNodes:
-            
-            simple_cpes = list()
             running_on = None
 
             if node['operator'] == "OR":
@@ -188,20 +187,21 @@ class VulnerabilityScraper():
                 raise ValueError("Unknown operator " + node['operator'])
         
         # Append results to dictionary
-        for vendor, products in simple_cpes.items():
-            # Iterate over all products of a vendor
-            for product, s_cpes in products.items():
+        if hasattr(simple_cpes, 'items'):
+            for vendor, products in simple_cpes.items():
+                # Iterate over all products of a vendor
+                for product, s_cpes in products.items():
 
-                # Iterate over all new CPEs
-                for cpe in s_cpes:
+                    # Iterate over all new CPEs
+                    for cpe in s_cpes:
 
-                    # This line retrieves the specific CPE if exists
-                    # and creates a new entry if it doesn't
-                    res_cpe = cpes[vendor][product][cpe]
-                    self.getConfigurationFromCPE(cpe, cve)
+                        # This line retrieves the specific CPE if exists
+                        # and creates a new entry if it doesn't
+                        res_cpe = cpes[vendor][product][cpe]
+                        self.getConfigurationFromCPE(cpe, cve)
 
-                    if node['operator'] == "AND":
-                        res_cpe.append(rc_count)
+                        if node['operator'] == "AND":
+                            res_cpe.append(rc_count)
                                 
         return cpes, running_configs
 

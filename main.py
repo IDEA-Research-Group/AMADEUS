@@ -3,6 +3,9 @@ import time
 import subprocess
 import argparse
 import re
+import csv
+
+from timer import ChronoTimer
 
 from scrapping.scraper import VulnerabilityScraper
 from scrapping.structures import CVE
@@ -62,9 +65,11 @@ def process_nmap_out(out):
     
     return res
 
-def construct_cpe_model_for_cve(cve: CVE):
+def construct_cpe_model_for_cve(cve: CVE, cve_times: list):
+    timer = ChronoTimer()
     semi_model, running_conf = scraper.get_CPEs(cve)
     print("Finding direct exploits for {}".format(cve.cve_id))
+    timer.start_exploit_scraping()
     direct_exploits = scraper.get_exploits_for_CVE(cve)
     indirect_exploits = dict()
     cpesToCheck = []
@@ -75,7 +80,7 @@ def construct_cpe_model_for_cve(cve: CVE):
     
     print("Finding indirect exploits for {}. Checking {} CPEs".format(cve.cve_id, len(cpesToCheck)))
     n = len(cpesToCheck)
-
+    
     with ThreadPoolExecutor(max_workers=50) as pool:
         futures = {}
         cveExploitDict = dict()
@@ -90,18 +95,28 @@ def construct_cpe_model_for_cve(cve: CVE):
                 print("Progress: {}%".format(progress))
 
     indirect_exploits = {cpe: futures[cpe].result() for cpe in cpesToCheck}
-    
-    generate_tree(cve, semi_model, running_conf, direct_exploits, indirect_exploits)
+    timer.stop_exploit_scraping()
+    generate_tree(cve, semi_model, running_conf, direct_exploits, indirect_exploits, timer)
     print("Wrote tree for " + cve.cve_id)
+    cve_times.append((cve.cve_id, '%.4f' % timer.get_exploit_scraping_time(), '%.4f' % timer.get_tree_build_time(), '%.4f' % timer.get_constraints_time()))
    # time.sleep(5) # Wait until releasing worker to reduce load...?
 
-def construct_cpe_model(related_cves):
+def construct_cpe_model(related_cves, keyword, cve_times):
     
     if related_cves:
         for cve in related_cves:
-            construct_cpe_model_for_cve(cve)
+            construct_cpe_model_for_cve(cve, cve_times)
+        save_times_in_csv(keyword, cve_times)
         print("Finished")
         
+def save_times_in_csv(keyword, cve_times):
+    sanitizedName = keyword.replace('*','#').replace('.','_')
+    with open('./fm/models/times/{}.csv'.format(sanitizedName), 'w', newline='',encoding='utf-8') as times_file:
+        writer = csv.writer(times_file)
+        writer.writerow(['cve','scraping_time','tree_build_time','constraints_time'])
+        writer.writerows(x for x in cve_times)
+    print("Saved csv with times.")
+
 
 if __name__ == "__main__":
 
@@ -125,12 +140,14 @@ if __name__ == "__main__":
     scraper = VulnerabilityScraper()
 
     # If the user wants to perfom a manual search
-    if parser_results.keyword:
+    if parser_results.keyword: 
         # Get CVEs that are related with the query
-        related_cves = scraper.get_CVEs(parser_results.keyword[0].strip(), exact_match=parser_results.e)
+        cve_times = []
+        kw = parser_results.keyword[0].strip()
+        related_cves = scraper.get_CVEs(kw, exact_match=parser_results.e)
         if related_cves:
             print(str(len(related_cves)) + " related CVEs found")
-            construct_cpe_model(related_cves)
+            construct_cpe_model(related_cves, kw, cve_times)
         else:
             print("Unable to retrieve any CVEs using the term: {}".format(parser_results.keyword[0]))
 

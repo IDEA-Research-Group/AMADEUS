@@ -44,7 +44,7 @@ def get_search_results(keyword: str):
         keyword = keyword.replace("CVE-", "").replace("-", " ") # Cve search, search is different
     
     # Sanitize special characters
-    keyword = keyword.replace(':','cc11').replace('.','pp22').replace('*','ss33')
+    keyword = keyword.replace(':','cc11').replace('.','pp22').replace('*','ss33').replace('pp22ss33','pp22*') # So 1.* version string wildcards work
     query = Query(keyword).paging(0,1000000)
     res = client.search(query)
     for doc in res.docs:
@@ -52,8 +52,12 @@ def get_search_results(keyword: str):
         .replace("'",'"') \
         .replace("True", "true") \
         .replace("False", "false") \
-        .replace('cc11',':').replace('pp22','.').replace('ss33','*')
+        .replace('cc11',':').replace('pp22','.').replace('ss33','*') \
+        .replace('\\\\','/bck') \
+        .replace('/bck"','') \
+        .replace('/bck','\\\\') # this is a hack to sanitize invalid json strings
         doc.configurations = jsonpickle.decode(sanitized)
+        doc.description = doc.description.replace('cc11',':').replace('pp22','.').replace('ss33','*') # Undo escaping
     
     finalRes = [CVE(doc.id.replace('cve:',''), vul_description=doc.description, sources=['nvd'],cpeConfigurations=doc.configurations) for doc in res.docs]
     return finalRes

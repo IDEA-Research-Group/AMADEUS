@@ -19,6 +19,7 @@ Icon
 
 # fm models
 fm/models/CVE*
+fm/models/complete_models/*
 
 # nvd data feeds
 /nvd_data_feeds
