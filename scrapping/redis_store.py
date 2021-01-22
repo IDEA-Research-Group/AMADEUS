@@ -57,7 +57,7 @@ def get_search_results(keyword: str):
         .replace('/bck"','') \
         .replace('/bck','\\\\') # this is a hack to sanitize invalid json strings
         doc.configurations = jsonpickle.decode(sanitized)
-        doc.description = doc.description.replace('cc11',':').replace('pp22','.').replace('ss33','*') # Undo escaping
+        doc.description = doc.description.replace('cc11',':').replace('pp22','.').replace('ss33','*').replace('-','_') # Undo escaping
     
     finalRes = [CVE(doc.id.replace('cve:',''), vul_description=doc.description, sources=['nvd'],cpeConfigurations=doc.configurations) for doc in res.docs]
     return finalRes

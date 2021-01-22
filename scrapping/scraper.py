@@ -133,18 +133,23 @@ class VulnerabilityScraper():
     def process_running_on_configuration(self, node):
         simple_cpes = defaultdict(lambda: defaultdict(set))
         running_on = defaultdict(lambda: defaultdict(set))
-        for subnode in node['children']:
-            isVulnerable = subnode['cpe_match'][0]['vulnerable']
-            if isVulnerable:
-                # simple cpe
-                for complex_cpe in subnode['cpe_match']:
-                    aux = CPE(complex_cpe['cpe23Uri'])
-                    simple_cpes[aux.get_vendor()[0]][aux.get_product()[0]].update(self.expand(complex_cpe))
-            else:
-                # running on
-                for complex_cpe in subnode['cpe_match']:
-                    aux = CPE(complex_cpe['cpe23Uri'])
-                    running_on[aux.get_vendor()[0]][aux.get_product()[0]].update(self.expand(complex_cpe))
+        if 'children' not in node:
+            for complex_cpe in node['cpe_match']:
+                aux = CPE(complex_cpe['cpe23Uri'])
+                simple_cpes[aux.get_vendor()[0]][aux.get_product()[0]].update(self.expand(complex_cpe))
+        else:
+            for subnode in node['children']:
+                isVulnerable = subnode['cpe_match'][0]['vulnerable']
+                if isVulnerable:
+                    # simple cpe
+                    for complex_cpe in subnode['cpe_match']:
+                        aux = CPE(complex_cpe['cpe23Uri'])
+                        simple_cpes[aux.get_vendor()[0]][aux.get_product()[0]].update(self.expand(complex_cpe))
+                else:
+                    # running on
+                    for complex_cpe in subnode['cpe_match']:
+                        aux = CPE(complex_cpe['cpe23Uri'])
+                        running_on[aux.get_vendor()[0]][aux.get_product()[0]].update(self.expand(complex_cpe))
         return simple_cpes, running_on
 
     def get_CPEs(self, cve: CVE) -> (dict, dict): 
@@ -204,34 +209,6 @@ class VulnerabilityScraper():
                             res_cpe.append(rc_count)
                                 
         return cpes, running_configs
-
-        '''
-        semimodel1, runningConf1 = self.nvdScraper.get_CPEs(cve)
-        #vuldbResults = self.vuldbScraper.get_CPEs(cve)
-        vuldbResults = None
-        semimodel2, runningConf2 = vuldbResults if vuldbResults else (None, None)
-        semimodels = [semimodel1, semimodel2]
-        semimodels = [s for s in semimodels if s]
-        finalSemimodel = dict()
-
-        for semimodel in semimodels:
-            topKeys = semimodel.keys()
-            for k in topKeys:
-                if k not in finalSemimodel:
-                    finalSemimodel[k] = dict()
-                middleKeys = semimodel[k].keys()
-                for m in middleKeys:
-                    if m not in finalSemimodel[k]:
-                        finalSemimodel[k][m] = dict()
-                    cpes = semimodel[k][m]
-                    for cpe in cpes:
-                        self.getConfigurationFromCPE(cpe, cve)
-                        if cpe not in finalSemimodel[k][m]:
-                            finalSemimodel[k][m][cpe] = list()
-        
-        store_cpes_from_cve(cve.cve_id, (finalSemimodel, runningConf1))
-        return (finalSemimodel, runningConf1)
-        '''
 
     def getConfigurationFromCPE(self, cpe: str, cve: CVE):
         '''

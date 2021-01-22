@@ -51,7 +51,7 @@ class FamaSerializer:
         self.CVE = cve
         # Different sections of a Feature Model file
         self.comments = ""
-        self.root = self.CVE.cve_id + ":"
+        self.root = self.CVE.cve_id.replace('-','_') + ":"
         self.cve_attributes = ""
         self.tree_add_CVE_attributes_to_root()
 
@@ -87,7 +87,7 @@ class FamaSerializer:
         if len(exploits) > 0:
             if len(self.direct_exploits_ids) == 0:
                 self.direct_exploits_ids += "direct: "
-            self.direct_exploits_ids += self.add_OR(("exploit-" + exploit.id for exploit in exploits))
+            self.direct_exploits_ids += self.add_OR(("exploit_" + exploit.id for exploit in exploits))
 
     def tree_add_indirect_exploits(self, exploits: dict, semi_model: dict) -> None:
         '''
@@ -135,7 +135,7 @@ class FamaSerializer:
         self.root += self.add_mandatory(self.CVE_CONFIGURATIONS_NODE_NAME)
         self.root += self.add_mandatory(self.CVE_SOURCES_NODE_NAME)
         self.cve_attributes += self.CVE_CONFIGURATIONS_NODE_NAME + ": " \
-                            + self.add_mandatory([x.lower().replace(" ", "-") for x in self.CVE.configurations]) \
+                            + self.add_mandatory([x.lower().replace(" ", "_") for x in self.CVE.configurations]) \
                             + self.LINE_TERMINATOR
         self.cve_attributes += self.CVE_SOURCES_NODE_NAME + ": " + self.add_mandatory(self.CVE.sources) + self.LINE_TERMINATOR
 
@@ -319,16 +319,16 @@ class FamaSerializer:
         res += "%Relationships \n"
         res += self.root + self.LINE_TERMINATOR + "\n"
         res += self.cve_attributes + "\n"
-        res += self.exploits + "\n"
+        res += self.exploits + self.LINE_TERMINATOR
         if self.rcs != "":
             res += self.rcs + "\n"
-        res += self.vendors + "\n"
-        res += self.vendors_products + "\n"
-        res += self.product_attributes
+        res += self.vendors.replace('-','_') + "\n"
+        res += self.vendors_products.replace('-','_') + "\n"
+        res += self.product_attributes.replace('-','_')
 
-        res += self.direct_exploits_ids + "\n"
-        res += self.direct_exploits + "\n"
-        res += self.indirect_exploits + "\n"
+        res += self.direct_exploits_ids + self.LINE_TERMINATOR if len(self.direct_exploits_ids) else "" + "\n"
+        res += self.direct_exploits + self.LINE_TERMINATOR if len(self.direct_exploits) else "" + "\n"
+        res += self.indirect_exploits + self.LINE_TERMINATOR if len(self.indirect_exploits) else "" + "\n"
 
 
         return res
