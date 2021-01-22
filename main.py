@@ -104,8 +104,15 @@ def construct_cpe_model_for_cve(cve: CVE, cve_times: list):
 def construct_cpe_model(related_cves, keyword, cve_times):
     
     if related_cves:
-        for cve in related_cves:
-            construct_cpe_model_for_cve(cve, cve_times)
+        with ThreadPoolExecutor(max_workers=50) as pool:
+            for cve in related_cves:
+                futures = {}
+                f = pool.submit(construct_cpe_model_for_cve, cve, cve_times)
+                futures[cve.cve_id] = f
+            n = len(futures)
+            for i, _ in enumerate(as_completed(futures.values())):
+               #progress = int((i/n)*100)
+               pass
         save_times_in_csv(keyword, cve_times)
         print("Finished")
         
