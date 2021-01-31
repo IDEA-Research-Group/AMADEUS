@@ -51,7 +51,7 @@ class FamaSerializer:
         self.CVE = cve
         # Different sections of a Feature Model file
         self.comments = ""
-        self.root = self.CVE.cve_id.replace('-','_') + ":"
+        self.root = self.CVE.cve_id + ":"
         self.cve_attributes = ""
         self.tree_add_CVE_attributes_to_root()
 
@@ -308,7 +308,27 @@ class FamaSerializer:
             raise ValueError("Input should be either a string or an Iterable")
 
         return res
-            
+
+    def sanitize_out_string(self, string):
+        '''
+        Sanitizes a string and makes it FM tree ready
+        '''
+        # TODO Sanitize CVE-2018-0579 and CVE-2019-14682
+        # Replace underscore with DOUBLE underscore (fixes CVEs such as CVE_2014_7958)
+        string = string.replace('_','__')
+        # Remove illegal characters. Also remove commas that aren't part of [1,1] relationships, or colons that aren't followed by space
+        string = re.sub(r'[^A-z0-9\[\]{},:;\n ]|\\|(,(?!1\]))|(:(?! ))', '_', string)
+        # Check string doesnt start with number (fixes CVEs such as CVE_2014_3882)
+        if re.match(r'^[0-9]', string):
+            string = "_" + string
+        # Check nodes starting with number
+        string = re.sub(r' (?=[0-9])', ' _', string)
+        # Check newline nodes starting with number
+        string = re.sub(r'(\n(?=[0-9]))', '\n_', string)
+        # Check OR nodes starting with number
+        string = re.sub(r'({(?=[0-9]))', '{_', string)
+        return string
+
     def tree_get_model(self) -> str:
 
         '''
@@ -317,14 +337,14 @@ class FamaSerializer:
 
         res = self.comments
         res += "%Relationships \n"
-        res += self.root + self.LINE_TERMINATOR + "\n"
+        res += self.sanitize_out_string(self.root) + self.LINE_TERMINATOR + "\n"
         res += self.cve_attributes + "\n"
         res += self.exploits + self.LINE_TERMINATOR
         if self.rcs != "":
-            res += self.rcs + "\n"
-        res += self.vendors.replace('-','_') + "\n"
-        res += self.vendors_products.replace('-','_') + "\n"
-        res += self.product_attributes.replace('-','_')
+            res += self.sanitize_out_string(self.rcs) + "\n"
+        res += self.sanitize_out_string(self.vendors)  + "\n"
+        res += self.sanitize_out_string(self.vendors_products)  + "\n"
+        res += self.sanitize_out_string(self.product_attributes)
 
         res += self.direct_exploits_ids + self.LINE_TERMINATOR if len(self.direct_exploits_ids) else "" + "\n"
         res += self.direct_exploits + self.LINE_TERMINATOR if len(self.direct_exploits) else "" + "\n"
