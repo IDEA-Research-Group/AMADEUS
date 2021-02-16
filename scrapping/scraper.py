@@ -223,11 +223,11 @@ class VulnerabilityScraper():
             matches = match.groups()
             if len(matches) > 0:
                 part = matches[0]
-                if part == "a" and "Application" not in cve.configurations:
+                if part == "a" and (cpe, "Application") not in cve.configurations:
                     cve.configurations.append((cpe, "Application"))
-                elif part == "h" and "Hardware" not in cve.configurations:
+                elif part == "h" and (cpe, "Hardware") not in cve.configurations:
                     cve.configurations.append((cpe, "Hardware"))
-                elif part == "o" and "Operating System" not in cve.configurations:
+                elif part == "o" and (cpe, "Operating System") not in cve.configurations:
                     cve.configurations.append((cpe, "Operating System"))
 
     def get_exploits_for_CVE(self, cve: CVE):
