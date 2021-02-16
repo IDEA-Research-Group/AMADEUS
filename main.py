@@ -67,6 +67,7 @@ def process_nmap_out(out):
 
 def construct_cpe_model_for_cve(cve: CVE, cve_times: list):
     timer = ChronoTimer()
+    cve.configurations = [] # Workaround for a bug
     semi_model, running_conf = scraper.get_CPEs(cve)
     print("Finding direct exploits for {}".format(cve.cve_id))
     timer.start_exploit_scraping()

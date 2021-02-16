@@ -137,8 +137,9 @@ class FamaSerializer:
     def tree_add_CVE_attributes_to_root(self) -> None:
         self.root += self.add_mandatory(self.CVE_CONFIGURATIONS_NODE_NAME)
         self.root += self.add_mandatory(self.CVE_SOURCES_NODE_NAME)
+        setTypes = set([x[1].lower().replace(" ", "_") for x in self.CVE.configurations])
         self.cve_attributes += self.CVE_CONFIGURATIONS_NODE_NAME + ": " \
-                            + self.add_mandatory([x[1].lower().replace(" ", "_") for x in self.CVE.configurations]) \
+                            + self.add_mandatory(setTypes) \
                             + self.LINE_TERMINATOR
         self.cve_attributes += self.CVE_SOURCES_NODE_NAME + ": " + self.add_mandatory(self.CVE.sources) + self.LINE_TERMINATOR
 
@@ -181,7 +182,7 @@ class FamaSerializer:
     
     def tree_add_constraints(self, vendor:str, product: str, restrictionNode:RestrictionNode) -> None:
         r = self.serialize_constraints(vendor, product, restrictionNode, 0)
-        if r != "":
+        if r != "" and r not in self.restrictions:
             self.restrictions +=  r + self.LINE_TERMINATOR
 
     def serialize_constraints(self, vendor:str, product: str, restrictionNode:RestrictionNode, depth:int) -> str:
