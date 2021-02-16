@@ -49,6 +49,10 @@ class FamaSerializer:
 
         # A Feature Model contains info about a single CVE
         self.CVE = cve
+
+        # Restrictions
+        self.restrictions = ""
+        
         # Different sections of a Feature Model file
         self.comments = ""
         self.root = self.CVE.cve_id + ":"
@@ -66,8 +70,7 @@ class FamaSerializer:
         self.vendors_products = ""
         self.product_attributes = ""
         
-        # Restrictions
-        self.restrictions = ""
+        
 
 
     ### SECTION
@@ -135,9 +138,13 @@ class FamaSerializer:
         self.root += self.add_mandatory(self.CVE_CONFIGURATIONS_NODE_NAME)
         self.root += self.add_mandatory(self.CVE_SOURCES_NODE_NAME)
         self.cve_attributes += self.CVE_CONFIGURATIONS_NODE_NAME + ": " \
-                            + self.add_mandatory([x.lower().replace(" ", "_") for x in self.CVE.configurations]) \
+                            + self.add_mandatory([x[1].lower().replace(" ", "_") for x in self.CVE.configurations]) \
                             + self.LINE_TERMINATOR
         self.cve_attributes += self.CVE_SOURCES_NODE_NAME + ": " + self.add_mandatory(self.CVE.sources) + self.LINE_TERMINATOR
+
+        # Add configuration constraints
+        for x in self.CVE.configurations:
+            self.tree_add_constraints(x[0].get_vendor()[0],x[0].get_product()[0],RestrictionNode(x[0].get_product()[0], requirements=[('type',x[1])]))
 
         if self.CVE.vul_name:
             self.comments += self.COMMENT_CHARACTER + self.CVE_VUL_NAME_NODE_NAME + ": " + self.CVE.vul_name + "\n\n"
@@ -209,6 +216,8 @@ class FamaSerializer:
                         aux.append(rcs)
                     elif attr == 'exploit':
                         aux.append("{}-{}-{}-{}".format(val.get_vendor()[0],val.get_product()[0],'version',self.sanitize(val.get_version()[0])))
+                    elif attr == 'type':
+                        aux.append(val)
                     else:
                         # Generate requirements for the rest of attributes (standard attr)
                         aux.append("{}-{}-{}-{}".format(vendor, product, attr[:-1], val))
@@ -220,7 +229,7 @@ class FamaSerializer:
 
                 if need_brackets:
                     res = '(' + res + ')'
-                
+
                 if len(restrictionNode.requirements):
                     res = super_value + VALUE_REQ_CONNECTOR + res
                 elif depth > 0:
