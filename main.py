@@ -65,6 +65,11 @@ def process_nmap_out(out):
     
     return res
 
+def get_cves_for_exploits(exploits: list):
+    scraper = VulnerabilityScraper()
+    for exploit in exploits:
+        print("{}: {}".format(exploit, scraper.get_CVEs_from_exploit(exploit)))
+
 def construct_cpe_model_for_cve(cve: CVE, cve_times: list):
     timer = ChronoTimer()
     cve.configurations = [] # Workaround for a bug
@@ -130,6 +135,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-k", "--keyword", nargs=1, help="Keyword used to perform a manual CVE search on vulnerability databases")
+    parser.add_argument("-x", "--exploits", nargs=1, help="Retrieves CVEs associated with a comma-separated list of exploit ids")
     parser.add_argument("-e", action='store_true', help="If the results from databases must be an EXACT match of the keywords or just contain them")
     parser.add_argument("-a", action='store_true', help="Launches NMAP to perform an automatic search of vulnerabilities")
     parser.add_argument("-t", "--target", nargs=1, help="CIDR block or host target of the automatic analysis")
@@ -142,10 +148,15 @@ if __name__ == "__main__":
     if parser_results.target is not None and not parser_results.a:
         parser.error("-t requires -a to perform an automatic analysis")
 
-    if parser_results.keyword is None and not parser_results.a:
+    if not parser_results.exploits and parser_results.keyword is None and not parser_results.a:
         parser.error("You must enter either a keyword or launch an automatic search against a target IP")
 
     scraper = VulnerabilityScraper()
+
+    if parser_results.exploits:
+        exploits = parser_results.exploits[0].strip().split(',')
+        get_cves_for_exploits(exploits)
+        exit()
 
     # If the user wants to perfom a manual search
     if parser_results.keyword: 

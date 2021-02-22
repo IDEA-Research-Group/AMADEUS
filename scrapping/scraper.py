@@ -97,7 +97,8 @@ class VulnerabilityScraper():
         '''
         return self.get_CVEs(cpe, exact_match=True, exclude_scrapers=["vuldb"], no_print=True)
 
-
+    def get_CVEs_from_exploit(self, exploit: str):
+        return self.exploitScraper.get_CVEs_from_exploit(exploit)
 
     def expand(self, complex_cpe):
         '''
