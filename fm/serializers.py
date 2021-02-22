@@ -90,7 +90,10 @@ class FamaSerializer:
         if len(exploits) > 0:
             if len(self.direct_exploits_ids) == 0:
                 self.direct_exploits_ids += "direct: "
-            self.direct_exploits_ids += self.add_OR(("exploit_" + exploit.id for exploit in exploits))
+            if len(self.direct_exploits_ids) > 1:
+                self.direct_exploits_ids += self.add_OR(("exploit_" + exploit.id for exploit in exploits))
+            else:
+                self.direct_exploits_ids += self.add_mandatory(("exploit_" + exploit.id for exploit in exploits))
 
     def tree_add_indirect_exploits(self, exploits: dict, semi_model: dict) -> None:
         '''
