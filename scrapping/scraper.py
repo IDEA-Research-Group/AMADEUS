@@ -135,6 +135,7 @@ class VulnerabilityScraper():
         simple_cpes = defaultdict(lambda: defaultdict(set))
         running_on = defaultdict(lambda: defaultdict(set))
         if 'children' not in node:
+            # TODO if this happens, we would need to add a constraint in FMR saying that X cpe needs Y cpe and viceversa.
             for complex_cpe in node['cpe_match']:
                 aux = CPE(complex_cpe['cpe23Uri'])
                 simple_cpes[aux.get_vendor()[0]][aux.get_product()[0]].update(self.expand(complex_cpe))
@@ -187,8 +188,11 @@ class VulnerabilityScraper():
                 # running on
                 print("[-] Detected Configuration Type: RUNNING_ON")
                 simple_cpes, running_on = self.process_running_on_configuration(node)
-                rc_count += 1
-                running_configs.append(running_on)
+                # Would this be the correct way to go? When all configs are vulnerable, it's basically processed as a basic_configuration.
+                # No running on configs would be included
+                if len(running_on) > 0:
+                    rc_count += 1
+                    running_configs.append(running_on)
             else:
                 raise ValueError("Unknown operator " + node['operator'])
         
@@ -206,7 +210,7 @@ class VulnerabilityScraper():
                             res_cpe = cpes[vendor][product][cpe]
                             self.getConfigurationFromCPE(cpe, cve)
 
-                            if node['operator'] == "AND":
+                            if node['operator'] == "AND" and len(running_on) > 0:
                                 res_cpe.append(rc_count)
                                 
         return cpes, running_configs
