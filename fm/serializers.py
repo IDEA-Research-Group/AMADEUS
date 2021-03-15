@@ -400,26 +400,21 @@ class FamaSerializer:
             os.makedirs(EXPORT_PATH)
         
         
-        fm_file = os.path.join(EXPORT_PATH, "{}.fm".format(file_name))
-        restriction_file = os.path.join(EXPORT_PATH, "{}.fmr".format(file_name))
+        fm_file = os.path.join(EXPORT_PATH, "{}.afm".format(file_name))
+       # restriction_file = os.path.join(EXPORT_PATH, "{}.fmr".format(file_name))
 
         with open(fm_file, mode='w', encoding='utf-8') as feat_model:
 
             feat_model.writelines(self.tree_get_model())
+            if self.restrictions != "":
+                feat_model.write("%Constraints \n")
+                feat_model.writelines(self.restrictions)
             feat_model.flush()
             feat_model.close()
         
         print("FaMa Model Saved! Check {}".format(fm_file))
-
-        if self.restrictions != "":
-            with open(restriction_file, mode='w', encoding='utf-8') as restriction_lines:
-
-                restriction_lines.write("%Constraints \n")
-                restriction_lines.writelines(self.restrictions)
-                restriction_lines.flush()
-                restriction_lines.close()
-        
-            print("FaMa Restrictions for Model Saved! Check {}".format(restriction_file))
+    
+        #print("FaMa Restrictions for Model Saved! Check {}".format(restriction_file))
 
     ### SECTION
     ### Methods to implement the different type of relationships in a Feature Model
