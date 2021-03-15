@@ -199,7 +199,7 @@ class FamaSerializer:
             temp = list()
             for j, alt in enumerate(alternatives):
                 if i != j:
-                    temp.append("NOT " + alt)
+                    temp.append("NOT " + self.sanitize_out_string(alt))
                 else:
                     temp.append(alt)
             unrolled.append('(' + ' AND '.join(temp) + ')')
@@ -242,12 +242,12 @@ class FamaSerializer:
                         
                         aux.append(rcs)
                     elif attr == 'exploit':
-                        aux.append("{}-{}-{}-{}".format(val.get_vendor()[0],val.get_product()[0],'version',self.sanitize(val.get_version()[0])))
+                        aux.append("{}_{}_{}_{}".format(val.get_vendor()[0],val.get_product()[0],'version',self.sanitize(val.get_version()[0])))
                     elif attr == 'type':
                         aux.append(val)
                     else:
                         # Generate requirements for the rest of attributes (standard attr)
-                        aux.append("{}-{}-{}-{}".format(vendor, product, attr[:-1], val))
+                        aux.append("{}_{}_{}_{}".format(vendor, product, attr[:-1], val))
                         need_brackets = True
 
                 need_brackets = depth <= 1 and need_brackets
@@ -265,7 +265,7 @@ class FamaSerializer:
                 elif depth > 0:
                     res = super_value
                 if depth == 0:
-                    res = vendor + "-" + res
+                    res = vendor + "_" + res
 
                 return res
 
@@ -276,7 +276,7 @@ class FamaSerializer:
                 
                 for sn in restrictionNode.subNodes:
                     # Explore all the subnodes recursively
-                    aux.append('{}-{}-{}-'.format(vendor, product, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
+                    aux.append('{}_{}_{}_'.format(vendor, product, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
 
                 if depth == 0:
                     res = self.LINE_TERMINATOR.join(self.sanitize(k) for k in aux) 
