@@ -188,6 +188,24 @@ class FamaSerializer:
         if r != "" and r not in self.restrictions:
             self.restrictions +=  r + self.LINE_TERMINATOR
 
+    def unroll_xor(self, alternatives: Union[str, Iterable]) -> str:
+        '''
+        Transforms a XOR expression to an IMPLIES-like normal form
+
+        Example: `A XOR B XOR C -> (A AND NOT B AND NOT C) OR (NOT A AND B AND NOT C) OR (NOT A AND NOT B AND C)`
+        '''
+        unrolled = list()
+        for i in range(len(alternatives)):
+            temp = list()
+            for j, alt in enumerate(alternatives):
+                if i != j:
+                    temp.append("NOT " + alt)
+                else:
+                    temp.append(alt)
+            unrolled.append('(' + ' AND '.join(temp) + ')')
+
+        return '(' + ' OR '.join(unrolled) + ')'
+
     def serialize_constraints(self, vendor:str, product: str, restrictionNode:RestrictionNode, depth:int) -> str:
         
         res = ''
@@ -202,14 +220,19 @@ class FamaSerializer:
                 # BASE CASE
 
                 VALUE_REQ_CONNECTOR = ' REQUIRES ' if depth <= 1 else ' AND '
+                VALUE_IMPL_CONNECTOR = ' IMPLIES ' if depth <= 1 else ' AND '
+                
                 aux = list()
                 need_brackets = False
+                needs_implies = False
 
                 for (attr, val) in restrictionNode.requirements:
                     
                     if attr == 'rcs':
                         # Generate requirements for the running configurations
-                        rcs = ' XOR '.join([self.RUNNING_CONFIG_PREFIX.format(k) for k in val])
+                       # rcs = ' XOR '.join([self.RUNNING_CONFIG_PREFIX.format(k) for k in val])
+                        rcs = self.unroll_xor([self.RUNNING_CONFIG_PREFIX.format(k) for k in val])
+                        needs_implies = True
 
                         # We add brackets if there are more than one rc, to create a logical group
                         if len(val) > 1:
@@ -235,10 +258,12 @@ class FamaSerializer:
                     res = '(' + res + ')'
 
                 if len(restrictionNode.requirements):
-                    res = super_value + VALUE_REQ_CONNECTOR + res
+                    if needs_implies:
+                        res = super_value + VALUE_IMPL_CONNECTOR + res
+                    else:
+                        res = super_value + VALUE_REQ_CONNECTOR + res
                 elif depth > 0:
                     res = super_value
-
                 if depth == 0:
                     res = vendor + "-" + res
 
@@ -258,6 +283,8 @@ class FamaSerializer:
                 elif depth == 1:
 
                     res = super_value
+                    # TODO Validate that this xor unrolling works
+                    '''
                     for i, e in enumerate(aux):
                         if i == 0:
                             res += ' REQUIRES ' + '(' + '(' * ("AND" in e) 
@@ -265,11 +292,12 @@ class FamaSerializer:
                             res += e + ')' * ("AND" in e) + ' XOR ' + '(' * ("AND" in aux[i+1])
                         else:
                             res += e
-                            res += ')' + ')' * ("AND" in e)  
-
-
+                            res += ')' + ')' * ("AND" in e)
+                    '''
+                    res += " IMPLIES " + self.unroll_xor(aux)
                 else:
-                    res = ' XOR '.join(aux)
+                    #res = ' XOR '.join(aux)
+                    res = self.unroll_xor(aux)
 
                 return res
 
