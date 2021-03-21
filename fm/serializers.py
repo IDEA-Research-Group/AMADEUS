@@ -148,7 +148,7 @@ class FamaSerializer:
 
         # Add configuration constraints
         for x in self.CVE.configurations:
-            self.tree_add_constraints(x[0].get_vendor()[0],x[0].get_product()[0],RestrictionNode(x[0].get_product()[0], requirements=[('type',x[1])]))
+            self.tree_add_constraints(x[0].get_vendor()[0],x[0].get_product()[0],RestrictionNode(x[0].get_product()[0], requirements=[('type',x[1].lower())]))
 
         if self.CVE.vul_name:
             self.comments += self.COMMENT_CHARACTER + self.CVE_VUL_NAME_NODE_NAME + ": " + self.CVE.vul_name + "\n\n"
@@ -199,21 +199,30 @@ class FamaSerializer:
             temp = list()
             for j, alt in enumerate(alternatives):
                 if i != j:
-                    temp.append("NOT " + self.sanitize_out_string(alt))
+                    temp.append("NOT " + alt)
                 else:
                     temp.append(alt)
             unrolled.append('(' + ' AND '.join(temp) + ')')
 
-        return '(' + ' OR '.join(unrolled) + ')'
+        if len(unrolled) > 1:
+            return '(' + ' OR '.join(unrolled) + ')'
+        else:
+            return unrolled[0]
 
     def serialize_constraints(self, vendor:str, product: str, restrictionNode:RestrictionNode, depth:int) -> str:
         
         res = ''
 
+        vendorSanit = self.sanitize_out_string(vendor)
+        productSanit = self.sanitize_out_string(product)
+
         if restrictionNode:
 
             # The value of the precedent requirement, or the product if depth = 0 
-            super_value = restrictionNode.value if depth > 0 else self.sanitize(product)
+            super_value = restrictionNode.value if depth > 0 else self.sanitize(productSanit)
+            super_value = super_value.replace(".","_")
+            super_value = self.sanitize_out_string(super_value, ignoreStartingWithNumber=True)
+            print(super_value)
 
             if restrictionNode.isLeaf:
                 
@@ -235,27 +244,28 @@ class FamaSerializer:
                         needs_implies = True
 
                         # We add brackets if there are more than one rc, to create a logical group
-                        if len(val) > 1:
-                            rcs = '(' + rcs + ')'
-                        else:
-                            need_brackets = True
+                        # if len(val) > 1:
+                        #     rcs = '(' + rcs + ')'
+                        # else:
+                        #     need_brackets = True
                         
                         aux.append(rcs)
                     elif attr == 'exploit':
-                        aux.append("{}_{}_{}_{}".format(val.get_vendor()[0],val.get_product()[0],'version',self.sanitize(val.get_version()[0])))
+                        # aux.append("{}_{}_{}_{}".format(val.get_vendor()[0],val.get_product()[0],'version',self.sanitize(val.get_version()[0])))
+                        aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit,'version',self.sanitize(self.sanitize_out_string(val.get_version()[0], ignoreStartingWithNumber=True))))
                     elif attr == 'type':
                         aux.append(val)
                     else:
                         # Generate requirements for the rest of attributes (standard attr)
-                        aux.append("{}_{}_{}_{}".format(vendor, product, attr[:-1], val))
+                        aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit, attr[:-1], val))
                         need_brackets = True
 
                 need_brackets = depth <= 1 and need_brackets
                 
                 res = ' AND '.join(aux)
 
-                if need_brackets:
-                    res = '(' + res + ')'
+                # if need_brackets:
+                #     res = '(' + res + ')'
 
                 if len(restrictionNode.requirements):
                     if needs_implies:
@@ -265,18 +275,18 @@ class FamaSerializer:
                 elif depth > 0:
                     res = super_value
                 if depth == 0:
-                    res = vendor + "_" + res
+                    res = vendorSanit + "_" + res
 
                 return res
 
             else:
 
-                split_attr = restrictionNode.xorAttributeSubNodes[:-1]
+                split_attr = self.sanitize_out_string(restrictionNode.xorAttributeSubNodes[:-1])
                 aux = list()
                 
                 for sn in restrictionNode.subNodes:
                     # Explore all the subnodes recursively
-                    aux.append('{}_{}_{}_'.format(vendor, product, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
+                    aux.append('{}_{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
 
                 if depth == 0:
                     res = self.LINE_TERMINATOR.join(self.sanitize(k) for k in aux) 
@@ -350,7 +360,7 @@ class FamaSerializer:
 
         return res
 
-    def sanitize_out_string(self, string):
+    def sanitize_out_string(self, string, ignoreStartingWithNumber = False):
         '''
         Sanitizes a string and makes it FM tree ready
         '''
@@ -360,7 +370,7 @@ class FamaSerializer:
         # Remove illegal characters. Also remove commas that aren't part of [1,1] relationships, or colons that aren't followed by space
         string = re.sub(r'[^A-z0-9\[\]{},:;\n ]|\\|(,(?!1\]))|(:(?! ))', '_', string)
         # Check string doesnt start with number (fixes CVEs such as CVE_2014_3882)
-        if re.match(r'^[0-9]', string):
+        if not ignoreStartingWithNumber and re.match(r'^[0-9]', string):
             string = "_" + string
         # Check nodes starting with number
         string = re.sub(r' (?=[0-9])', ' _', string)
