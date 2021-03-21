@@ -222,7 +222,6 @@ class FamaSerializer:
             super_value = restrictionNode.value if depth > 0 else self.sanitize(productSanit)
             super_value = super_value.replace(".","_")
             super_value = self.sanitize_out_string(super_value, ignoreStartingWithNumber=True)
-            print(super_value)
 
             if restrictionNode.isLeaf:
                 
