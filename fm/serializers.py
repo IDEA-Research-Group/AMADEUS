@@ -148,7 +148,7 @@ class FamaSerializer:
 
         # Add configuration constraints
         for x in self.CVE.configurations:
-            self.tree_add_constraints(x[0].get_vendor()[0],x[0].get_product()[0],RestrictionNode(x[0].get_product()[0], requirements=[('type',x[1].lower())]))
+            self.tree_add_constraints(x[0].get_vendor()[0],x[0].get_product()[0],RestrictionNode(x[0].get_product()[0], requirements=[('type',x[1].lower().replace(" ", "_") )]))
 
         if self.CVE.vul_name:
             self.comments += self.COMMENT_CHARACTER + self.CVE_VUL_NAME_NODE_NAME + ": " + self.CVE.vul_name + "\n\n"
@@ -219,9 +219,16 @@ class FamaSerializer:
         if restrictionNode:
 
             # The value of the precedent requirement, or the product if depth = 0 
-            super_value = restrictionNode.value if depth > 0 else self.sanitize(productSanit)
-            super_value = super_value.replace(".","_")
-            super_value = self.sanitize_out_string(super_value, ignoreStartingWithNumber=True)
+            if depth > 0:
+                super_value = restrictionNode.value
+                if super_value == '*':
+                    super_value = "any"
+                else:
+                    super_value = super_value.replace(".","_")
+                    super_value = self.sanitize_out_string(super_value, ignoreStartingWithNumber=True)
+            else:
+                super_value = self.sanitize(productSanit)
+            
 
             if restrictionNode.isLeaf:
                 
@@ -256,7 +263,7 @@ class FamaSerializer:
                         aux.append(val)
                     else:
                         # Generate requirements for the rest of attributes (standard attr)
-                        aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit, attr[:-1], val))
+                        aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), val))
                         need_brackets = True
 
                 need_brackets = depth <= 1 and need_brackets
