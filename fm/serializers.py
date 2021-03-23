@@ -263,7 +263,8 @@ class FamaSerializer:
                         aux.append(val)
                     else:
                         # Generate requirements for the rest of attributes (standard attr)
-                        aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), val))
+                        sanitVal = val if val == '*' else self.sanitize_out_string(val)
+                        aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), sanitVal))
                         need_brackets = True
 
                 need_brackets = depth <= 1 and need_brackets
