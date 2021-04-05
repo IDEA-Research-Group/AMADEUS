@@ -278,6 +278,8 @@ class FamaSerializer:
                     if needs_implies:
                         res = super_value + VALUE_IMPL_CONNECTOR + res
                     else:
+                        #if VALUE_REQ_CONNECTOR == ' REQUIRES ' and 'AND' in res:
+
                         res = super_value + VALUE_REQ_CONNECTOR + res
                 elif depth > 0:
                     res = super_value
@@ -292,8 +294,16 @@ class FamaSerializer:
                 aux = list()
                 
                 for sn in restrictionNode.subNodes:
-                    # Explore all the subnodes recursively
-                    aux.append('{}_{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
+                    if len(sn.requirements) == 0:
+                        # Explore all the subnodes recursively
+                        aux.append('{}_{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
+                    else:
+                        for req in sn.requirements:
+                            newnode = RestrictionNode(sn.value,sn.subNodes,sn.xorAttributeSubNodes,[req])
+                            # Explore all the subnodes recursively
+                            aux.append('{}_{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, newnode, depth=depth+1))
+
+                    
 
                 if depth == 0:
                     res = self.LINE_TERMINATOR.join(self.sanitize(k) for k in aux) 
