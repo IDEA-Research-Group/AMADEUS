@@ -7,21 +7,25 @@ __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 
 from collections import defaultdict
 
-from fm.serializers import FamaSerializer
-from fm.structures import RestrictionNode, HashableCPE
-from fm.aux import generate_mock_complex_CPEs, generate_mock_simple_CPEs
+from .serializers import FamaSerializer
+from .structures import RestrictionNode, HashableCPE
+from ._aux import generate_mock_complex_CPEs, generate_mock_simple_CPEs
+
+from timer import ChronoTimer
+
+from scrapping.structures import CVE
 
 ###############################
 ###          T TREE         ###
 ###############################
-def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
+def generate_tree(cve: CVE, semi_model: dict, semi_model_rc: list, direct_exploits: list, indirect_exploits: dict, timer: ChronoTimer):
 
     '''
         Creates a fully well-formed feature model tree T representing all possible
         configurations given a list of CPEs (even the ones that are not affected) by
         a CVE.
 
-        :param cve: CVE identifier
+        :param cve: CVE identifier object
 
         :param semi_model: A dictionary structure containing a semi-representation of the
         final FeatureModel, which must include all simple CPEs that are going to be analysed.
@@ -29,12 +33,17 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
         :param semi_model_rc: A dictionary structure containing a semi-representation of the
         Running Configuration of the final FeatureModel, which must include all simple CPEs
         that are going to be analysed.
+
+        :param direct_exploits: A list containing the exploits directly related to the CVE
+
+        :param indirect_exploits: A dictionary with structure {cpe: [exploit]} containing exploits related to other vulnerabilities, that affect
+        configurations also affected by this CVE
     '''
 
     # First, we need to check the arguments
 
-    if not cve or type(cve) is not str:
-        raise ValueError("cve must be a non-empty string")
+    if not cve or type(cve) is not CVE:
+        raise ValueError("cve must be a valid CVE object")
 
     if not isinstance(semi_model, dict):
         raise ValueError("semi_model must be a dictionary like structure containing a semi model")
@@ -47,21 +56,28 @@ def generate_tree(cve: str, semi_model: dict, semi_model_rc: list):
         print("[-] No semi_model was provided, skipping FM Tree generation")
         return None
 
-    print("\n \t **** {} ****".format(cve))
+    if not timer or type(timer) is not ChronoTimer:
+        raise ValueError("You have to provide a ChronoTimer instance.")
+
+    print("\n \t **** {} ****".format(cve.cve_id))
 
     fmSerializer = FamaSerializer(cve)
 
-    processSemiModel([semi_model], fmSerializer, isRC=False)
-    processSemiModel(semi_model_rc, fmSerializer, isRC=True)
+    processSemiModel([semi_model], fmSerializer, isRC=False, timer=timer)
+    processSemiModel(semi_model_rc, fmSerializer, isRC=True, timer=timer)
 
+    timer.start_tree_build()
+    process_direct_exploits(direct_exploits, fmSerializer)
+    process_indirect_exploits(indirect_exploits, semi_model, fmSerializer)
+    timer.stop_tree_build()
     # print("\n \t *** FEATURE MODEL *** \n")
     # print(fmSerializer.tree_get_model())
     
-    fmSerializer.save_model(cve)
+    fmSerializer.save_model(cve.cve_id)
 
 # TODO: Change to FMSerializer abstract class
-def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, isRC:bool):
-    
+def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, isRC:bool, timer: ChronoTimer):
+    timer.start_tree_build()
     s_cpes = set()
 
     # CPE fields
@@ -74,8 +90,9 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
     if isRC:
         fmSerializer.tree_add_rcs_to_root(len(semi_model_container))
 
+    timer.stop_tree_build()
     for rc_i, semi_model in enumerate(semi_model_container):
-        
+        timer.start_tree_build()
         # First step to serialize is to indicate which vendors we are dealing
         # with. Further information will hang from vendor nodes.
         if isRC:
@@ -83,16 +100,16 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
         else:
             fmSerializer.tree_add_vendors_to_root(semi_model.keys())
             rc_i = None
-
+        timer.stop_tree_build()
         # Iterate over all vendors
         for vendor, products in semi_model.items():
-
+            timer.start_tree_build()
             # Indicate all the products a vendor has  
             fmSerializer.tree_add_products_to_vendor(vendor, products, rc_i)
-
+            timer.stop_tree_build()
             # Iterate over all products of a vendor
             for product, cpes in products.items():
-
+                timer.start_tree_build()
                 # Create actual CPE instances using its
                 # 2.3 FS string representation.
                 # Create a collection containing all CPE instances
@@ -155,15 +172,25 @@ def processSemiModel(semi_model_container: list, fmSerializer: FamaSerializer, i
                 sortedFieldsIndexes = sorted(range(len(cpe_fields)-1), key=lambda x: len(cpe_fields[x]), reverse=True)
                 sortedFieldsIndexes.append(len(cpe_fields)-1)
 
+                timer.stop_tree_build()
+                timer.start_constraints()
                 # TODO: Add constraints to serializer and take into account the need to add 
                 # constraints pointing to RCs even if 'constraints' is empty: CVE-2020-0833
                 constraints = obtainConstraints(s_cpes, sortedFieldsIndexes, "[]", cpe_fields, cpe_fields_description)
                 fmSerializer.tree_add_constraints(vendor, product, constraints)
-                
+                timer.stop_constraints()
+                timer.start_tree_build()
                 # Reset all accumulators for next product
                 for field in cpe_fields:
                     field.clear()
                 s_cpes.clear()
+                timer.stop_tree_build()
+
+def process_direct_exploits(direct_exploits: list, fmSerializer: FamaSerializer):
+    fmSerializer.tree_add_direct_exploits(direct_exploits)
+
+def process_indirect_exploits(indirect_exploits: dict, semi_model: dict, fmSerializer: FamaSerializer):
+    fmSerializer.tree_add_indirect_exploits(indirect_exploits, semi_model)
 
 def obtainConstraints(cpeListing: list, sortedAttrListing: list, lastAttributeValue: str, cpe_fields: list, cpe_fields_description: list) -> RestrictionNode:
     
