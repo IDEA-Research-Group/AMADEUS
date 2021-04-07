@@ -1,0 +1,17 @@
+07-04-2021
+
+-- Fork de rama máster AMADEUS
+1. Creado Fork y rama para empezar a trabajar en la preparación para el desarrollo.
+2. Clonado el Fork y contruido entorno virtual con Python 3.9 para poder trabajar en ello.
+3. Instaladas dependencias actuales, y comprobado que puedo acceder a la funcionaliad actual
+   sin ningún tipo de problema.
+
+-- Integración FamaPy
+1. Instaladas y registradas las dependencias necesarias de FamaPy.
+2. Probadas las dos operaciones actuales en FamaPy (a la espera de que el resto sea integrada en el 
+   futuro en PyPy), las cuales son valid model y all products.
+3. Se ha probado con un modelo de ejemplo transformado desde xml con la funcionaliad de FamaPy. 
+   Queda probarlo con los modelos generados por AMADEUS.
+4. Se puede comprobar el funcionamiento de estas operaciones, siempre y cuando se hayan instalado
+   las dependencias del fichero "extra_requirements.txt" en el entorno virtual, con el siguiente 
+   comando "python operations.py".
