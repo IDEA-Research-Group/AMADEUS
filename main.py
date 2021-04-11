@@ -136,7 +136,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-k", "--keyword", nargs=1, help="Keyword used to perform a manual CVE search on vulnerability databases")
     parser.add_argument("-x", "--exploits", nargs=1, help="Retrieves CVEs associated with a comma-separated list of exploit ids")
-    parser.add_argument("-e", action='store_true', help="If the results from databases must be an EXACT match of the keywords or just contain them")
+    parser.add_argument("-e", action='store_true', help="Whether the results from databases must be an EXACT match of the keywords or just contain them")
     parser.add_argument("-a", action='store_true', help="Launches NMAP to perform an automatic search of vulnerabilities")
     parser.add_argument("-t", "--target", nargs=1, help="CIDR block or host target of the automatic analysis")
     parser_results = parser.parse_args()
