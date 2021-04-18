@@ -8,3 +8,4 @@ jsonpickle==1.4.2
 ahpy==1.2
 numpy
 scipy
+mcdm==1.2
