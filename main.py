@@ -4,6 +4,7 @@ import subprocess
 import argparse
 import re
 import csv
+import os
 
 from timer import ChronoTimer
 
@@ -126,6 +127,8 @@ def construct_cpe_model(related_cves, keyword, cve_times):
         
 def save_times_in_csv(keyword, cve_times):
     sanitizedName = keyword.replace('*','#').replace('.','_')
+    if not os.path.isdir('./fm/models/times/'):
+        os.mkdir('./fm/models/times/')
     with open('./fm/models/times/{}.csv'.format(sanitizedName), 'w', newline='',encoding='utf-8') as times_file:
         writer = csv.writer(times_file)
         writer.writerow(['cve','scraping_time','tree_build_time','constraints_time'])
