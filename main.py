@@ -7,6 +7,8 @@ import csv
 
 from timer import ChronoTimer
 
+# from famapyOp.operations import products_number, valid_configuration
+
 from scrapping.scraper import VulnerabilityScraper
 from scrapping.structures import CVE
 
@@ -139,6 +141,8 @@ if __name__ == "__main__":
     parser.add_argument("-e", action='store_true', help="If the results from databases must be an EXACT match of the keywords or just contain them")
     parser.add_argument("-a", action='store_true', help="Launches NMAP to perform an automatic search of vulnerabilities")
     parser.add_argument("-t", "--target", nargs=1, help="CIDR block or host target of the automatic analysis")
+    parser.add_argument("-p", "--products", nargs=1, help="The feature model path to perfom the profructs number operation")
+    parser.add_argument("-vc", "--validconfig", nargs=2, help="The feature model path and a configuration to perfom the valid configuration operation. Configuration pattern [a-zA-Z0-9_:-]. Example: a:7:C or 9:-b:-D, the - implies it's a none selected feature")
     parser_results = parser.parse_args()
 
     # Validate parser output
@@ -148,8 +152,10 @@ if __name__ == "__main__":
     if parser_results.target is not None and not parser_results.a:
         parser.error("-t requires -a to perform an automatic analysis")
 
-    if not parser_results.exploits and parser_results.keyword is None and not parser_results.a:
-        parser.error("You must enter either a keyword or launch an automatic search against a target IP")
+    operation_check = parser_results.products is None and parser_results.validconfig is None
+
+    if not parser_results.exploits and parser_results.keyword is None and not parser_results.a and operation_check:
+       parser.error("You must enter either a keyword or launch an automatic search against a target IP")
 
     scraper = VulnerabilityScraper()
 
@@ -157,6 +163,31 @@ if __name__ == "__main__":
         exploits = parser_results.exploits[0].strip().split(',')
         get_cves_for_exploits(exploits)
         exit()
+
+    if parser_results.products:
+        p = parser_results.products[0].strip()
+        # products_number(p)
+        print("Hola")
+
+    if parser_results.validconfig:
+        p = parser_results.validconfig[0].strip()
+        c = parser_results.validconfig[1].strip()
+        configuration_names = c.split(":")
+        regex = re.compile(r"^[a-zA-Z0-9_:-]+")
+
+        if regex.match(c).group() is not c:
+            parser.error("You must respect the configuration pattern [a-zA-Z0-9_:-] \nExample: a:7:C or 9:-b:-D, the - implies it's a none selected feature")
+
+        for name in configuration_names:
+            if name.count("-")==1 and not name.startswith("-"):
+                parser.error("The '-' must be at the beginning")
+            elif name.count("-")>1:
+                parser.error("You have introduced more than one '-' in a feature")
+            elif name.replace("-","") == "":
+                parser.error("You have introduced void features")
+
+        # valid_configuration(p, c)
+        print("Hola")
 
     # If the user wants to perfom a manual search
     if parser_results.keyword: 
@@ -170,7 +201,7 @@ if __name__ == "__main__":
         else:
             print("Unable to retrieve any CVEs using the term: {}".format(parser_results.keyword[0]))
 
-    else:
+    elif operation_check:
 
         # Let's validate the target IP
         # https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
