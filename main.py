@@ -8,7 +8,7 @@ import os
 
 from timer import ChronoTimer
 
-# from famapyOp.operations import products_number, valid_configuration
+from famapyOp.operations import products_number, valid_configuration
 
 from scrapping.scraper import VulnerabilityScraper
 from scrapping.structures import CVE
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", action='store_true', help="Launches NMAP to perform an automatic search of vulnerabilities")
     parser.add_argument("-t", "--target", nargs=1, help="CIDR block or host target of the automatic analysis")
     parser.add_argument("-p", "--products", nargs=1, help="The feature model path to perfom the profructs number operation")
-    parser.add_argument("-vc", "--validconfig", nargs=2, help="The feature model path and a configuration to perfom the valid configuration operation. Configuration pattern [a-zA-Z0-9_:-]. Example: a:7:C or 9:-b:-D, the - implies it's a none selected feature")
+    parser.add_argument("-vc", "--validconfig", nargs=2, help="The feature model path and a configuration to perfom the valid configuration operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it's a none selected feature")
     parser_results = parser.parse_args()
 
     # Validate parser output
@@ -169,28 +169,26 @@ if __name__ == "__main__":
 
     if parser_results.products:
         p = parser_results.products[0].strip()
-        # products_number(p)
-        print("Hola")
+        products_number(p)
 
     if parser_results.validconfig:
         p = parser_results.validconfig[0].strip()
         c = parser_results.validconfig[1].strip()
         configuration_names = c.split(":")
-        regex = re.compile(r"^[a-zA-Z0-9_:-]+")
+        regex = re.compile(r"[a-zA-Z0-9_:^]+")
 
         if regex.match(c).group() is not c:
-            parser.error("You must respect the configuration pattern [a-zA-Z0-9_:-] \nExample: a:7:C or 9:-b:-D, the - implies it's a none selected feature")
+            parser.error("You must respect the configuration pattern [a-zA-Z0-9_:^] \nExample: a:7:C or 9:^b:^D, the ^ implies it's a none selected feature")
 
         for name in configuration_names:
-            if name.count("-")==1 and not name.startswith("-"):
-                parser.error("The '-' must be at the beginning")
-            elif name.count("-")>1:
-                parser.error("You have introduced more than one '-' in a feature")
-            elif name.replace("-","") == "":
+            if name.count("^") == 1 and not name.startswith("^"):
+                parser.error("The '^' must be at the beginning")
+            elif name.count("^") > 1:
+                parser.error("You have introduced more than one '^' in a feature")
+            elif name.replace("^", "") == "":
                 parser.error("You have introduced void features")
 
-        # valid_configuration(p, c)
-        print("Hola")
+        valid_configuration(p, configuration_names)
 
     # If the user wants to perfom a manual search
     if parser_results.keyword: 
