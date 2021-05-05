@@ -4,11 +4,56 @@ You must have downloaded offline NVD data feeds, found in the following link
 https://nvd.nist.gov/vuln/data-feeds
 '''
 import ujson
+import os
+import shutil
+import requests
+import zipfile
+import subprocess
 
 from redisearch import Client, TextField, IndexDefinition, Query
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import redis
+
+if not os.path.isdir('./nvd_data_feeds/'):
+    os.mkdir('./nvd_data_feeds/')
+
+cmd = "docker ps -q --filter ancestor='redislabs/redisearch:latest' | xargs -r docker stop"
+ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+subprocess.Popen(['docker', 'run', '-p', '6379:6379', 'redislabs/redisearch:latest'])
+
+urls = [
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2021.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2020.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2019.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2018.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2017.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2016.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2015.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2014.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2013.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2012.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2011.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2010.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2009.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2008.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2007.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2006.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2005.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2004.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2003.json.zip",
+    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2002.json.zip",
+    "https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip"
+    ]
+
+os.mkdir('./downloads/')
+for url in urls:
+    myfile = requests.get(url)
+    aux = url.split('/')
+    open('./downloads/' + aux[-1], 'wb').write(myfile.content)
+    with zipfile.ZipFile('./downloads/' + aux[-1], 'r') as zip_ref:
+        zip_ref.extractall('./nvd_data_feeds/')
+shutil.rmtree('./downloads/')
 
 index_exists = True
 

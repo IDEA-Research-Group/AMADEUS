@@ -15,7 +15,7 @@ def products_number(path):
 
     operation = Glucose3Products()
     operation.execute(transform.destination_model)
-    print("The number of products in the model are -> " + str(len(operation.products)))
+    print("The number of products in the model are -> " + str(operation.products))
 
 def valid_configuration(path, configuration_names):
     parser = AFMTransformation(path)
