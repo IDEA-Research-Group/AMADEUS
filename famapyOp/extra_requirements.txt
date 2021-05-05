@@ -1,3 +1,0 @@
-famapy==0.1.0
-famapy-fm==0.1.0
-famapy-sat==0.1.0

@@ -8,7 +8,7 @@ import os
 
 from timer import ChronoTimer
 
-from famapyOp.operations import products_number, valid_configuration
+from famapyOp.operations import products_number, valid_configuration, filter
 
 from scrapping.scraper import VulnerabilityScraper
 from scrapping.structures import CVE
@@ -135,6 +135,23 @@ def save_times_in_csv(keyword, cve_times):
         writer.writerows(x for x in cve_times)
     print("Saved csv with times.")
 
+def check_config(config):
+    configuration_names = config.split(":")
+    regex = re.compile(r"[a-zA-Z0-9_:^]+")
+
+    if regex.match(c).group() is not c:
+        parser.error("You must respect the configuration pattern [a-zA-Z0-9_:^] \nExample: a:7:C or 9:^b:^D, the ^ implies it's a none selected feature")
+
+    for name in configuration_names:
+        if name.count("^") == 1 and not name.startswith("^"):
+            parser.error("The '^' must be at the beginning")
+        elif name.count("^") > 1:
+            parser.error("You have introduced more than one '^' in a feature")
+        elif name.replace("^", "") == "":
+            parser.error("You have introduced void features")
+
+    return configuration_names
+
 
 if __name__ == "__main__":
 
@@ -146,6 +163,7 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--target", nargs=1, help="CIDR block or host target of the automatic analysis")
     parser.add_argument("-p", "--products", nargs=1, help="The feature model path to perfom the profructs number operation")
     parser.add_argument("-vc", "--validconfig", nargs=2, help="The feature model path and a configuration to perfom the valid configuration operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it's a none selected feature")
+    parser.add_argument("-f", "--filter", nargs=2, help="The feature model path and a configuration to perfom the filter operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it's a none selected feature")
     parser_results = parser.parse_args()
 
     # Validate parser output
@@ -155,7 +173,7 @@ if __name__ == "__main__":
     if parser_results.target is not None and not parser_results.a:
         parser.error("-t requires -a to perform an automatic analysis")
 
-    operation_check = parser_results.products is None and parser_results.validconfig is None
+    operation_check = parser_results.products is None and parser_results.validconfig is None and parser_results.filter is None
 
     if not parser_results.exploits and parser_results.keyword is None and not parser_results.a and operation_check:
        parser.error("You must enter either a keyword or launch an automatic search against a target IP")
@@ -171,23 +189,16 @@ if __name__ == "__main__":
         p = parser_results.products[0].strip()
         products_number(p)
 
+    if parser_results.filter:
+        p = parser_results.filter[0].strip()
+        c = parser_results.filter[1].strip()
+        configuration_names = check_config(c)
+        filter(p, configuration_names)
+
     if parser_results.validconfig:
         p = parser_results.validconfig[0].strip()
         c = parser_results.validconfig[1].strip()
-        configuration_names = c.split(":")
-        regex = re.compile(r"[a-zA-Z0-9_:^]+")
-
-        if regex.match(c).group() is not c:
-            parser.error("You must respect the configuration pattern [a-zA-Z0-9_:^] \nExample: a:7:C or 9:^b:^D, the ^ implies it's a none selected feature")
-
-        for name in configuration_names:
-            if name.count("^") == 1 and not name.startswith("^"):
-                parser.error("The '^' must be at the beginning")
-            elif name.count("^") > 1:
-                parser.error("You have introduced more than one '^' in a feature")
-            elif name.replace("^", "") == "":
-                parser.error("You have introduced void features")
-
+        configuration_names = check_config(c)
         valid_configuration(p, configuration_names)
 
     # If the user wants to perfom a manual search
