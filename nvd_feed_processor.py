@@ -20,7 +20,7 @@ import redis
 if not os.path.isdir('./nvd_data_feeds/'):
     os.mkdir('./nvd_data_feeds/')
 
-print("Creating the docker container with redislabs/redisearch\n")
+print('Creating the docker container with redislabs/redisearch\n')
 
 cmd = "docker ps -q --filter ancestor='redislabs/redisearch:latest' | xargs -r docker stop"
 ps = Popen(cmd,shell=True,stdout=PIPE,stderr=STDOUT)
@@ -28,30 +28,30 @@ Popen(['docker', 'run', '-p', '6379:6379', 'redislabs/redisearch:latest'])
 sleep(3)
 
 urls = [
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2021.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2020.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2019.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2018.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2017.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2016.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2015.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2014.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2013.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2012.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2011.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2010.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2009.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2008.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2007.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2006.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2005.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2004.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2003.json.zip",
-    "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2002.json.zip",
-    "https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip"
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2021.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2020.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2019.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2018.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2017.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2016.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2015.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2014.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2013.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2012.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2011.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2010.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2009.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2008.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2007.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2006.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2005.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2004.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2003.json.zip',
+    'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2002.json.zip',
+    'https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip'
     ]
 
-print("\nDownloading and unziping json feeds")
+print('\nDownloading and unziping json feeds')
 os.mkdir('./downloads/')
 tam = len(urls)
 dl = 0
@@ -62,10 +62,11 @@ for url in urls:
     with ZipFile('./downloads/' + name, 'r') as zip_ref:
         zip_ref.extractall('./nvd_data_feeds/')
     dl += 1
-    done = int(50 * dl / tam)
-    stdout.write("\r[%s%s%s]" % ("Progres > ", '=' * done, ' ' * (50-done)))
+    prog = dl / tam
+    done = int(50 * prog)
+    stdout.write('\r[%s%s%s]%s' % ('Progres > ', '=' * done, ' ' * (50-done), str(round(prog*100)) + '%'))
 rmtree('./downloads/')
-print("\n")
+print('\n')
 
 index_exists = True
 
