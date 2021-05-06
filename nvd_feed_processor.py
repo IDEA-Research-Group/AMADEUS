@@ -5,22 +5,27 @@ https://nvd.nist.gov/vuln/data-feeds
 '''
 import ujson
 import os
-import shutil
-import requests
-import zipfile
-import subprocess
 
 from redisearch import Client, TextField, IndexDefinition, Query
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from zipfile import ZipFile
+from subprocess import Popen, PIPE, STDOUT
+from requests import get
+from shutil import rmtree
+from time import sleep
+from sys import stdout
 
 import redis
 
 if not os.path.isdir('./nvd_data_feeds/'):
     os.mkdir('./nvd_data_feeds/')
 
+print("Creating the docker container with redislabs/redisearch\n")
+
 cmd = "docker ps -q --filter ancestor='redislabs/redisearch:latest' | xargs -r docker stop"
-ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-subprocess.Popen(['docker', 'run', '-p', '6379:6379', 'redislabs/redisearch:latest'])
+ps = Popen(cmd,shell=True,stdout=PIPE,stderr=STDOUT)
+Popen(['docker', 'run', '-p', '6379:6379', 'redislabs/redisearch:latest'])
+sleep(3)
 
 urls = [
     "https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2021.json.zip",
@@ -46,14 +51,21 @@ urls = [
     "https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip"
     ]
 
+print("\nDownloading and unziping json feeds")
 os.mkdir('./downloads/')
+tam = len(urls)
+dl = 0
 for url in urls:
-    myfile = requests.get(url)
-    aux = url.split('/')
-    open('./downloads/' + aux[-1], 'wb').write(myfile.content)
-    with zipfile.ZipFile('./downloads/' + aux[-1], 'r') as zip_ref:
+    name = url.split('/')[-1]
+    response = get(url)
+    zip = open('./downloads/' + name, 'wb').write(response.content)
+    with ZipFile('./downloads/' + name, 'r') as zip_ref:
         zip_ref.extractall('./nvd_data_feeds/')
-shutil.rmtree('./downloads/')
+    dl += 1
+    done = int(50 * dl / tam)
+    stdout.write("\r[%s%s%s]" % ("Progres > ", '=' * done, ' ' * (50-done)))
+rmtree('./downloads/')
+print("\n")
 
 index_exists = True
 
