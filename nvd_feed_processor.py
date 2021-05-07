@@ -25,7 +25,7 @@ print('Creating the docker container with redislabs/redisearch\n')
 cmd = "docker ps -q --filter ancestor='redislabs/redisearch:latest' | xargs -r docker stop"
 ps = Popen(cmd,shell=True,stdout=PIPE,stderr=STDOUT)
 Popen(['docker', 'run', '-p', '6379:6379', 'redislabs/redisearch:latest'])
-sleep(3)
+sleep(4)
 
 urls = [
     'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2021.json.zip',
@@ -64,7 +64,7 @@ for url in urls:
     dl += 1
     prog = dl / tam
     done = int(50 * prog)
-    stdout.write('\r[%s%s%s]%s' % ('Progres > ', '=' * done, ' ' * (50-done), str(round(prog*100)) + '%'))
+    stdout.write('\r[%s%s%s]%s' % ('Progres > ', '=' * (done-1) + '>', ' ' * (50-done), str(round(prog*100)) + '%'))
 rmtree('./downloads/')
 print('\n')
 
