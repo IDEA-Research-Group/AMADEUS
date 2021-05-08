@@ -9,3 +9,4 @@ ahpy==1.2
 numpy
 scipy
 mcdm==1.2
+git+https://github.com/nicolasdeory/decipy.git

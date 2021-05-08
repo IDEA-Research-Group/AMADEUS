@@ -1,6 +1,9 @@
 import ahpy
 import jsonpickle
+import jsonpickle.ext.numpy as jsonpickle_numpy
 from ahp_structure import AhpNode, AhpTree
+
+jsonpickle_numpy.register_handlers()
 
 '''
 Ejemplo. Tenemos los siguientes criterios y subcriterios
@@ -117,3 +120,13 @@ for key, item in finalAhpCompareObjects.items():
 
 print("ROOT")
 print(root.target_weights)
+
+weights = {k: w.item() for k,w in root.target_weights.items()}
+
+outObject = {
+    'output_weights': weights
+}
+
+with open('./decision_trees/result-ahp-weights.json', 'w') as out:
+    res = jsonpickle.encode(outObject, unpicklable=False, make_refs=False, indent=4)
+    out.write(res)

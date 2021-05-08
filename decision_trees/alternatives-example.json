@@ -1,0 +1,5 @@
+[
+    ["openssl_openssl_version_0_9_8f", "apache_http_server_version_2_0_79"],
+    ["openssl_openssl_version_0_9_6e", "apache_http_server_version_2_0_43"],
+    ["openssl_openssl_version_0_9_8f", "apache_http_server_version_2_0_65"]
+]
