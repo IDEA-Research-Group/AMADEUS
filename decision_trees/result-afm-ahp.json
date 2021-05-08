@@ -137,7 +137,7 @@
                         "children": [
                             {
                                 "py/object": "ahp_structure.AhpNode",
-                                "id": "openssl",
+                                "id": "openssl_openssl",
                                 "children": [
                                     {
                                         "py/object": "ahp_structure.AhpNode",
@@ -162,7 +162,7 @@
                                                 "id": "openssl_openssl_version_0_9_8f",
                                                 "children": [],
                                                 "comparisons": {
-                                                    "openssl_openssl_version_0_9_7g": 1,
+                                                    "openssl_openssl_version_0_9_7g": 2,
                                                     "openssl_openssl_version_0_9_6e": 1
                                                 }
                                             }
@@ -174,10 +174,10 @@
                             }
                         ],
                         "comparisons": {
-                            "types": 1,
-                            "sources": 1,
-                            "exploits": 1,
-                            "apache": 1
+                            "types": 8,
+                            "sources": 8,
+                            "exploits": 8,
+                            "apache": 4
                         }
                     }
                 ],

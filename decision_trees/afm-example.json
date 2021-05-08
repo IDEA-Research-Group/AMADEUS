@@ -22,7 +22,7 @@
             }
         },
         "openssl": {
-            "openssl": {
+            "openssl_openssl": {
                 "openssl_openssl_version":
                 [
                     "openssl_openssl_version_0_9_7g",
