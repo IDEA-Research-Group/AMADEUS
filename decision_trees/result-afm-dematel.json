@@ -1,0 +1,213 @@
+{
+    "py/object": "ahp_structure.AhpTree",
+    "algorithm": "ahp",
+    "version": 1,
+    "nodes": {
+        "children": [
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "CVE_2009_3555",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "types",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "operating_system",
+                                "children": [],
+                                "comparisons": {
+                                    "application": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "application",
+                                "children": [],
+                                "comparisons": {
+                                    "operating_system": 0
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "sources": 0,
+                            "exploits": 0,
+                            "apache": 0,
+                            "openssl": 0
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "sources",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "nvd",
+                                "children": [],
+                                "comparisons": {}
+                            }
+                        ],
+                        "comparisons": {
+                            "types": 0,
+                            "exploits": 0,
+                            "apache": 0,
+                            "openssl": 0
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "exploits",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "direct",
+                                "children": [
+                                    {
+                                        "py/object": "ahp_structure.AhpNode",
+                                        "id": "exploit_10579",
+                                        "children": [],
+                                        "comparisons": {
+                                            "exploit_10071": 0
+                                        }
+                                    },
+                                    {
+                                        "py/object": "ahp_structure.AhpNode",
+                                        "id": "exploit_10071",
+                                        "children": [],
+                                        "comparisons": {
+                                            "exploit_10579": 0
+                                        }
+                                    }
+                                ],
+                                "comparisons": {
+                                    "indirect": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "indirect",
+                                "children": [],
+                                "comparisons": {
+                                    "direct": 0
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "types": 0,
+                            "sources": 0,
+                            "apache": 0,
+                            "openssl": 0
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "apache",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "apache_http_server",
+                                "children": [
+                                    {
+                                        "py/object": "ahp_structure.AhpNode",
+                                        "id": "apache_http_server_version",
+                                        "children": [
+                                            {
+                                                "py/object": "ahp_structure.AhpNode",
+                                                "id": "apache_http_server_version_2_0_43",
+                                                "children": [],
+                                                "comparisons": {
+                                                    "apache_http_server_version_2_0_65": 0,
+                                                    "apache_http_server_version_2_0_79": 0
+                                                }
+                                            },
+                                            {
+                                                "py/object": "ahp_structure.AhpNode",
+                                                "id": "apache_http_server_version_2_0_65",
+                                                "children": [],
+                                                "comparisons": {
+                                                    "apache_http_server_version_2_0_43": 0,
+                                                    "apache_http_server_version_2_0_79": 0
+                                                }
+                                            },
+                                            {
+                                                "py/object": "ahp_structure.AhpNode",
+                                                "id": "apache_http_server_version_2_0_79",
+                                                "children": [],
+                                                "comparisons": {
+                                                    "apache_http_server_version_2_0_43": 0,
+                                                    "apache_http_server_version_2_0_65": 0
+                                                }
+                                            }
+                                        ],
+                                        "comparisons": {}
+                                    }
+                                ],
+                                "comparisons": {}
+                            }
+                        ],
+                        "comparisons": {
+                            "types": 0,
+                            "sources": 0,
+                            "exploits": 0,
+                            "openssl": 0
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "openssl",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "openssl_openssl",
+                                "children": [
+                                    {
+                                        "py/object": "ahp_structure.AhpNode",
+                                        "id": "openssl_openssl_version",
+                                        "children": [
+                                            {
+                                                "py/object": "ahp_structure.AhpNode",
+                                                "id": "openssl_openssl_version_0_9_7g",
+                                                "children": [],
+                                                "comparisons": {
+                                                    "openssl_openssl_version_0_9_6e": 0,
+                                                    "openssl_openssl_version_0_9_8f": 0
+                                                }
+                                            },
+                                            {
+                                                "py/object": "ahp_structure.AhpNode",
+                                                "id": "openssl_openssl_version_0_9_6e",
+                                                "children": [],
+                                                "comparisons": {
+                                                    "openssl_openssl_version_0_9_7g": 0,
+                                                    "openssl_openssl_version_0_9_8f": 0
+                                                }
+                                            },
+                                            {
+                                                "py/object": "ahp_structure.AhpNode",
+                                                "id": "openssl_openssl_version_0_9_8f",
+                                                "children": [],
+                                                "comparisons": {
+                                                    "openssl_openssl_version_0_9_7g": 0,
+                                                    "openssl_openssl_version_0_9_6e": 0
+                                                }
+                                            }
+                                        ],
+                                        "comparisons": {}
+                                    }
+                                ],
+                                "comparisons": {}
+                            }
+                        ],
+                        "comparisons": {
+                            "types": 0,
+                            "sources": 0,
+                            "exploits": 0,
+                            "apache": 0
+                        }
+                    }
+                ],
+                "comparisons": {}
+            }
+        ]
+    }
+}
