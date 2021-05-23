@@ -51,7 +51,7 @@ def process_child_dematel(parent, child):
             add_comparisons(parent, par_child, zero_value=True)
 
 
-with open('./decision_trees/json_afm_models/afm-example.json') as file:
+with open('./decision_trees/json_afm_models/dematel-tfm.json') as file:
     s = file.read()
     data = jsonpickle.decode(s)
 
