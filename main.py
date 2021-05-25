@@ -6,9 +6,12 @@ import re
 import csv
 import os
 
+from redisearch import Client
+
 from timer import ChronoTimer
 
 from famapyOp.operations import products_number, valid_configuration, filter
+from nvd_feed_processor import open_redis, close_redis
 
 from scrapping.scraper import VulnerabilityScraper
 from scrapping.structures import CVE
@@ -111,7 +114,6 @@ def construct_cpe_model_for_cve(cve: CVE, cve_times: list):
    # time.sleep(5) # Wait until releasing worker to reduce load...?
 
 def construct_cpe_model(related_cves, keyword, cve_times):
-    
     if related_cves:
         with ThreadPoolExecutor(max_workers=50) as pool:
             for cve in related_cves:
@@ -138,10 +140,8 @@ def save_times_in_csv(keyword, cve_times):
 def check_config(config):
     configuration_names = config.split(":")
     regex = re.compile(r"[a-zA-Z0-9_:^]+")
-
     if regex.match(c).group() is not c:
         parser.error("You must respect the configuration pattern [a-zA-Z0-9_:^] \nExample: a:7:C or 9:^b:^D, the ^ implies it's a none selected feature")
-
     for name in configuration_names:
         if name.count("^") == 1 and not name.startswith("^"):
             parser.error("The '^' must be at the beginning")
@@ -149,13 +149,12 @@ def check_config(config):
             parser.error("You have introduced more than one '^' in a feature")
         elif name.replace("^", "") == "":
             parser.error("You have introduced void features")
-
     return configuration_names
 
-
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
+    parser.add_argument("--open", action='store_true', help="Launch the dockerized redislab/redisearch module")
+    parser.add_argument("--close", action='store_true', help="Close and delete the dockerized redislab/redisearch module")
     parser.add_argument("-k", "--keyword", nargs=1, help="Keyword used to perform a manual CVE search on vulnerability databases")
     parser.add_argument("-x", "--exploits", nargs=1, help="Retrieves CVEs associated with a comma-separated list of exploit ids")
     parser.add_argument("-e", action='store_true', help="If the results from databases must be an EXACT match of the keywords or just contain them")
@@ -166,7 +165,26 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--filter", nargs=2, help="The feature model path and a configuration to perfom the filter operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it's a none selected feature")
     parser_results = parser.parse_args()
 
-    # Validate parser output
+    if parser_results.open:
+        s = str(subprocess.check_output('docker ps -a', shell=True))
+        if s.__contains__("amadeus"):
+            print("Already there are running a redis server with the redisearch module installed")
+            exit()
+        open_redis()
+        exit()
+
+    client = Client("cveIndex")
+    try:
+        client.info()
+    except Exception as e:
+        if e.args[0] != "Unknown Index name":
+            print("You must be running a redis server with the redisearch module installed")
+            exit()
+
+    if parser_results.close:
+        close_redis()
+        exit()
+
     if parser_results.a and parser_results.target is None:
         parser.error("-a requires -t to specify the target to which apply the analysis")
 

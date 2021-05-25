@@ -1,0 +1,9 @@
+# vul_description: Adobe Flash Player 32.0.0.238 and earlier versions, 32.0.0.207 and earlier versions have a Same Origin Method Execution vulnerability. Successful exploitation could lead to Arbitrary Code Execution in the context of the current user.
+
+%Relationships 
+A: [B] [C] [D];
+
+
+
+%Constraints 
+A IMPLIES (((B AND C) OR NOT D) AND (NOT B OR D));
