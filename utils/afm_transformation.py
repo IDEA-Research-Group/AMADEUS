@@ -21,7 +21,7 @@ class AFMTransformation(TextToModel):
         self.path = path
         self.name_feature = {}
         self.parents = []
-        self.ctc_counter = [0, 0, 0]
+        self.ctc_counter = 0
 
     def transform(self):
         with open(self.path, 'r') as lines:
@@ -47,25 +47,12 @@ class AFMTransformation(TextToModel):
         return feature_model
 
     def parse_ctc(self, ctc: str) -> Constraint:
-        if ctc.__contains__('REQUIRES'):
-            self.ctc_counter[0] += 1
-            constraint = Constraint(
-                'Re-' + str(self.ctc_counter[0]), 
-                AST(ctc.replace('REQUIRES', 'requires'))
-            )
-        elif ctc.__contains__('EXCLUDES'):
-            self.ctc_counter[1] += 1
-            constraint = Constraint(
-                'Ex-' + str(self.ctc_counter[1]), 
-                AST(ctc.replace('EXCLUDES', 'excludes'))
-            )
-        elif ctc.__contains__('IMPLIES'):
-            ctc = ctc.replace('AND', 'and').replace('OR', 'or').replace('NOT', 'not').replace('IMPLIES','implies')
-            self.ctc_counter[2] += 1
-            constraint = Constraint(
-                'Im-' + str(self.ctc_counter[2]), 
-                AST(ctc)
-            )
+        ctc = ctc.replace('AND', 'and').replace('OR', 'or').replace('NOT', 'not').replace('IMPLIES','implies').replace('REQUIRES','requires').replace('EXCLUDES','excludes')
+        self.ctc_counter += 1
+        constraint = Constraint(
+            'Ctc-' + str(self.ctc_counter), 
+            AST(ctc)
+        )
         return constraint
 
     def parse_features(self, words: list[str], model: FeatureModel) -> Feature:

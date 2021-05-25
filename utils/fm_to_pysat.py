@@ -131,12 +131,20 @@ class FmToPysat(ModelToModel):
                     result.append(cnf_rigth)
             elif actual_op == 'or':
                 aux = []
-                results1 = self.add_and_cnfs(cnfs_left)
-                results2 = self.add_and_cnfs(cnfs_rigth)
-                for result1 in results1:
-                    for result2 in results2:
+                for result1 in cnfs_left:
+                    for result2 in cnfs_rigth:
                         aux.append(self.flatten([result1,result2]))
                 result.extend(aux)
+            elif actual_op in ('requires','implies'):
+                for obj in cnfs_rigth:
+                    if isinstance(obj, list):
+                        cnf = [-cnfs_left]
+                        cnf.extend(obj)
+                        result.append(cnf)
+                    elif isinstance(obj, int):
+                        cnf = [-cnfs_left]
+                        cnf.append(obj)
+                        result.append(cnf)
         elif isinstance(cnfs_left, int) and isinstance(cnfs_rigth, list):
             if actual_op == 'and':
                 result.append([cnfs_left])
@@ -145,6 +153,27 @@ class FmToPysat(ModelToModel):
                 for cnf_rigth in cnfs_rigth:
                     cnf = self.flatten([cnfs_left, cnf_rigth])
                     result.append(cnf)
+            elif actual_op in ('requires','implies'):
+                for obj in cnfs_rigth:
+                    if isinstance(obj, list):
+                        cnf = [-cnfs_left]
+                        cnf.extend(obj)
+                        result.append(cnf)
+                    elif isinstance(obj, int):
+                        cnf = [-cnfs_left]
+                        cnf.append(obj)
+                        result.append(cnf)
+            elif actual_op == 'excludes':
+                for obj in cnfs_rigth:
+                    if isinstance(obj, list):
+                        cnf = [- x for x in obj]
+                        cnf.append(-cnfs_left)
+                        result.append(cnf)
+                    elif isinstance(obj, int):
+                        cnf = []
+                        cnf.append(-obj)
+                        cnf.append(-cnfs_left)
+                        result.append(cnf)
         elif isinstance(cnfs_left, list) and isinstance(cnfs_rigth, int):
             if actual_op == 'and':
                 result.append(cnfs_rigth)
@@ -153,6 +182,28 @@ class FmToPysat(ModelToModel):
                 for cnf_left in cnfs_left:
                     cnf = self.flatten([cnf_left, cnfs_rigth])
                     result.append(cnf)
+            elif actual_op in ('requires','implies'):
+                for obj in cnfs_left:
+                    if isinstance(obj, list):
+                        cnf = [- x for x in obj]
+                        cnf.append(cnfs_rigth)
+                        result.append(cnf)
+                    elif isinstance(obj, int):
+                        cnf = []
+                        cnf.append(obj)
+                        cnf.append(cnfs_rigth)
+                        result.append(cnf)
+            elif actual_op == 'excludes':
+                for obj in cnfs_left:
+                    if isinstance(obj, list):
+                        cnf = [- x for x in obj]
+                        cnf.append(-cnfs_rigth)
+                        result.append(cnf)
+                    elif isinstance(obj, int):
+                        cnf = []
+                        cnf.append(obj)
+                        cnf.append(-cnfs_rigth)
+                        result.append(cnf)
         else: #left int and right int
             if actual_op == 'and':
                 result.append([cnfs_left])
@@ -160,9 +211,10 @@ class FmToPysat(ModelToModel):
             elif actual_op == 'or':
                 result = [[cnfs_left,cnfs_rigth]]
             elif actual_op == 'excludes':
-                result = [-cnfs_left,-cnfs_rigth]
+                result = [[-cnfs_left,-cnfs_rigth]]
             elif actual_op in ('requires','implies'):
-                result = [-cnfs_left,cnfs_rigth]
+                result = [[-cnfs_left,cnfs_rigth]]
+
         return result
 
     def ast_iterator(self, ctc, node):
@@ -179,26 +231,17 @@ class FmToPysat(ModelToModel):
             cnfs_rigth = self.ast_iterator(ctc, childs[1])
             result = self.combinator(cnfs_left, cnfs_rigth, name)
         elif name == 'requires':
-            self.ast_iterator(ctc, node, name)
+            cnfs_left = self.ast_iterator(ctc, childs[0])
+            cnfs_rigth = self.ast_iterator(ctc, childs[1])
+            result = self.combinator(cnfs_left, cnfs_rigth, name)
         elif name == 'excludes':
-            self.ast_iterator(ctc, node, name)
+            cnfs_left = self.ast_iterator(ctc, childs[0])
+            cnfs_rigth = self.ast_iterator(ctc, childs[1])
+            result = self.combinator(cnfs_left, cnfs_rigth, name)
         elif name == 'implies':
             cnfs_left = self.ast_iterator(ctc, childs[0])
             cnfs_rigth = self.ast_iterator(ctc, childs[1])
-            if isinstance(cnfs_rigth, int):
-                cnf = [-cnfs_left]
-                cnf.append(cnfs_rigth)
-                result.append(cnf)
-            elif isinstance(cnfs_rigth, list):
-                for obj in cnfs_rigth:
-                    if isinstance(obj, list):
-                        cnf = [-cnfs_left]
-                        cnf.extend(obj)
-                        result.append(cnf)
-                    elif isinstance(obj, int):
-                        cnf = [-cnfs_left]
-                        cnf.append(obj)
-                        result.append(cnf)
+            result = self.combinator(cnfs_left, cnfs_rigth, name)
         elif name == 'not':
             var = self.destination_model.variables.get(
                 ctc.ast.get_childs(node)[0].get_name()
