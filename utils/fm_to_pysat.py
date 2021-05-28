@@ -185,7 +185,7 @@ class FmToPysat(ModelToModel):
             elif actual_op in ('requires','implies'):
                 for obj in cnfs_left:
                     if isinstance(obj, list):
-                        cnf = [- x for x in obj]
+                        cnf = [x for x in obj]
                         cnf.append(cnfs_rigth)
                         result.append(cnf)
                     elif isinstance(obj, int):
@@ -196,13 +196,13 @@ class FmToPysat(ModelToModel):
             elif actual_op == 'excludes':
                 for obj in cnfs_left:
                     if isinstance(obj, list):
-                        cnf = [- x for x in obj]
-                        cnf.append(-cnfs_rigth)
+                        cnf = [x for x in obj]
+                        cnf.append(cnfs_rigth)
                         result.append(cnf)
                     elif isinstance(obj, int):
                         cnf = []
                         cnf.append(obj)
-                        cnf.append(-cnfs_rigth)
+                        cnf.append(cnfs_rigth)
                         result.append(cnf)
         else: #left int and right int
             if actual_op == 'and':
@@ -211,36 +211,70 @@ class FmToPysat(ModelToModel):
             elif actual_op == 'or':
                 result = [[cnfs_left,cnfs_rigth]]
             elif actual_op == 'excludes':
-                result = [[-cnfs_left,-cnfs_rigth]]
+                result = [[cnfs_left,cnfs_rigth]]
             elif actual_op in ('requires','implies'):
-                result = [[-cnfs_left,cnfs_rigth]]
+                result = [[cnfs_left,cnfs_rigth]]
 
         return result
 
-    def ast_iterator(self, ctc, node):
+    def negative_ast_iterator(self, ctc, node):
         result = []
         print(node.get_name())
         name = node.get_name().replace('(','').replace(')','')
         childs = ctc.ast.get_childs(node)
         if name == 'and':
-            cnfs_left = self.ast_iterator(ctc, childs[0])
-            cnfs_rigth = self.ast_iterator(ctc, childs[1])
-            result = self.combinator(cnfs_left, cnfs_rigth, name)
+            cnfs_left = self.negative_ast_iterator(ctc, childs[0])
+            cnfs_rigth = self.negative_ast_iterator(ctc, childs[1])
+            result = self.combinator(cnfs_left, cnfs_rigth, 'or')
         elif name == 'or':
-            cnfs_left = self.ast_iterator(ctc, childs[0])
-            cnfs_rigth = self.ast_iterator(ctc, childs[1])
-            result = self.combinator(cnfs_left, cnfs_rigth, name)
-        elif name == 'requires':
-            cnfs_left = self.ast_iterator(ctc, childs[0])
-            cnfs_rigth = self.ast_iterator(ctc, childs[1])
+            cnfs_left = self.negative_ast_iterator(ctc, childs[0])
+            cnfs_rigth = self.negative_ast_iterator(ctc, childs[1])
+            result = self.combinator(cnfs_left, cnfs_rigth, 'and')
+        elif name in ('requires', 'implies'):
+            cnfs_left = self.positive_ast_iterator(ctc, childs[0])
+            cnfs_rigth = self.negative_ast_iterator(ctc, childs[1])
             result = self.combinator(cnfs_left, cnfs_rigth, name)
         elif name == 'excludes':
-            cnfs_left = self.ast_iterator(ctc, childs[0])
-            cnfs_rigth = self.ast_iterator(ctc, childs[1])
+            cnfs_left = self.positive_ast_iterator(ctc, childs[0])
+            cnfs_rigth = self.positive_ast_iterator(ctc, childs[1])
             result = self.combinator(cnfs_left, cnfs_rigth, name)
-        elif name == 'implies':
-            cnfs_left = self.ast_iterator(ctc, childs[0])
-            cnfs_rigth = self.ast_iterator(ctc, childs[1])
+        elif name == 'not':
+            print(ctc.ast.get_childs(node))
+            var = self.destination_model.variables.get(
+                ctc.ast.get_childs(node)[0].get_name()
+            )
+            if var:
+                result = var
+            else:
+                cnfs = self.positive_ast_iterator(ctc, childs[0])
+                for cnf in cnfs:
+                    result.append(cnf)
+        else:
+            var = self.destination_model.variables.get(node.get_name())
+            result = - var
+        print(result)
+        return result
+
+    def positive_ast_iterator(self, ctc, node):
+        result = []
+        print(node.get_name())
+        name = node.get_name().replace('(','').replace(')','')
+        childs = ctc.ast.get_childs(node)
+        if name == 'and':
+            cnfs_left = self.positive_ast_iterator(ctc, childs[0])
+            cnfs_rigth = self.positive_ast_iterator(ctc, childs[1])
+            result = self.combinator(cnfs_left, cnfs_rigth, name)
+        elif name == 'or':
+            cnfs_left = self.positive_ast_iterator(ctc, childs[0])
+            cnfs_rigth = self.positive_ast_iterator(ctc, childs[1])
+            result = self.combinator(cnfs_left, cnfs_rigth, name)
+        elif name in ('requires', 'implies'):
+            cnfs_left = self.negative_ast_iterator(ctc, childs[0])
+            cnfs_rigth = self.positive_ast_iterator(ctc, childs[1])
+            result = self.combinator(cnfs_left, cnfs_rigth, name)
+        elif name == 'excludes':
+            cnfs_left = self.negative_ast_iterator(ctc, childs[0])
+            cnfs_rigth = self.negative_ast_iterator(ctc, childs[1])
             result = self.combinator(cnfs_left, cnfs_rigth, name)
         elif name == 'not':
             var = self.destination_model.variables.get(
@@ -249,7 +283,7 @@ class FmToPysat(ModelToModel):
             if var:
                 result = - var
             else:
-                cnfs = self.ast_iterator(ctc, childs[0])
+                cnfs = self.negative_ast_iterator(ctc, childs[0])
                 for cnf in cnfs:
                     aux = [- x for x in cnf]
                     result.append(aux)
@@ -260,11 +294,24 @@ class FmToPysat(ModelToModel):
         return result
 
     def add_constraint(self, ctc):
+        '''
+        Hay dos iteradores debido a que las reglas de las leyes de Morgan cambian los operadores or y and
+        cuando se usar el operador not para negar una clausula. Debido a que esta negación es necesaría
+        al trasformar a CNF nacen el iterador positivo y negativo que se complementan en el flujo de 
+        creación del CNF.
+        Reglas de las leyes de Morgan:
+            A <=> B      = (A => B) AND (B => A)
+            A  => B      = NOT(A) OR  B
+            NOT(A AND B) = NOT(A) OR  NOT(B) 
+            NOT(A OR  B) = NOT(A) AND NOT(B) 
+        '''
         node = ctc.ast.get_root()
         print(ctc.ast.string)
         name = node.get_name()
-        if name in ('and', 'or', 'requires', 'excludes', 'implies', 'not'):
-            cnfs = self.ast_iterator(ctc, node)
+        if name == 'not':
+            cnfs = self.negative_ast_iterator(ctc, node)
+        elif name in ('and', 'or', 'requires', 'excludes', 'implies'):
+            cnfs = self.positive_ast_iterator(ctc, node)
         else:
             print('This FM contains non supported elements', file=sys.stderr)
 

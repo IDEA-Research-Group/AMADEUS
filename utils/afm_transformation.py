@@ -1,7 +1,6 @@
 import sys
 
 from famapy.core.transformations import TextToModel
-from utils.ast import AST
 from famapy.core.exceptions import DuplicatedFeature
 from famapy.metamodels.fm_metamodel.models.feature_model import (
     Constraint,
@@ -9,6 +8,9 @@ from famapy.metamodels.fm_metamodel.models.feature_model import (
     FeatureModel,
     Relation,
 )
+
+''' It is not yet implemented in the latest release of FaMa-Py '''
+from utils.ast import AST
 
 
 class AFMTransformation(TextToModel):

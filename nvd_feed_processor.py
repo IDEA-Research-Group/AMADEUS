@@ -6,7 +6,7 @@ https://nvd.nist.gov/vuln/data-feeds
 import ujson
 import os
 
-from redisearch import Client, TextField, IndexDefinition, Query
+from redisearch import Client, TextField, IndexDefinition
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from zipfile import ZipFile
 from subprocess import Popen, PIPE, STDOUT
@@ -22,10 +22,7 @@ def open_redis():
         os.mkdir('./nvd_data_feeds/')
 
     print('Creating the docker container with redislabs/redisearch\n')
-
-    cmd = "docker ps -q --filter name='amadeus' | xargs -r docker stop"
-    Popen(cmd,shell=True,stdout=PIPE,stderr=STDOUT)
-    Popen(['docker', 'run', '--name', 'amadeus', '-p', '6379:6379', 'redislabs/redisearch:latest'])
+    Popen(['docker', 'run', '--rm', '--name', 'amadeus', '-p', '6379:6379', 'redislabs/redisearch:latest'])
     sleep(5)
 
     urls = [
@@ -69,28 +66,28 @@ def open_redis():
     rmtree('./downloads/')
     print('\n')
 
-    index_exists = True
+    print('Start processing CVE feeds')
 
     # Create a normal redis connection
     conn = redis.Redis('localhost')
 
     # Creating a client with a given index name
-    client = Client("cveIndex")
+    client = Client('cveIndex')
 
     # IndexDefinition is avaliable for RediSearch 2.0+
     definition = IndexDefinition(prefix=['cve:'])
 
     # Creating the index definition and schema
     try:
-        client.create_index((TextField("id"), TextField("description"), TextField("configurations")), definition=definition)
+        client.create_index((TextField('id'), TextField('description'), TextField('configurations')), definition=definition)
     except:
         # Index already exists. Delete and recreate
         client.drop_index()
-        print("Index already exists. Dropping. Delete keys and try again.")
+        print('Index already exists\nDropping\nDelete keys and try again')
         exit()
 
     def process_CVE_file(file):
-        with open(file, 'r', encoding="utf8") as f:
+        with open(file, 'r', encoding='utf8') as f:
             json = ujson.decode(f.read())
             cve_items = json['CVE_Items']
             for cve_item in cve_items:
@@ -107,7 +104,7 @@ def open_redis():
                                     'description': cve_desc_sanitized,
                                     'configurations': cve_configurations_sanitized
                                 })
-            print("Processed " + file)
+            print('Processed ' + file)
 
     with ThreadPoolExecutor(max_workers=20) as pool:
         futures = []
@@ -116,9 +113,9 @@ def open_redis():
             futures.append(future)
         json_list = [x.result() for x in as_completed(futures)]
 
-    print("Done processing CVE feeds. Processing NVD CPE match feed")
+    print('Done processing CVE feeds\nProcessing NVD CPE match feed')
 
-    with open("./nvd_data_feeds/nvdcpematch-1.0.json", 'r', encoding="utf8") as f:
+    with open('./nvd_data_feeds/nvdcpematch-1.0.json', 'r', encoding='utf8') as f:
         json = ujson.decode(f.read())
         matches = json['matches']
         for match in matches:
@@ -134,14 +131,12 @@ def open_redis():
                 keyName += ';;versionEndExcluding=' + match['versionEndExcluding']
             if len(match['cpe_name']) > 0:
                 # if CPE list is empty no need to include it in cache
-                valueString = ";;".join(x['cpe23Uri'] for x in match['cpe_name'])
+                valueString = ';;'.join(x['cpe23Uri'] for x in match['cpe_name'])
                 conn.set(keyName, valueString)
 
-    print("done")
+    print('AMADEUS is already launched!')
 
 def close_redis():
     Popen(['docker', 'stop', 'amadeus'])
     sleep(2)
-    Popen(['docker', 'rm', 'amadeus'])
-    sleep(2)
-    print("Redis has been close succesfully!")
+    print('AMADEUS has been close succesfully!')

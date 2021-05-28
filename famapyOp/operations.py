@@ -1,12 +1,11 @@
 from famapy.metamodels.pysat_metamodel.operations.glucose3_products import Glucose3Products
 from famapy.metamodels.pysat_metamodel.operations.glucose3_valid_configuration import Glucose3ValidConfiguration
-# from famapy.metamodels.pysat_metamodel.transformations.fm_to_pysat import FmToPysat
 
+''' It is not yet implemented in the latest release of FaMa-Py '''
 from utils.afm_transformation import AFMTransformation
 from utils.configuration import Configuration
 from utils.glucose3_filter import Glucose3Filter
 from utils.fm_to_pysat import FmToPysat
-from utils.ast import AST
 
 def get_configuration(fm, names):
     config = {}
@@ -30,23 +29,17 @@ def transform(path):
     return fm, transform.destination_model
 
 def products_number(path):
-    # A implies ((B and not C) or (not B and C))
-    ast3 = AST("A implies ((B and not C) or (not B and C))")
-
-    # A implies ((B or not C) and (not B or C))
-    ast4 = AST("A implies ((B or not C) and (not B or C))")
-
     result = transform(path)
     operation = Glucose3Products()
     operation.execute(result[1])
-    print("The number of atack vectors in the model are -> " + str(operation.products))
+    print("The atack vectors of the model are -> " + str(operation.products))
 
 def filter(path, configuration_names):
     result = transform(path)
     operation = Glucose3Filter()
     operation.set_configuration(get_configuration(result[0], configuration_names))
     operation.execute(result[1])
-    print("The number of filter atack vectors in the model are -> " + str(len(operation.filter_products)))
+    print("The number of filter atack vectors of the model are -> " + str(len(operation.filter_products)))
 
 def valid_configuration(path, configuration_names):
     result = transform(path)
