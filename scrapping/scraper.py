@@ -148,7 +148,7 @@ class VulnerabilityScraper():
                         running_on[aux.get_vendor()[0]][aux.get_product()[0]].update(self.expand(complex_cpe))
         return simple_cpes, running_on
 
-    def get_CPEs(self, cve: CVE) -> (dict, dict): 
+    def get_CPEs(self, cve: CVE) -> tuple(dict, dict): 
         '''
             Returns a list of CPEs matching the given CVE, using available web scrapers
             Note: Mutates given cve, appending found configurations in CPEs (Application, Hardware or Operating System)
