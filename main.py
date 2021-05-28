@@ -1,25 +1,21 @@
-import time
-import subprocess
 import argparse
-import re
 import csv
 import os
-
-from redisearch import Client
-
-from timer import ChronoTimer
-
-from famapyOp.operations import products_number, valid_configuration, filter
-from nvd_feed_processor import open_redis, close_redis
-
-from scrapping.scraper import VulnerabilityScraper
-from scrapping.structures import CVE
-
+import re
+import subprocess
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from fm.fm import generate_tree
-
 from dotenv import load_dotenv
+from redisearch import Client
+
+from famapyOp.operations import filter, products_number, valid_configuration
+from fm.fm import generate_tree
+from nvd_feed_processor import close_redis, open_redis
+from scrapping.scraper import VulnerabilityScraper
+from scrapping.structures import CVE
+from timer import ChronoTimer
+
 load_dotenv()
 
 def launch_nmap(target_ip):

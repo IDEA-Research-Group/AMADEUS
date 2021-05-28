@@ -1,13 +1,11 @@
 import sys
 
-from famapy.core.transformations import TextToModel
 from famapy.core.exceptions import DuplicatedFeature
-from famapy.metamodels.fm_metamodel.models.feature_model import (
-    Constraint,
-    Feature,
-    FeatureModel,
-    Relation,
-)
+from famapy.core.transformations import TextToModel
+from famapy.metamodels.fm_metamodel.models.feature_model import (Constraint,
+                                                                 Feature,
+                                                                 FeatureModel,
+                                                                 Relation)
 
 ''' It is not yet implemented in the latest release of FaMa-Py '''
 from utils.ast import AST

@@ -1,5 +1,6 @@
 from typing import Any, List, Optional
 
+
 class Node:  # noqa
     def __init__(  # noqa
         self,

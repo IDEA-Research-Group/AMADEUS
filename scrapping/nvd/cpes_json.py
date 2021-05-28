@@ -7,9 +7,11 @@
 
 __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 
-from cpe import CPE
-from enum import Enum
 from collections import defaultdict
+from enum import Enum
+
+from cpe import CPE
+
 
 class ConfigType(Enum):
     

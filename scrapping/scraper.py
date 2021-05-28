@@ -6,25 +6,19 @@
 __author__ = "Nicolás de Ory (deorynicolas@gmail.com)"
 
 
-# Concurrency
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
-# Regex
 import re
-
-# Redis
-from .redis_store import *
-
-# Scrapers
-from .nvd.data_retrieval import NvdScraper
-from .vuldb.data_retrieval import VuldbScraper
-
-from .structures import CVE
-from .exploitdb_scraper import ExploitDbScraper
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from enum import Enum
 
 from cpe import CPE
-from enum import Enum
-from collections import defaultdict
+
+from .exploitdb_scraper import ExploitDbScraper
+from .nvd.data_retrieval import NvdScraper
+from .redis_store import *
+from .structures import CVE
+from .vuldb.data_retrieval import VuldbScraper
+
 
 class VulnerabilityScraper():
 

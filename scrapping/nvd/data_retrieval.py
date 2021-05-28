@@ -6,29 +6,28 @@
 __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 
 
-# BeautifulSoup4 and HTTP connections
-import ssl
-from bs4 import BeautifulSoup
-from urllib.request import Request, urlopen
-import urllib.parse
-
+import json
+import math
 # Common
 import re
-import json
+# BeautifulSoup4 and HTTP connections
+import ssl
 import time
-import math
-
+import urllib.parse
 # Concurrency
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.request import Request, urlopen
 
+from bs4 import BeautifulSoup
 # Structures
 from scrapping.structures import CVE
 
 # Auxiliary JSON CPE Extractor
 from .cpes_json import extract_semimodel
 
-class NvdScraper:
 
+class NvdScraper:
+    
     SCRAPER_NAME = "nvd"
     BASE_NVD_URI = "https://nvd.nist.gov/"
     VULN_QUERY_URI = BASE_NVD_URI + "vuln/search/results?form_type=Basic&results_type=overview&search_type=all&query={}&startIndex={}"

@@ -5,6 +5,7 @@
 
 from .structures import HashableCPE
 
+
 def generate_mock_complex_CPEs():
     res = list()
 

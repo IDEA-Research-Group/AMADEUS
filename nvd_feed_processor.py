@@ -1,21 +1,16 @@
-'''
-Run this to index CVE data in redis. 
-You must have downloaded offline NVD data feeds, found in the following link
-https://nvd.nist.gov/vuln/data-feeds
-'''
-import ujson
 import os
-
-from redisearch import Client, TextField, IndexDefinition
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from zipfile import ZipFile
-from subprocess import Popen, PIPE, STDOUT
-from requests import get
 from shutil import rmtree
-from time import sleep
+from subprocess import PIPE, STDOUT, Popen
 from sys import stdout
+from time import sleep
+from zipfile import ZipFile
 
 import redis
+import ujson
+from redisearch import Client, IndexDefinition, TextField
+from requests import get
+
 
 def open_redis():
     if not os.path.isdir('./nvd_data_feeds/'):

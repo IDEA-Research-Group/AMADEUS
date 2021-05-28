@@ -2,9 +2,9 @@
 Redis helper functions. Needs a Redis server running locally.
 '''
 
-import redis
 import jsonpickle
-from redisearch import Client, TextField, IndexDefinition, Query
+import redis
+from redisearch import Client, IndexDefinition, Query, TextField
 
 from scrapping.structures import CVE
 
