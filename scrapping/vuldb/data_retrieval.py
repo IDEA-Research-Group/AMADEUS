@@ -100,7 +100,7 @@ class VuldbScraper:
 
         return vulnerabilities
 
-    def get_CPEs(self, cve: CVE) -> tuple(dict, dict):
+    def get_CPEs(self, cve: CVE) -> (dict, dict):
 
         '''
             Retrieves the CPEs of a given CVE, generating a dictionary containing:

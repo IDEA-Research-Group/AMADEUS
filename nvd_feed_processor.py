@@ -129,7 +129,7 @@ def open_redis():
                 valueString = ';;'.join(x['cpe23Uri'] for x in match['cpe_name'])
                 conn.set(keyName, valueString)
 
-    print('AMADEUS is already launched!')
+    print('\nAMADEUS is already launched!')
 
 def close_redis():
     Popen(['docker', 'stop', 'amadeus'])

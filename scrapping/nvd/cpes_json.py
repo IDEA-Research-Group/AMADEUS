@@ -38,7 +38,7 @@ class CpeListType(Enum):
     VULNERABLE = "VULNERABLE"
     NON_VULNERABLE = "NON_VULNERABLE"
 
-def extract_semimodel(json: dict) -> tuple(dict, list):
+def extract_semimodel(json: dict) -> (dict, list):
 
     '''
         Creates an intermediate representation between a JSON file 
@@ -141,7 +141,7 @@ def process_basic_configuration(container: dict) -> dict:
     
     return res
 
-def process_running_on_configuration(container: dict) -> tuple(dict, dict):
+def process_running_on_configuration(container: dict) -> (dict, dict):
 
     '''
         Extracts, expands and conditionally expand the CPEs records
