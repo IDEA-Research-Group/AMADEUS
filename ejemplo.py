@@ -47,7 +47,7 @@ print(ctc.ast.string)
 
 print('\n')
 
-ast_prueba = AST('A implies ((B or not C) and (D or not C))')
+ast_prueba = AST('A implies ((B and not C) or (not B and (C requires D)))')
 print(ast_prueba)
 
 def iterator(node):

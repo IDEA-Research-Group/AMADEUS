@@ -156,23 +156,23 @@ class FmToPysat(ModelToModel):
             elif actual_op in ('requires','implies'):
                 for obj in cnfs_rigth:
                     if isinstance(obj, list):
-                        cnf = [-cnfs_left]
+                        cnf = [cnfs_left]
                         cnf.extend(obj)
                         result.append(cnf)
                     elif isinstance(obj, int):
-                        cnf = [-cnfs_left]
+                        cnf = [cnfs_left]
                         cnf.append(obj)
                         result.append(cnf)
             elif actual_op == 'excludes':
                 for obj in cnfs_rigth:
                     if isinstance(obj, list):
-                        cnf = [- x for x in obj]
-                        cnf.append(-cnfs_left)
+                        cnf = [cnfs_left]
+                        cnf.extend(obj)
                         result.append(cnf)
                     elif isinstance(obj, int):
                         cnf = []
-                        cnf.append(-obj)
-                        cnf.append(-cnfs_left)
+                        cnf.append(obj)
+                        cnf.append(cnfs_left)
                         result.append(cnf)
         elif isinstance(cnfs_left, list) and isinstance(cnfs_rigth, int):
             if actual_op == 'and':
@@ -239,7 +239,6 @@ class FmToPysat(ModelToModel):
             cnfs_rigth = self.positive_ast_iterator(ctc, childs[1])
             result = self.combinator(cnfs_left, cnfs_rigth, name)
         elif name == 'not':
-            print(ctc.ast.get_childs(node))
             var = self.destination_model.variables.get(
                 ctc.ast.get_childs(node)[0].get_name()
             )
@@ -306,7 +305,6 @@ class FmToPysat(ModelToModel):
             NOT(A OR  B) = NOT(A) AND NOT(B) 
         '''
         node = ctc.ast.get_root()
-        print(ctc.ast.string)
         name = node.get_name()
         if name == 'not':
             cnfs = self.negative_ast_iterator(ctc, node)
