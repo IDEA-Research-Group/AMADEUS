@@ -5,5 +5,5 @@ A: [B] [C] [D];
 
 
 
-%Constraints 
-((D AND B) IMPLIES (B AND C));
+%Constraints
+(C AND D) EXCLUDES B;

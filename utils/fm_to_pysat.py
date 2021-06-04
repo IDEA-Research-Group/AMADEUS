@@ -87,36 +87,6 @@ class FmToPysat(ModelToModel):
             )
             raise NotImplementedError
 
-    def flatten(self, nested_list: list):
-        '''
-        Este metodo se encarga de aplanar una lista de listas anidada con multiples listas a
-        multiples niveles.
-        '''
-        try:
-            head = nested_list[0]
-        except IndexError:
-            return []
-        return ((self.flatten(head) if isinstance(head, list) else [head]) +
-                self.flatten(nested_list[1:]))
-
-    def add_and_cnfs(self, cnfs_rigth):
-        '''
-        Este es un metodo auxiliar que se encarga de la expresividad de los operadores logicos and.
-        Esto es necesario ya que a diferencia de los otros operadores usar este operador hace
-        que se tengan que construir mas de una clausula, aumentando la complejidad al tratarlas.
-        '''
-        cnfs_rigth.append('f')
-        result = []
-        cnf_or = []
-        for obj in cnfs_rigth:
-            if isinstance(obj, int):
-                cnf_or.append(obj)
-            if isinstance(obj, list):
-                result.append(self.add_and_cnfs(obj))
-            if obj == 'f' and cnf_or:
-                result = cnf_or
-        return result
-
     def combinator(self, cnfs_left: Any, cnfs_rigth: Any, actual_op: str):
         '''
         Este metodo se encarga de conseguir las clausulas CNF resultantes por la combinacion de los
@@ -132,22 +102,28 @@ class FmToPysat(ModelToModel):
             elif actual_op in ('or', 'requires', 'implies', 'excludes'):
                 for result1 in cnfs_left:
                     for result2 in cnfs_rigth:
-                        result.append(self.flatten([result1,result2]))
+                        cnf = [x for x in result1]
+                        cnf.extend(result2)
+                        result.append(cnf)
         elif isinstance(cnfs_left, int) and isinstance(cnfs_rigth, list):
             if actual_op == 'and':
                 result.append([cnfs_left])
-                result.extend(self.add_and_cnfs(cnfs_rigth))
+                for cnf_rigth in cnfs_rigth:
+                    result.append(cnf_rigth)
             elif actual_op in ('or', 'requires', 'implies', 'excludes'):
                 for cnf_rigth in cnfs_rigth:
-                    cnf = self.flatten([cnfs_left, cnf_rigth])
+                    cnf = [cnfs_left]
+                    cnf.extend(cnf_rigth)
                     result.append(cnf)
         elif isinstance(cnfs_left, list) and isinstance(cnfs_rigth, int):
             if actual_op == 'and':
                 result.append(cnfs_rigth)
-                result.extend(self.add_and_cnfs(cnfs_left))
+                for cnf_left in cnfs_left:
+                    result.append(cnf_left)
             elif actual_op in ('or', 'requires', 'implies', 'excludes'):
                 for cnf_left in cnfs_left:
-                    cnf = self.flatten([cnf_left, cnfs_rigth])
+                    cnf = cnf_left
+                    cnf.append(cnfs_rigth)
                     result.append(cnf)
         else: #left int and right int
             if actual_op == 'and':
@@ -167,7 +143,6 @@ class FmToPysat(ModelToModel):
             NOT(A OR  B) = NOT(A) AND NOT(B) 
         '''
         result = []
-        print(node.get_name())
         name = node.get_name()
         childs = ctc.ast.get_childs(node)
         if name == 'and':
@@ -179,31 +154,29 @@ class FmToPysat(ModelToModel):
             cnfs_rigth = self.ast_iterator(ctc, childs[1], number)
             result = self.combinator(cnfs_left, cnfs_rigth, name if number > 0 else 'and')
         elif name in ('requires', 'implies'):
-            cnfs_left = self.ast_iterator(ctc, childs[0], number * - 1)
+            cnfs_left = self.ast_iterator(ctc, childs[0], number * -1)
             cnfs_rigth = self.ast_iterator(ctc, childs[1], number)
             result = self.combinator(cnfs_left, cnfs_rigth, name)
         elif name == 'excludes':
-            cnfs_left = self.ast_iterator(ctc, childs[0], number * - 1)
-            cnfs_rigth = self.ast_iterator(ctc, childs[1], number * - 1)
+            cnfs_left = self.ast_iterator(ctc, childs[0], number * -1)
+            cnfs_rigth = self.ast_iterator(ctc, childs[1], number * -1)
             result = self.combinator(cnfs_left, cnfs_rigth, name)
         elif name == 'not':
             var = self.destination_model.variables.get(
                 ctc.ast.get_childs(node)[0].get_name()
             )
             if var:
-                result = - var * number
+                result = -var * number
             else:
-                cnfs = self.ast_iterator(ctc, childs[0], number * - 1)
+                cnfs = self.ast_iterator(ctc, childs[0], number * -1)
                 result = cnfs
         else:
             var = self.destination_model.variables.get(node.get_name())
             result = var * number
-        print(result)
         return result
 
     def add_constraint(self, ctc):
         node = ctc.ast.get_root()
-        print(ctc.ast)
         if node.get_name() in ('and', 'or', 'requires', 'excludes', 'implies', 'not'):
             cnfs = self.ast_iterator(ctc, node, 1)
         else:
@@ -216,7 +189,6 @@ class FmToPysat(ModelToModel):
                 else:
                     self.cnf.append([cnf])
         else:
-            print(cnfs)
             self.cnf.append([cnfs])
 
     def transform(self):

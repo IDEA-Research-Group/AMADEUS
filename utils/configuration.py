@@ -1,9 +1,7 @@
-from abc import ABC, abstractmethod
-
-from famapy.core.models.variability_model import VariabilityModel
+from typing import Any
 
 
-class Configuration(ABC):
+class Configuration():
 
-    def __init__(self, elements: dict[VariabilityModel, bool]) -> None:
+    def __init__(self, elements: dict[Any, bool]) -> None:
         self.elements = elements
