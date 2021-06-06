@@ -18,7 +18,7 @@ def open_redis():
 
     print('Creating the docker container with redislabs/redisearch\n')
     Popen(['docker', 'run', '--rm', '--name', 'amadeus', '-p', '6379:6379', 'redislabs/redisearch:latest'])
-    sleep(5)
+    sleep(6)
 
     urls = [
         'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-2021.json.zip',
