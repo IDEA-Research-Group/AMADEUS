@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 from redisearch import Client
 
-from famapyOp.operations import filter, products_number, valid_configuration
+from famapyOp.operations import filter, products_number, valid_configuration, products
 from fm.fm import generate_tree
 from nvd_feed_processor import close_redis, open_redis
 from scrapping.scraper import VulnerabilityScraper
@@ -155,7 +155,8 @@ if __name__ == '__main__':
     parser.add_argument('-e', action = 'store_true', help = 'If the results from databases must be an EXACT match of the keywords or just contain them')
     parser.add_argument('-a', action = 'store_true', help = 'Launches NMAP to perform an automatic search of vulnerabilities')
     parser.add_argument('-t', '--target', nargs = 1, help = 'CIDR block or host target of the automatic analysis')
-    parser.add_argument('-p', '--products', nargs = 1, help = 'The feature model path to perfom the profructs number operation')
+    parser.add_argument('-p', '--products', nargs = 1, help = 'The feature model path to perfom the products operation')
+    parser.add_argument('-pn', '--productsnumber', nargs = 1, help = 'The feature model path to perfom the products number operation')
     parser.add_argument('-vc', '--validconfig', nargs = 2, help = 'The feature model path and a configuration to perfom the valid configuration operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it is a none selected feature')
     parser.add_argument('-f', '--filter', nargs = 2, help = 'The feature model path and a configuration to perfom the filter operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it is a none selected feature')
     parser_results = parser.parse_args()
@@ -186,7 +187,7 @@ if __name__ == '__main__':
     if parser_results.target is not None and not parser_results.a:
         parser.error('-t requires -a to perform an automatic analysis')
 
-    operation_check = parser_results.products is None and parser_results.validconfig is None and parser_results.filter is None
+    operation_check = parser_results.products is None and parser_results.productsnumber is None and parser_results.validconfig is None and parser_results.filter is None
 
     if not parser_results.exploits and parser_results.keyword is None and not parser_results.a and operation_check:
        parser.error('You must enter either a keyword or launch an automatic search against a target IP')
@@ -200,6 +201,10 @@ if __name__ == '__main__':
 
     if parser_results.products:
         p = parser_results.products[0].strip()
+        products(p)
+
+    if parser_results.productsnumber:
+        p = parser_results.productsnumber[0].strip()
         products_number(p)
 
     if parser_results.filter:
