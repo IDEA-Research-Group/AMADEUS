@@ -1,5 +1,3 @@
-# (TO BE UPDATED)
-
 # AMADEUS: AutoMAteD secUrity teSting
 
 AMADEUS is a framework solution to enable and help the automatic analysis and testing of cybersecurity vulnerabilities of configuration systems based on feature models. AMADEUS can automatically analyse the organisation infrastructure determining the vulnerabilities by querying vulnerability repositories.
@@ -11,17 +9,36 @@ The minimum software requirements to run AMADEUS are:
 
 * Python  3
 * An Internet connection
+* A Redis instance with the Redisearch module loaded, running locally
 
 In addition, if you plan to run automatic network-based vulnerability tests, you may need to install [Nmap](https://nmap.org) in your system and configure your path properly.
 
-###  Installation
+### Installation
 
 This step involves the process of retrieving and installing required dependencies (modules) that AMADEUS requires. To proceed, open a new shell interpreter and simply run the following commands:
 
 ```$ cd /path/to/amadeus```
 ```$ pip install -r requirements.txt```
 
-##  Usage
+For Redis, you can download the Redisearch module [here](https://redislabs.com/redis-enterprise-software/download-center/modules/).
+Once downloaded, launch a Redis instance with the provided `run-redis.sh` script. You can run this from Windows using WSL.
+
+Lastly, in order to build the Redis vulnerability cache, you must download the NVD offline dataset from [their website](https://nvd.nist.gov/vuln/data-feeds),
+and store the JSON files inside a folder named `nvd_data_feeds`, and run `nvd_feed_processor.py`.
+
+The folder structure should resemble the following:
+```
+AMADEUS
+|--- ...
+|--- nvd_data_feeds
+	|--- nvdcpematch-1.0.json
+	|--- nvdcve-1.1-2002.json
+	|--- ...
+	|--- nvdcve-1.1-2020.json
+	|--- nvdcve-1.1-recent.json
+```
+
+## Usage
 
 AMADEUS supports two types of execution. In either of those, you can type the command ```--help``` to display the following explanatory dialog.
 
@@ -37,11 +54,11 @@ optional arguments:
 
 -k KEYWORD, --keyword KEYWORD
 
-	Keyword used to perform a manual CVE search on NVD
+	Keyword used to perform a manual CVE search on vulnerability databases
 
 -e  If the results from NVD must be an EXACT match of the
 
-	keywords or just contain them
+	Whether the results from databases must be an EXACT match of the keywords or just contain them
 
 -a  Launches NMAP to perform an automatic search of
 
@@ -66,7 +83,7 @@ Target (```-t/--target```) can also be a CIDR block:
 
 ### Keyword-based manual analysis
 
-By running the program in this mode, AMADEUS will use provided keywords to retrieve potentially related CVE flaws and vector attacks on an online vulnerability database (NVD).
+By running the program in this mode, AMADEUS will use provided keywords to retrieve potentially related CVE flaws and vector attacks on the NVD offline vulnerability database.
 
 To provide your own keywords and perform a search based on them:
 ```$ python main.py -k "YOUR_KEYWORD"```
