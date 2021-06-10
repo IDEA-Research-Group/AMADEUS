@@ -17,8 +17,8 @@ In addition, if you plan to run automatic network-based vulnerability tests, you
 
 This step involves the process of retrieving and installing required dependencies (modules) that AMADEUS requires. To proceed, open a new shell interpreter and simply run the following commands:
 
-```$ cd /path/to/amadeus```
-```$ pip install -r requirements.txt```
+```cd /path/to/amadeus```
+```pip install -r requirements.txt```
 
 ## Usage
 
@@ -74,7 +74,7 @@ optional arguments:
 ###  Automatic launch dockerized Redis
 For launch AMADEUS you only need to tun the following command:
 
-```$ python main.py --open```
+```python main.py --open```
 
 This command automatically launch the dockerized Redis with the Redisearch module loaded.
 Then, automatically download the NVD offline dataset from [their website](https://nvd.nist.gov/vuln/data-feeds), and store the JSON files inside a folder named `nvd_data_feeds`, following this structure: 
@@ -94,7 +94,7 @@ Lastly, process this files in Redis.
 
 Also, if you can close AMADEUS you can run the following command:
 
-```$ python main.py --close```
+```python main.py --close```
 
 Begin a process to close down docker and delete the container.
 
@@ -104,18 +104,18 @@ By running the program in this mode, AMADEUS will launch a Nmap analysis to the 
 
 In order to perform an automatic analysis to a specific network, you may run the following command:
 
-```$ python main.py -a -t 192.168.1.1```
+```python main.py -a -t 192.168.1.1```
 
 Target (```-t/--target```) can also be a CIDR block:
 
-```$ python main.py -a -t 192.168.1.1/24```
+```python main.py -a -t 192.168.1.1/24```
 
 ### Keyword-based manual analysis
 
 By running the program in this mode, AMADEUS will use provided keywords to retrieve potentially related CVE flaws and vector attacks on the NVD offline vulnerability database.
 
 To provide your own keywords and perform a search based on them:
-```$ python main.py -k "YOUR_KEYWORD"```
+```python main.py -k "YOUR_KEYWORD"```
 
 ### Tips
 * Optionally, you can set the flag ```-e``` in both approaches to ensure that results obtained from NVD do not only contain the keywords, but they appear in the exact same order.
@@ -128,12 +128,46 @@ Feature models inferred by AMADEUS are expressed using the AFM formatting, used 
 
 First, launch AMADEUS with command ```python main.py --open```:
 
-![AMADEUS Step 1](./docs/images/open.png)
+![AMADEUS Step 1](./docs/images/step1.png)
 
-In order to stage a running example, let's suppose we have discover that the Nginx server of our organization is running version 1.7. To obtain related vulnerable configurations (or attack vectors) we may instruct AMADEUS to derive a model from that information:
+In order to stage a running example, let's suppose we have discover that the server of our organization is running on Nginx version 1.0. To obtain related vulnerable configurations (or attack vectors) we may instruct AMADEUS to derive a model from that information with command ```python main.py -k "nginx 1"```:
 
-![AMADEUS Step 1](./docs/images/amadeus_ex_01.png)
+![AMADEUS Step 2-1](./docs/images/step2-1.png)
 
-This operation will effectively create some models with the vulnerabilities detected under the path _fm/models_. Now, lets try to load the model with a FaMa compatible tool (like [FaMaShell-Docker](https://github.com/FaMaFW/FaMaShell-Docker)) and apply some operations over it:
+![AMADEUS Step 2-2](./docs/images/step2-2.png)
 
-![AMADEUS Step 2](./docs/images/amadeus_ex_02.png)
+This operation will effectively create some models with the vulnerabilities detected under the path _fm/models_. Now, lets try to make some operations in the model with FaMa-Py help, that parse the model in AFM extension and operate it.
+
+### Number of attack vectors
+
+This operation returns the number of attack vectors by passing the path of a model.
+
+With the command ```python main.py -pn fm/models/CVE-2020-29238.afm``` AMADEUS returns:
+
+![AMADEUS Operation 1](./docs/images/op1.png)
+
+### Attack vectors
+
+This operation returns the of attack vectors by passing the path of a model.
+
+With the command ```python main.py -p fm/models/CVE-2020-29238.afm``` AMADEUS returns:
+
+![AMADEUS Operation 2](./docs/images/op2.png)
+
+### Valid attack vector
+
+This operation return true in a specified attack vector is in the set of attack vectors of a model or false otherwise. Also check if a partial attack vector can define a sub set of attack vectors, in the case we use a complete attack vector the sub set will be the same. A configuration is specified as a set of selected and non selected features of a model following the pattern ```[a-zA-Z0-9_:^]```. For example for the model CVE-2020-29238 a configuration could be CVE_2020_29238:types:exploits:expressvpn:^direct, the ^ implies it is a none selected feature.
+
+This operations requires the path to the model and a configuration of the same.
+
+With the command ```python main.py -vc fm/models/CVE-2020-29238.afm CVE_2020_29238:types:exploits:expressvpn:^direct``` AMADEUS returns:
+
+![AMADEUS Operation 3](./docs/images/op3.png)
+
+### Filter
+
+A partial configuration can be used for filter attack vector in a model, this operations only requires the path to a model and a configuration of the same to filter them.
+
+With the command ```python main.py -f fm/models/CVE-2020-29238.afm CVE_2020_29238:types:exploits:expressvpn:^direct``` AMADEUS returns:
+
+![AMADEUS Operation 4](./docs/images/op4.png)

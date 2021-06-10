@@ -51,6 +51,7 @@ def filter(path, configuration_names):
     operation.set_configuration(get_configuration(result[0], configuration_names))
     operation.execute(result[1])
     print('The filter atack vectors of the model are -> ' + str(operation.filter_products))
+    print('The number of filter atack vectors of the model are -> ' + str(len(operation.filter_products)))
 
 def valid_configuration(path, configuration_names):
     result = transform(path)
