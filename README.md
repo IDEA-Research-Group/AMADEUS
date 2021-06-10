@@ -8,8 +8,8 @@ AMADEUS is a framework solution to enable and help the automatic analysis and te
 The minimum software requirements to run AMADEUS are:
 
 * Python  3
+* Docker to run a Redis instance with the Redisearch module loaded
 * An Internet connection
-* A Redis instance with the Redisearch module loaded, running locally
 
 In addition, if you plan to run automatic network-based vulnerability tests, you may need to install [Nmap](https://nmap.org) in your system and configure your path properly.
 
@@ -19,24 +19,6 @@ This step involves the process of retrieving and installing required dependencie
 
 ```$ cd /path/to/amadeus```
 ```$ pip install -r requirements.txt```
-
-For Redis, you can download the Redisearch module [here](https://redislabs.com/redis-enterprise-software/download-center/modules/).
-Once downloaded, launch a Redis instance with the provided `run-redis.sh` script. You can run this from Windows using WSL.
-
-Lastly, in order to build the Redis vulnerability cache, you must download the NVD offline dataset from [their website](https://nvd.nist.gov/vuln/data-feeds),
-and store the JSON files inside a folder named `nvd_data_feeds`, and run `nvd_feed_processor.py`.
-
-The folder structure should resemble the following:
-```
-AMADEUS
-|--- ...
-|--- nvd_data_feeds
-	|--- nvdcpematch-1.0.json
-	|--- nvdcve-1.1-2002.json
-	|--- ...
-	|--- nvdcve-1.1-2020.json
-	|--- nvdcve-1.1-recent.json
-```
 
 ## Usage
 
@@ -51,6 +33,10 @@ usage: main.py [-h] [-k KEYWORD] [-e] [-a] [-t TARGET]
 optional arguments:
 
 -h, --help  show this help message and exit
+
+--open  Launch the dockerized redislab/redisearch module
+
+--close  Close and delete the dockerized redislab/redisearch module
 
 -k KEYWORD, --keyword KEYWORD
 
@@ -67,7 +53,50 @@ optional arguments:
 -t TARGET, --target TARGET
 
 	CIDR block or host target of the automatic analysis
+
+-p PRODUCTS, --products PRODUCTS
+
+    The feature model path to perfom the products operation
+
+-pn PRODUCTSNUMBER, --productsnumber PRODUCTSNUMBER
+
+    The feature model path to perfom the products number operation
+
+-vc VALIDCONFIG VALIDCONFIG, --validconfig VALIDCONFIG VALIDCONFIG
+
+    The feature model path and a configuration to perfom the valid configuration operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it is a none selected feature
+
+-f FILTER FILTER, --filter FILTER FILTER
+
+    The feature model path and a configuration to perfom the filter operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it is a none selected feature
 ```
+
+###  Automatic launch dockerized Redis
+For launch AMADEUS you only need to tun the following command:
+
+```$ python main.py --open```
+
+This command automatically launch the dockerized Redis with the Redisearch module loaded.
+Then, automatically download the NVD offline dataset from [their website](https://nvd.nist.gov/vuln/data-feeds), and store the JSON files inside a folder named `nvd_data_feeds`, following this structure: 
+
+```
+AMADEUS
+|--- ...
+|--- nvd_data_feeds
+	|--- nvdcpematch-1.0.json
+	|--- nvdcve-1.1-2002.json
+	|--- ...
+	|--- nvdcve-1.1-2020.json
+	|--- nvdcve-1.1-recent.json
+```
+
+Lastly, process this files in Redis.
+
+Also, if you can close AMADEUS you can run the following command:
+
+```$ python main.py --close```
+
+Begin a process to close down docker and delete the container.
 
 ###  Automatic network analysis
 
@@ -95,9 +124,11 @@ To provide your own keywords and perform a search based on them:
 
 ## Output & Examples
 
-  
+Feature models inferred by AMADEUS are expressed using the AFM formatting, used in FaMa-Py. A tool packaged in PyPI Python Package Index, compatible with this kind of format can be then used to perform a series of operations over these models.
 
-Feature models inferred by AMADEUS are expressed using the [FaMa](https://github.com/FaMaFW/FaMA) formatting. A tool compatible with this kind of format can be then used to perform a series of operations over these models.
+First, launch AMADEUS with command ```python main.py --open```:
+
+![AMADEUS Step 1](./docs/images/open.png)
 
 In order to stage a running example, let's suppose we have discover that the Nginx server of our organization is running version 1.7. To obtain related vulnerable configurations (or attack vectors) we may instruct AMADEUS to derive a model from that information:
 
