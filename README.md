@@ -71,7 +71,7 @@ optional arguments:
     The feature model path and a configuration to perfom the filter operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it is a none selected feature
 ```
 
-###  Automatic launch dockerized Redis
+###  Automatic launch of dockerized Redis
 For launch AMADEUS you only need to tun the following command:
 
 ```python main.py --open```
@@ -171,3 +171,7 @@ A partial configuration can be used for filter attack vector in a model, this op
 With the command ```python main.py -f fm/models/CVE-2020-29238.afm CVE_2020_29238:types:exploits:expressvpn:^direct``` AMADEUS returns:
 
 ![AMADEUS Operation 4](./docs/images/op4.png)
+
+In the last place, for close AMADEUS we can use this command ```python main.py --close```:
+
+![AMADEUS Step 3](./docs/images/step3.png)
