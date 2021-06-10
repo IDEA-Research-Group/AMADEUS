@@ -95,18 +95,11 @@ def construct_cpe_model_for_cve(cve: CVE, cve_times: list):
             f = pool.submit(scraper.get_exploits_for_CPE, cpe, cve, cveExploitDict)
             futures[cpe] = f
 
-        n = len(futures)
-        for i, _ in enumerate(as_completed(futures.values())):
-            progress = int((i/n)*100)
-            if progress % 5 == 0:
-                print('Progress: {}%'.format(progress))
-
     indirect_exploits = {cpe: futures[cpe].result() for cpe in cpesToCheck}
     timer.stop_exploit_scraping()
     generate_tree(cve, semi_model, running_conf, direct_exploits, indirect_exploits, timer)
     print('Wrote tree for ' + cve.cve_id)
     cve_times.append((cve.cve_id, '%.4f' % timer.get_exploit_scraping_time(), '%.4f' % timer.get_tree_build_time(), '%.4f' % timer.get_constraints_time()))
-   # time.sleep(5) # Wait until releasing worker to reduce load...?
 
 def construct_cpe_model(related_cves, keyword, cve_times):
     if related_cves:
@@ -115,10 +108,6 @@ def construct_cpe_model(related_cves, keyword, cve_times):
                 futures = {}
                 f = pool.submit(construct_cpe_model_for_cve, cve, cve_times)
                 futures[cve.cve_id] = f
-            n = len(futures)
-            for i, _ in enumerate(as_completed(futures.values())):
-               #progress = int((i/n)*100)
-               pass
         save_times_in_csv(keyword, cve_times)
         print('Finished')
         
