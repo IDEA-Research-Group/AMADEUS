@@ -156,7 +156,7 @@ With the command ```python main.py -p fm/models/CVE-2020-29238.afm``` AMADEUS re
 
 ### Valid attack vector
 
-This operation return true in a specified attack vector is in the set of attack vectors of a model or false otherwise. Also check if a partial attack vector can define a sub set of attack vectors, in the case we use a complete attack vector the sub set will be the same. A configuration is specified as a set of selected and non selected features of a model following the pattern ```[a-zA-Z0-9_:^]```. For example for the model CVE-2020-29238 a configuration could be CVE_2020_29238:types:exploits:expressvpn:^direct, the ^ implies it is a none selected feature.
+This operation return true is a specified attack vector is in the set of attack vectors of a model or false otherwise. Also check if a partial attack vector can define a sub set of attack vectors, in the case we use a complete attack vector the sub set will be the same. The attack vectors are defined by configurations, a configuration is specified as a set of selected and non selected features of a model following the pattern ```[a-zA-Z0-9_:^]```. For example for the model CVE-2020-29238 a configuration could be CVE_2020_29238:types:exploits:expressvpn:^direct, the ^ implies it is a none selected feature.
 
 This operations requires the path to the model and a configuration of the same.
 
@@ -166,7 +166,7 @@ With the command ```python main.py -vc fm/models/CVE-2020-29238.afm CVE_2020_292
 
 ### Filter
 
-A partial configuration can be used for filter attack vector in a model, this operations only requires the path to a model and a configuration of the same to filter them.
+A partial attack vector can be used for filter attack vector in a model, this operations only requires the path to a model and a configuration of the same to filter them.
 
 With the command ```python main.py -f fm/models/CVE-2020-29238.afm CVE_2020_29238:types:exploits:expressvpn:^direct``` AMADEUS returns:
 
