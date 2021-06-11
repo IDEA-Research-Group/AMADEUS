@@ -111,6 +111,17 @@ class FmToPysat(ModelToModel):
                 result.append(cnf)
         return result
 
+    def combinate(self, number, name, cnfs_left, cnfs_rigth):
+        if number > 0 and name == 'and':
+            result = self.and_combinator(cnfs_left, cnfs_rigth)
+        elif number > 0 and name in ('or', 'requires', 'excludes', 'implies'):
+            result = self.or_combinator(cnfs_left, cnfs_rigth)
+        elif number < 0 and name == 'and':
+            result = self.or_combinator(cnfs_left, cnfs_rigth)
+        elif number < 0 and name in ('or', 'requires', 'excludes', 'implies'):
+            result = self.and_combinator(cnfs_left, cnfs_rigth)
+        return result
+
     def get_var(self, ctc, node, name, number):
         childs = ctc.ast.get_childs(node)
         if name == 'not':
@@ -138,6 +149,7 @@ class FmToPysat(ModelToModel):
         '''
         name = node.get_name()
         childs = ctc.ast.get_childs(node)
+        result = []
 
         if name in ('and', 'or'):
             cnfs_left = self.ast_iterator(ctc, childs[0], number)
@@ -149,16 +161,10 @@ class FmToPysat(ModelToModel):
             cnfs_left = self.ast_iterator(ctc, childs[0], number * -1)
             cnfs_rigth = self.ast_iterator(ctc, childs[1], number * -1)
         else:
-            return self.get_var(ctc, node, name, number)
+            result = self.get_var(ctc, node, name, number)
 
-        if number > 0 and name == 'and':
-            result = self.and_combinator(cnfs_left, cnfs_rigth)
-        elif number > 0 and name in ('or', 'requires', 'excludes', 'implies'):
-            result = self.or_combinator(cnfs_left, cnfs_rigth)
-        elif number < 0 and name == 'and':
-            result = self.or_combinator(cnfs_left, cnfs_rigth)
-        elif number < 0 and name in ('or', 'requires', 'excludes', 'implies'):
-            result = self.and_combinator(cnfs_left, cnfs_rigth)
+        if not result:
+            result = self.combinate(number, name, cnfs_left, cnfs_rigth)
 
         return result
 
@@ -174,6 +180,7 @@ class FmToPysat(ModelToModel):
         else:
             print('This FM contains non supported elements', file=sys.stderr)
 
+        print(cnfs)
         self.ctc_cnf.extend(cnfs)
 
     def transform(self):

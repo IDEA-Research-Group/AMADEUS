@@ -6,4 +6,4 @@ A: [B] [C] [D];
 
 
 %Constraints
-A IMPLIES (B AND (C OR (D AND (C OR D))));
+A IMPLIES (B AND D);
