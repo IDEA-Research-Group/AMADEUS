@@ -22,7 +22,7 @@ class FmToPysat(ModelToModel):
         self.destination_model = PySATModel()
         self.r_cnf = self.destination_model.r_cnf
         self.ctc_cnf = self.destination_model.ctc_cnf
-        
+
     def add_feature(self, feature):
         if feature.name not in self.destination_model.variables.keys():
             self.destination_model.variables[feature.name] = self.counter
@@ -129,7 +129,7 @@ class FmToPysat(ModelToModel):
                 ctc.ast.get_childs(node)[0].get_name()
             )
             if var:
-                result =  [[-var * number]]
+                result = [[-var * number]]
             else:
                 cnfs = self.ast_iterator(ctc, childs[0], number * -1)
                 result = cnfs
@@ -180,7 +180,6 @@ class FmToPysat(ModelToModel):
         else:
             print('This FM contains non supported elements', file=sys.stderr)
 
-        print(cnfs)
         self.ctc_cnf.extend(cnfs)
 
     def transform(self):
