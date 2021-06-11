@@ -5,20 +5,19 @@
 __author__ = "Nicolás de Ory Carmona (deorynicolas@gmail.com)"
 
 
-# BeautifulSoup4 and HTTP connections
-import ssl
-from bs4 import BeautifulSoup
-from urllib.request import Request, urlopen, HTTPRedirectHandler
-import urllib.parse
-import requests
-
-# Common
-import re
 import json
 import os
+# Common
+import re
+# BeautifulSoup4 and HTTP connections
+import ssl
 import time
+import urllib.parse
 from collections import defaultdict
+from urllib.request import HTTPRedirectHandler, Request, urlopen
 
+import requests
+from bs4 import BeautifulSoup
 from scrapping.structures import CVE
 
 
