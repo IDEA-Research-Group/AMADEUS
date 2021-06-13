@@ -2,9 +2,9 @@
 Redis helper functions. Needs a Redis server running locally.
 '''
 
-import redis
 import jsonpickle
-from redisearch import Client, TextField, IndexDefinition, Query
+import redis
+from redisearch import Client, IndexDefinition, Query, TextField
 
 from scrapping.structures import CVE
 
@@ -16,13 +16,6 @@ CPES_FROM_CVE_HASH_KEY = "cpes_from_cve_{}"
 EXPLOITS_FROM_CVE_HASH_KEY = "exploits_from_cve_{}"
 
 client = Client("cveIndex")
-try:
-    client.info()
-except Exception as e:
-    if e.args[0] != "Unknown Index name":
-        print("You must be running a redis server with the redisearch module installed")
-        exit()
-
 
 '''
 def store_search_results(keyword: str, results: list):

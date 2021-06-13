@@ -2,6 +2,7 @@ __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 
 from cpe import CPE
 
+
 # CPE Class does not provide a hash function by default
 # We create a subclass and add this feature in order to 
 # be able to use Sets and other data structures based

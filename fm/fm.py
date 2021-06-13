@@ -7,13 +7,13 @@ __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 
 from collections import defaultdict
 
-from .serializers import FamaSerializer
-from .structures import RestrictionNode, HashableCPE
-from ._aux import generate_mock_complex_CPEs, generate_mock_simple_CPEs
-
+from scrapping.structures import CVE
 from timer import ChronoTimer
 
-from scrapping.structures import CVE
+from ._aux import generate_mock_complex_CPEs, generate_mock_simple_CPEs
+from .serializers import FamaSerializer
+from .structures import HashableCPE, RestrictionNode
+
 
 ###############################
 ###          T TREE         ###
