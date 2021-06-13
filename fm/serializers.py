@@ -7,13 +7,14 @@
 __author__ = "Jose Antonio Carmona (joscarfom@alum.us.es)"
 
 
-import re
 import os
-from typing import Union
+import re
 from collections.abc import Iterable
-from .structures import RestrictionNode
+from typing import Union
 
 from scrapping.structures import CVE, HashableCPE
+
+from .structures import RestrictionNode
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_FOLDER = "models"
