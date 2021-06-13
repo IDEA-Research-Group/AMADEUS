@@ -72,12 +72,11 @@ optional arguments:
 ```
 
 ###  Automatic launch of dockerized Redis
-For launch AMADEUS you only need to tun the following command:
+To launch AMADEUS you only need to run the following command:
 
 ```python main.py --open```
 
-This command automatically launch the dockerized Redis with the Redisearch module loaded.
-Then, automatically download the NVD offline dataset from [their website](https://nvd.nist.gov/vuln/data-feeds), and store the JSON files inside a folder named `nvd_data_feeds`, following this structure: 
+This command automatically launch the dockerized Redis with the Redisearch module loaded. Then, AMADEUS automatically downloads the NVD offline dataset from [their website](https://nvd.nist.gov/vuln/data-feeds), and stores the JSON files inside a folder named `nvd_data_feeds`, following this structure: 
 
 ```
 AMADEUS
@@ -90,7 +89,7 @@ AMADEUS
 	|--- nvdcve-1.1-recent.json
 ```
 
-Lastly, process this files in Redis.
+Lastly, AMADEUS processes this files in Redis.
 
 Also, if you can close AMADEUS you can run the following command:
 
@@ -130,7 +129,7 @@ First, launch AMADEUS with command ```python main.py --open```:
 
 ![AMADEUS Step 1](./docs/images/step1.png)
 
-In order to stage a running example, let's suppose we have discover that the server of our organization is running on Nginx version 1.0. To obtain related vulnerable configurations (or attack vectors) we may instruct AMADEUS to derive a model from that information with command ```python main.py -k "nginx 1"```:
+In order to stage a running example, let's suppose we have discovered that the server of our organization is running on Nginx version 1.0. To obtain related vulnerable configurations (or attack vectors) we may instruct AMADEUS to derive a model from that information with command ```python main.py -k "nginx 1"```:
 
 ![AMADEUS Step 2-1](./docs/images/step2-1.png)
 
@@ -148,7 +147,7 @@ With the command ```python main.py -pn fm/models/CVE-2020-29238.afm``` AMADEUS r
 
 ### Attack vectors
 
-This operation returns the of attack vectors by passing the path of a model.
+This operation returns the attack vectors by passing the path of a model.
 
 With the command ```python main.py -p fm/models/CVE-2020-29238.afm``` AMADEUS returns:
 
@@ -158,7 +157,7 @@ With the command ```python main.py -p fm/models/CVE-2020-29238.afm``` AMADEUS re
 
 This operation return true is a specified attack vector is in the set of attack vectors of a model or false otherwise. Also check if a partial attack vector can define a sub set of attack vectors, in the case we use a complete attack vector the sub set will be the same. The attack vectors are defined by configurations, a configuration is specified as a set of selected and non selected features of a model following the pattern ```[a-zA-Z0-9_:^]```. For example for the model CVE-2020-29238 a configuration could be CVE_2020_29238:types:exploits:expressvpn:^direct, the ^ implies it is a none selected feature.
 
-This operations requires the path to the model and a configuration of the same.
+This operation requires the path to the model and a configuration of the same.
 
 With the command ```python main.py -vc fm/models/CVE-2020-29238.afm CVE_2020_29238:types:exploits:expressvpn:^direct``` AMADEUS returns:
 
@@ -166,12 +165,12 @@ With the command ```python main.py -vc fm/models/CVE-2020-29238.afm CVE_2020_292
 
 ### Filter
 
-A partial attack vector can be used for filter attack vector in a model, this operations only requires the path to a model and a configuration of the same to filter them.
+A partial attack vector can be used to filter attack vector in a model, this operations only requires the path of a model and a configuration of the same to filter them.
 
 With the command ```python main.py -f fm/models/CVE-2020-29238.afm CVE_2020_29238:types:exploits:expressvpn:^direct``` AMADEUS returns:
 
 ![AMADEUS Operation 4](./docs/images/op4.png)
 
-In the last place, for close AMADEUS we can use this command ```python main.py --close```:
+In the last place, to close AMADEUS we can use this command ```python main.py --close```:
 
 ![AMADEUS Step 3](./docs/images/step3.png)
