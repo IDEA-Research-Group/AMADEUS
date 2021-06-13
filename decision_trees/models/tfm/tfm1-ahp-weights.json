@@ -1,0 +1,16 @@
+{
+    "output_weights": {
+        "Inmediata": 0.2384,
+        "64 MB": 0.2323,
+        "32 MB": 0.12,
+        "Una semana": 0.1134,
+        "Rojo": 0.0775,
+        "16 MB": 0.06,
+        "Negro": 0.0448,
+        "Cuatro semanas": 0.0356,
+        "8 MB": 0.031,
+        "Rosa": 0.023,
+        "Azul": 0.0167,
+        "Verde": 0.0072
+    }
+}

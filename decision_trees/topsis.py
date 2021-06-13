@@ -31,61 +31,63 @@ las alternativas.
 '''
 #mcdm.rank()
 
-with open('./decision_trees/result-ahp-weights.json') as file:
-    s = file.read()
-    deserial = jsonpickle.decode(s)
-    ahpWeights = deserial['output_weights']
+def rank_ahp_alternatives(weightsPath, alternativesPath):
 
-with open('./decision_trees/alternatives-example.json') as file:
-    s = file.read()
-    alternatives = jsonpickle.decode(s)
+    with open(weightsPath) as file:
+        s = file.read()
+        deserial = jsonpickle.decode(s)
+        ahpWeights = deserial['output_weights']
 
-'''
-matriz de decision
-[
-    [x1 y1 z1]
-    [x2 y2 z2]
-]
-x1 = Si la alternativa 1 posee la feature X
-'''
+    with open(alternativesPath) as file:
+        s = file.read()
+        alternatives = jsonpickle.decode(s)
 
-alts = ['A'+str(i) for i,_ in enumerate(alternatives)]
-crits = list(ahpWeights.keys())
-weights = list(ahpWeights.values())
-beneficial = [True for i in range(len(crits))]
+    '''
+    matriz de decision
+    [
+        [x1 y1 z1]
+        [x2 y2 z2]
+    ]
+    x1 = Si la alternativa 1 posee la feature X
+    '''
 
-enumCrits = {k: i for i,k in enumerate(crits)}
+    alts = ['A'+str(i) for i,_ in enumerate(alternatives)]
+    crits = list(ahpWeights.keys())
+    weights = list(ahpWeights.values())
+    beneficial = [True for i in range(len(crits))]
 
-decisionList = []
-for alternative in alternatives:
-    altList = [0 for i in range(len(enumCrits))]
-    for c in alternative:
-        if c in enumCrits:
-            altList[enumCrits[c]] = 1
-    decisionList.append(altList)
-    
-matrix = np.array(decisionList)
-xij = pd.DataFrame(matrix, index=alts, columns=crits)
+    enumCrits = {k: i for i,k in enumerate(crits)}
 
-# Executor
-kwargs = {
-    'data': xij,
-    'beneficial': beneficial,
-    'weights': weights,
-    'rank_reverse': True,
-    'rank_method': 'ordinal'
-}
+    decisionList = []
+    for alternative in alternatives:
+        altList = [0 for i in range(len(enumCrits))]
+        for c in alternative:
+            if c in enumCrits:
+                altList[enumCrits[c]] = 1
+        decisionList.append(altList)
+        
+    matrix = np.array(decisionList)
+    xij = pd.DataFrame(matrix, index=alts, columns=crits)
 
-wsm = exe.WSM(**kwargs)
-topsis = exe.Topsis(**kwargs)
-vikor = exe.Vikor(**kwargs)
+    # Executor
+    kwargs = {
+        'data': xij,
+        'beneficial': beneficial,
+        'weights': weights,
+        'rank_reverse': True,
+        'rank_method': 'ordinal'
+    }
 
-# show results
-print("WSM Ranks")
-print(wsm.dataframe)
+    wsm = exe.WSM(**kwargs)
+    topsis = exe.Topsis(**kwargs)
+    vikor = exe.Vikor(**kwargs)
 
-print("TOPSIS Ranks")
-print(topsis.dataframe)
+    # show results
+    print("WSM Ranks")
+    print(wsm.dataframe)
 
-print("Vikor Ranks")
-print(vikor.dataframe)
+    print("TOPSIS Ranks")
+    print(topsis.dataframe)
+
+    print("Vikor Ranks")
+    print(vikor.dataframe)

@@ -1,0 +1,168 @@
+{
+    "py/object": "ahp_structure.AhpTree",
+    "algorithm": "ahp",
+    "version": 1,
+    "nodes": {
+        "children": [
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "Comprar un dispositivo",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "Color",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "Rosa",
+                                "children": [],
+                                "comparisons": {
+                                    "Azul": 2,
+                                    "Verde": 3,
+                                    "Negro": 0.5,
+                                    "Rojo": 0.25
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "Azul",
+                                "children": [],
+                                "comparisons": {
+                                    "Rosa": 0.5,
+                                    "Verde": 3,
+                                    "Negro": 0.25,
+                                    "Rojo": 0.33
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "Verde",
+                                "children": [],
+                                "comparisons": {
+                                    "Rosa": 0.33,
+                                    "Azul": 0.33,
+                                    "Negro": 0.14,
+                                    "Rojo": 0.14
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "Negro",
+                                "children": [],
+                                "comparisons": {
+                                    "Rosa": 2,
+                                    "Azul": 4,
+                                    "Verde": 7,
+                                    "Rojo": 0.33
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "Rojo",
+                                "children": [],
+                                "comparisons": {
+                                    "Rosa": 4,
+                                    "Azul": 3,
+                                    "Verde": 7,
+                                    "Negro": 3
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "Memoria": 0.33,
+                            "Entrega": 0.5
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "Memoria",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "8 MB",
+                                "children": [],
+                                "comparisons": {
+                                    "16 MB": 0.5,
+                                    "32 MB": 0.25,
+                                    "64 MB": 0.14
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "16 MB",
+                                "children": [],
+                                "comparisons": {
+                                    "8 MB": 2,
+                                    "32 MB": 0.5,
+                                    "64 MB": 0.25
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "32 MB",
+                                "children": [],
+                                "comparisons": {
+                                    "8 MB": 4,
+                                    "16 MB": 2,
+                                    "64 MB": 0.5
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "64 MB",
+                                "children": [],
+                                "comparisons": {
+                                    "8 MB": 7,
+                                    "16 MB": 4,
+                                    "32 MB": 2
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "Color": 3,
+                            "Entrega": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "Entrega",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "Inmediata",
+                                "children": [],
+                                "comparisons": {
+                                    "Una semana": 2,
+                                    "Cuatro semanas": 7
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "Una semana",
+                                "children": [],
+                                "comparisons": {
+                                    "Inmediata": 0.5,
+                                    "Cuatro semanas": 3
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "Cuatro semanas",
+                                "children": [],
+                                "comparisons": {
+                                    "Inmediata": 0.14,
+                                    "Una semana": 0.33
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "Color": 2,
+                            "Memoria": 1
+                        }
+                    }
+                ],
+                "comparisons": {}
+            }
+        ]
+    }
+}

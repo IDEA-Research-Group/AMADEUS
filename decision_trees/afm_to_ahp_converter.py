@@ -50,20 +50,17 @@ def process_child_dematel(parent, child):
         for par_child in parent.get_children():
             add_comparisons(parent, par_child, zero_value=True)
 
+def afm_to_ahp_conversion(afmJsonPath, outPath, dematelProcessing = False):
+    with open(afmJsonPath) as file:
+        s = file.read()
+        data = jsonpickle.decode(s)
 
-with open('./decision_trees/json_afm_models/dematel-tfm.json') as file:
-    s = file.read()
-    data = jsonpickle.decode(s)
+    tree = AhpTree()
+    if dematelProcessing:
+        process_child_dematel(tree, data)
+    else:
+        process_child(tree, data)
 
-DO_DEMATEL_PROCESSING = True
-
-tree = AhpTree()
-if DO_DEMATEL_PROCESSING:
-    process_child_dematel(tree, data)
-else:
-    process_child(tree, data)
-
-filename = 'result-afm-ahp' if not DO_DEMATEL_PROCESSING else 'result-afm-dematel'
-with open('./decision_trees/' + filename + '.json', 'w') as out:
-    res = jsonpickle.encode(tree, make_refs=False, indent=4)
-    out.write(res)
+    with open(outPath, 'w') as out:
+        res = jsonpickle.encode(tree, make_refs=False, indent=4)
+        out.write(res)

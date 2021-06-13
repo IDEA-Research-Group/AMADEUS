@@ -89,34 +89,35 @@ def process_node(comparisons, node, parentId = None):
         comparisons[nodeId]['children'].append(child.id)
         process_node(comparisons, child, nodeId)
 
-with open('./decision_trees/result-afm-dematel.json') as file:
-    s = file.read()
-    ahpTree = jsonpickle.decode(s)
+def process_dematel(path):
+    with open(path) as file:
+        s = file.read()
+        ahpTree = jsonpickle.decode(s)
 
-comparisonObject = {}
+    comparisonObject = {}
 
-process_node(comparisonObject, ahpTree)
-#print(jsonpickle.encode(comparisonObject))
+    process_node(comparisonObject, ahpTree)
+    #print(jsonpickle.encode(comparisonObject))
 
-comparisons = {}
-for key,value in comparisonObject.items():
-    for compKey, compVal in value['comparisons'].items():
-        comparisons[compKey] = compVal
+    comparisons = {}
+    for key,value in comparisonObject.items():
+        for compKey, compVal in value['comparisons'].items():
+            comparisons[compKey] = compVal
 
-#print(jsonpickle.encode(comparisons))
+    #print(jsonpickle.encode(comparisons))
 
-labels = {c[0] for c in comparisons.keys()}
-labelSet = {c: i for i,c in enumerate(labels)}
-numberOfCriteria = len(labels)
+    labels = {c[0] for c in comparisons.keys()}
+    labelSet = {c: i for i,c in enumerate(labels)}
+    numberOfCriteria = len(labels)
 
-pairedComparisonMatrix = np.zeros((numberOfCriteria, numberOfCriteria))
+    pairedComparisonMatrix = np.zeros((numberOfCriteria, numberOfCriteria))
 
 
-for compKey, compVal in comparisons.items():
-    row = labelSet[compKey[0]]
-    col = labelSet[compKey[1]]
-    pairedComparisonMatrix[row,col] = compVal
+    for compKey, compVal in comparisons.items():
+        row = labelSet[compKey[0]]
+        col = labelSet[compKey[1]]
+        pairedComparisonMatrix[row,col] = compVal
 
-print(labels)
+    #print(labels)
 
-D_plus_R, D_minus_R, weights = dematel_method(pairedComparisonMatrix, list(labels), numberOfCriteria, numberOfCriteria)
+    D_plus_R, D_minus_R, weights = dematel_method(pairedComparisonMatrix, list(labels), numberOfCriteria, numberOfCriteria)

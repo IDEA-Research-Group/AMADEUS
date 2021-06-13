@@ -1,0 +1,7 @@
+{
+    "Comprar un dispositivo": {
+        "Color": ["Rosa","Azul","Verde","Negro","Rojo"],
+        "Memoria": ["8 MB", "16 MB", "32 MB", "64 MB"],
+        "Entrega": ["Inmediata", "Una semana", "Cuatro semanas"]
+    }
+}
