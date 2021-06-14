@@ -36,9 +36,9 @@ The procedure to use the utility is outlined below:
 
 1. Run the python file like shown above
 2. If an AHP file doesn't exist yet, one is created with default weights
-3. User is asked to customize the comparison weights to their preferences
+3. User is asked to customize the AHP comparison weights to their preferences
 4. If a DEMATEL file doesn't exist yet, one is created with default weights. Note that the program is expected to fail if weights aren't changed from its defaults (they're all zero by default)
-5. User is asked to customize the comparison weights to their preferences
+5. User is asked to customize the DEMATEL comparison weights to their preferences
 6. If an alternatives file is created, alternatives are ranked using Weighted Sum, TOPSIS and VIKOR
 7. If the DEMATEL file is correctly filled out, a 2D chart is displayed, and a file is created with output data from the algorithm
 
