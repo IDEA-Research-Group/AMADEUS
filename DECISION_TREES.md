@@ -10,7 +10,7 @@ python ./decision_trees/decision_tree_processor.py
 
 Before running the utility, it is advised to tweak the following values, found in the top part of the file:
 
-```
+```python
 ROOT_PATH = "./decision_trees/models/" # The base path where the AFM file can be found
 
 FILE_NAME = "example" # The base file name
