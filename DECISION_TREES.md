@@ -53,7 +53,7 @@ An example alternative file is shown below:
 ]
 ```
 Note that since we're working with qualitative features, not including a feature in an alternative is equal to saying it has a value of 0.
-E.g. the alternative matrix for the above file will be processed as follows:
+E.g. the alternative matrix for the above file will be interpreted as follows:
 
 | alternative | feature1 | feature2 | feature3 | feature4 | feature5 |
 |-------------|----------|----------|----------|----------|----------|
