@@ -31,7 +31,7 @@ las alternativas.
 '''
 #mcdm.rank()
 
-def rank_ahp_alternatives(weightsPath, alternativesPath):
+def rank_ahp_alternatives(weightsPath, alternativesPath, outPath):
 
     with open(weightsPath) as file:
         s = file.read()
@@ -83,11 +83,13 @@ def rank_ahp_alternatives(weightsPath, alternativesPath):
     vikor = exe.Vikor(**kwargs)
 
     # show results
-    print("WSM Ranks")
-    print(wsm.dataframe)
+    finalString = ""
+    finalString += "WSM Ranks\n"
+    finalString += str(wsm.dataframe)
+    finalString += "\n\nTOPSIS Ranks\n"
+    finalString += str(topsis.dataframe)
+    finalString += "\n\nVikor Ranks\n"
+    finalString += str(vikor.dataframe)
 
-    print("TOPSIS Ranks")
-    print(topsis.dataframe)
-
-    print("Vikor Ranks")
-    print(vikor.dataframe)
+    with open(outPath, 'w') as out:
+        out.write(finalString)

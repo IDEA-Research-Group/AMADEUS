@@ -33,19 +33,20 @@ def dematel_method(dataset, labels, size_x = 10, size_y = 10):
     print('')
     plt.figure(figsize = [size_x, size_y])
     plt.style.use('ggplot')
+    outputStringBuffer = ""
     for i in range(0, dataset.shape[0]):
         if (D_minus_R[i] >= 0 and D_plus_R[i] >= np.mean(D_plus_R)):
             plt.text(D_plus_R[i],  D_minus_R[i], labels[i], size = 12, ha = 'center', va = 'center', bbox = dict(boxstyle = 'round', ec = (0.0, 0.0, 0.0), fc = (0.7, 1.0, 0.7),)) 
-            print(labels[i]+': Quadrant I')
+            outputStringBuffer += labels[i]+': Quadrant I'+'\n'
         elif (D_minus_R[i] >= 0 and D_plus_R[i] < np.mean(D_plus_R)):
             plt.text(D_plus_R[i],  D_minus_R[i], labels[i], size = 12, ha = 'center', va = 'center', bbox = dict(boxstyle = 'round', ec = (0.0, 0.0, 0.0), fc = (1.0, 1.0, 0.7),))
-            print(labels[i]+': Quadrant II')
+            outputStringBuffer += labels[i]+': Quadrant II'+'\n'
         elif (D_minus_R[i] < 0 and D_plus_R[i] < np.mean(D_plus_R)):
             plt.text(D_plus_R[i],  D_minus_R[i], labels[i], size = 12, ha = 'center', va = 'center', bbox = dict(boxstyle = 'round', ec = (0.0, 0.0, 0.0), fc = (1.0, 0.7, 0.7),)) 
-            print(labels[i]+': Quadrant III')
+            outputStringBuffer += labels[i]+': Quadrant III'+'\n'
         else:
             plt.text(D_plus_R[i],  D_minus_R[i], labels[i], size = 12, ha = 'center', va = 'center', bbox = dict(boxstyle = 'round', ec = (0.0, 0.0, 0.0), fc = (0.7, 0.7, 1.0),)) 
-            print(labels[i]+': Quadrant IV')
+            outputStringBuffer += labels[i]+': Quadrant IV'+'\n'
     axes = plt.gca()
     xmin = np.amin(D_plus_R)
     if (xmin > 0):
@@ -66,7 +67,8 @@ def dematel_method(dataset, labels, size_x = 10, size_y = 10):
     plt.xlabel('Prominence (D + R)')
     plt.ylabel('Relation (D - R)')
     plt.show()
-    return D_plus_R, D_minus_R, weights
+    outputStringBuffer += '\n'
+    return D_plus_R, D_minus_R, weights, outputStringBuffer
 
 def process_node(comparisons, node, parentId = None):
     if isinstance(node, AhpTree):
@@ -89,7 +91,7 @@ def process_node(comparisons, node, parentId = None):
         comparisons[nodeId]['children'].append(child.id)
         process_node(comparisons, child, nodeId)
 
-def process_dematel(path):
+def process_dematel(path, outPath):
     with open(path) as file:
         s = file.read()
         ahpTree = jsonpickle.decode(s)
@@ -106,7 +108,11 @@ def process_dematel(path):
 
     #print(jsonpickle.encode(comparisons))
 
-    labels = {c[0] for c in comparisons.keys()}
+    labels = set()
+    for c in comparisons.keys():
+        labels.add(c[0])
+        labels.add(c[1])
+
     labelSet = {c: i for i,c in enumerate(labels)}
     numberOfCriteria = len(labels)
 
@@ -120,4 +126,13 @@ def process_dematel(path):
 
     #print(labels)
 
-    D_plus_R, D_minus_R, weights = dematel_method(pairedComparisonMatrix, list(labels), numberOfCriteria, numberOfCriteria)
+    D_plus_R, D_minus_R, weights, outputStringBuffer = dematel_method(pairedComparisonMatrix, list(labels), numberOfCriteria, numberOfCriteria)
+    with open(outPath, 'w') as out:
+        out.write(outputStringBuffer)
+        out.write('D_PLUS_R:\n')
+        out.write(str(D_plus_R) + '\n')
+        out.write('D_MINUS_R:\n')
+        out.write(str(D_minus_R) + '\n')
+        out.write('WEIGHTS:\n')
+        out.write(str(weights) + '\n')
+    

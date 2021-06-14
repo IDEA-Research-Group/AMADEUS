@@ -98,6 +98,8 @@ Also, if you can close AMADEUS you can run the following command:
 
 Begin a process to close down docker and delete the container.
 
+### Decision tree analysis
+Please see [FA](./DECISION_TREES.md) for detailed usage instructions.
 ###  Automatic network analysis
 
 By running the program in this mode, AMADEUS will launch a Nmap analysis to the specified IP (or CIDR block) and identify relevant information of the target system. These details will be used to retrieve potentially related CVE flaws and vector attacks on an online vulnerability database (NVD).

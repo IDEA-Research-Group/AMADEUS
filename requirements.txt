@@ -14,3 +14,4 @@ ujson==4.0.2
 famapy==0.2.0
 famapy-fm==0.2.0
 famapy-sat==0.2.0
+Pillow==8.2.0
