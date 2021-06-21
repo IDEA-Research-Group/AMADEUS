@@ -1,0 +1,56 @@
+{
+    "py/object": "ahp_structure.AhpTree",
+    "algorithm": "ahp",
+    "version": 1,
+    "nodes": {
+        "children": [
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "tfm3",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "precio",
+                        "children": [],
+                        "comparisons": {
+                            "memoria": 1,
+                            "camara": 1,
+                            "procesador": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "memoria",
+                        "children": [],
+                        "comparisons": {
+                            "precio": 3,
+                            "camara": 2,
+                            "procesador": 2
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "camara",
+                        "children": [],
+                        "comparisons": {
+                            "precio": 3,
+                            "memoria": 2,
+                            "procesador": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "procesador",
+                        "children": [],
+                        "comparisons": {
+                            "precio": 4,
+                            "memoria": 1,
+                            "camara": 2
+                        }
+                    }
+                ],
+                "comparisons": {}
+            }
+        ]
+    }
+}

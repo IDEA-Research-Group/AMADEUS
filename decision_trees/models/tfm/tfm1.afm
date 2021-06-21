@@ -1,0 +1,8 @@
+%Relationships
+tfm1: color memoria entrega
+
+color: rosa azul verde rojo negro
+memoria: 8mb 16mb 32mb 64mb
+entrega: inmediata una_semana cuatro_semanas
+
+%Constraints

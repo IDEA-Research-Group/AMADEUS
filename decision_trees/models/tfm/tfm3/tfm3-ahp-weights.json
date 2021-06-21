@@ -1,0 +1,8 @@
+{
+    "output_weights": {
+        "procesador": 0.25,
+        "precio": 0.25,
+        "memoria": 0.25,
+        "camara": 0.25
+    }
+}

@@ -16,8 +16,8 @@ Procedimiento:
 y muestre el gráfico DEMATEL
 '''
 
-ROOT_PATH = "./decision_trees/models/"
-FILE_NAME = "CVE-2008-1678"
+ROOT_PATH = "./models/tfm/"
+FILE_NAME = "tfm3"
 AFM_EXTENSION = ".afm"
 AFM_JSON_EXTENSION = "-afm.json"
 AHP_EXTENSION = "-ahp.json"

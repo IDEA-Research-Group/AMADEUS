@@ -1,0 +1,26 @@
+{
+    "tfm2": {
+        "precio": [
+            "precio_200",
+            "precio_225",
+            "precio_250",
+            "precio_275",
+            "precio_300"
+        ],
+        "memoria": [
+            "memoria_16",
+            "memoria_32"
+        ],
+        "camara": [
+            "camara_8",
+            "camara_12",
+            "camara_16"
+        ],
+        "acabado": [
+            "acabado_4",
+            "acabado_3",
+            "acabado_2",
+            "acabado_1"
+        ]
+    }
+}

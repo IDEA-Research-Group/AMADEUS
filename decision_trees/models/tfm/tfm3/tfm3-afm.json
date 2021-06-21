@@ -1,0 +1,8 @@
+{
+    "tfm3": [
+        "precio",
+        "memoria",
+        "camara",
+        "procesador"
+    ]
+}

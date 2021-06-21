@@ -1,0 +1,18 @@
+{
+    "output_weights": {
+        "precio_200": 0.129,
+        "memoria_32": 0.125,
+        "memoria_16": 0.125,
+        "camara_16": 0.0833,
+        "camara_8": 0.0833,
+        "camara_12": 0.0833,
+        "precio_225": 0.0645,
+        "acabado_1": 0.0625,
+        "acabado_4": 0.0625,
+        "acabado_3": 0.0625,
+        "acabado_2": 0.0625,
+        "precio_250": 0.0322,
+        "precio_275": 0.0161,
+        "precio_300": 0.0081
+    }
+}

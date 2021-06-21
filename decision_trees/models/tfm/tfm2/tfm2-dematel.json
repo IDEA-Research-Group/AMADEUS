@@ -1,0 +1,198 @@
+{
+    "py/object": "ahp_structure.AhpTree",
+    "algorithm": "ahp",
+    "version": 1,
+    "nodes": {
+        "children": [
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "tfm2",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "precio",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "precio_200",
+                                "children": [],
+                                "comparisons": {
+                                    "precio_225": 0,
+                                    "precio_250": 0,
+                                    "precio_275": 0,
+                                    "precio_300": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "precio_225",
+                                "children": [],
+                                "comparisons": {
+                                    "precio_200": 0,
+                                    "precio_250": 2,
+                                    "precio_275": 0,
+                                    "precio_300": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "precio_250",
+                                "children": [],
+                                "comparisons": {
+                                    "precio_200": 0,
+                                    "precio_225": 0,
+                                    "precio_275": 0.5,
+                                    "precio_300": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "precio_275",
+                                "children": [],
+                                "comparisons": {
+                                    "precio_200": 0,
+                                    "precio_225": 0,
+                                    "precio_250": 0,
+                                    "precio_300": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "precio_300",
+                                "children": [],
+                                "comparisons": {
+                                    "precio_200": 0,
+                                    "precio_225": 0,
+                                    "precio_250": 0,
+                                    "precio_275": 0
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "memoria": 0,
+                            "camara": 0,
+                            "acabado": 0
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "memoria",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "memoria_16",
+                                "children": [],
+                                "comparisons": {
+                                    "memoria_32": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "memoria_32",
+                                "children": [],
+                                "comparisons": {
+                                    "memoria_16": 0
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "precio": 0,
+                            "camara": 0,
+                            "acabado": 0
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "camara",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "camara_8",
+                                "children": [],
+                                "comparisons": {
+                                    "camara_12": 0,
+                                    "camara_16": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "camara_12",
+                                "children": [],
+                                "comparisons": {
+                                    "camara_8": 0,
+                                    "camara_16": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "camara_16",
+                                "children": [],
+                                "comparisons": {
+                                    "camara_8": 0,
+                                    "camara_12": 0
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "precio": 0,
+                            "memoria": 0,
+                            "acabado": 0
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "acabado",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "acabado_4",
+                                "children": [],
+                                "comparisons": {
+                                    "acabado_3": 0,
+                                    "acabado_2": 0,
+                                    "acabado_1": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "acabado_3",
+                                "children": [],
+                                "comparisons": {
+                                    "acabado_4": 0,
+                                    "acabado_2": 0,
+                                    "acabado_1": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "acabado_2",
+                                "children": [],
+                                "comparisons": {
+                                    "acabado_4": 0,
+                                    "acabado_3": 0,
+                                    "acabado_1": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "acabado_1",
+                                "children": [],
+                                "comparisons": {
+                                    "acabado_4": 0,
+                                    "acabado_3": 0,
+                                    "acabado_2": 0
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "precio": 0,
+                            "memoria": 0,
+                            "camara": 0
+                        }
+                    }
+                ],
+                "comparisons": {}
+            }
+        ]
+    }
+}
