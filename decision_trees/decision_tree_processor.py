@@ -24,8 +24,8 @@ AHP_EXTENSION = "-ahp.json"
 DEMATEL_EXTENSION = "-dematel.json"
 AHP_WEIGHTS_EXTENSION = "-ahp-weights.json"
 ALTERNATIVES_EXTENSION = "-alternatives.json"
-RANK_OUTPUT_EXTENSION = "-rank-output.log"
-DEMATEL_OUTPUT_EXTENSION = "-dematel-output.log"
+RANK_OUTPUT_EXTENSION = "-rank-output.json"
+DEMATEL_OUTPUT_EXTENSION = "-dematel-output.json"
 
 OUTPUT_PATH = ROOT_PATH + FILE_NAME + "/"
 pathlib.Path(OUTPUT_PATH).mkdir(parents=True, exist_ok=True) 

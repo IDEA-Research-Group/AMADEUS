@@ -27,8 +27,9 @@ def process_node(node:Feature):
 def afm_to_afm_json_conversion(afmPath, outPath=None):
     afm = AFMTransformation(afmPath).transform()
     nodeDict = process_node(afm.root)
+    resultDict = {afm.root.name: nodeDict}
     with open(outPath, 'w') as out:
-        res = jsonpickle.encode(nodeDict, make_refs=False, indent=4)
+        res = jsonpickle.encode(resultDict, make_refs=False, indent=4)
         out.write(res)
 
 # CVE 2019-8069 y 8070 no funcionan

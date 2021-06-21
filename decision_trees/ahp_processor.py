@@ -65,34 +65,30 @@ def process_ahp(ahpJsonFilePath, ahpWeightsOutPath):
     comparisons = {}
 
     process_node(comparisons, ahpTree)
-    #print(jsonpickle.encode(comparisons))
 
     '''
+    MANUAL USAGE OF THE COMPARE FUNCTION
+
     root = ahpy.Compare('Criteria',criteria_comparisons, precision=4, random_index='saaty')
     apache_version = ahpy.Compare('apache-version', apache_version_comparison, precision=4, random_index='saaty')
-    openssl_version = ahpy.Compare('openssl-version', openssl_version_comparison, precision=4, random_index='saaty')
-    ubuntu_version = ahpy.Compare('ubuntu-version', ubuntu_version_comparison, precision=4, random_index='saaty')
-    debian_version = ahpy.Compare('debian-version', debian_version_comparison, precision=4, random_index='saaty')
-    apache = ahpy.Compare('apache', {('apache-version','apache-version'):1})
-    openssl = ahpy.Compare('openssl', {('openssl-version','openssl-version'):1})
+    [...]
     ubuntu = ahpy.Compare('canonical', {('ubuntu-version','ubuntu-version'):1})
-    debian = ahpy.Compare('debian', {('debian-version','debian-version'):1})
+    [...]
     root.add_children([apache,openssl,ubuntu,debian])
-    apache.add_children([apache_version])
-    openssl.add_children([openssl_version])
-    ubuntu.add_children([ubuntu_version])
-    debian.add_children([debian_version])
-
+    [...]
     print("ROOT")
     print(root.target_weights)
     '''
 
+    # TODO document this method, it seems to work but it's ugly
     finalComparisons = {}
     for key, item in comparisons.items():
         if item['parent'] == 'root':
             continue
-        if not item['parent'] in finalComparisons:
-            finalComparisons[item['parent']] = {(key,key):1}
+        if item['parent'] not in finalComparisons:
+            if item['parent'] not in finalComparisons:
+                finalComparisons[item['parent']] = {}
+            finalComparisons[item['parent']][(key,key)] = 1
         
         if any(item['comparisons']) and any(x for x in finalComparisons[item['parent']].keys() if x[0] == x[1]):
             finalComparisons[item['parent']] = {}
