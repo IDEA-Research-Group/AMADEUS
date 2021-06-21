@@ -126,7 +126,11 @@ def process_dematel(path, outPath):
 
     #print(labels)
 
-    D_plus_R, D_minus_R, weights, quadrants = dematel_method(pairedComparisonMatrix, list(labels), numberOfCriteria, numberOfCriteria)
+    try:
+        D_plus_R, D_minus_R, weights, quadrants = dematel_method(pairedComparisonMatrix, list(labels), numberOfCriteria, numberOfCriteria)
+    except:
+        print("Error applying dematel. You probably haven't specified valid dematel comparison weights.")
+        return
     resultObject = {
         "quadrants": quadrants,
         "D_PLUS_R": D_plus_R.tolist(),
