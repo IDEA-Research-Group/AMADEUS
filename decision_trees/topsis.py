@@ -83,13 +83,14 @@ def rank_ahp_alternatives(weightsPath, alternativesPath, outPath):
     vikor = exe.Vikor(**kwargs)
 
     # show results
-    finalString = ""
-    finalString += "WSM Ranks\n"
-    finalString += str(wsm.dataframe)
-    finalString += "\n\nTOPSIS Ranks\n"
-    finalString += str(topsis.dataframe)
-    finalString += "\n\nVikor Ranks\n"
-    finalString += str(vikor.dataframe)
+
+    finalObject = {
+        "ranks": {
+            "wsm": jsonpickle.decode(wsm.dataframe.to_json()),
+            "topsis": jsonpickle.decode(topsis.dataframe.to_json()),
+            "vikor": jsonpickle.decode(vikor.dataframe.to_json())
+        }    
+    }
 
     with open(outPath, 'w') as out:
-        out.write(finalString)
+        out.write(jsonpickle.encode(finalObject, make_refs=False, indent=4))

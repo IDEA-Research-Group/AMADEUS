@@ -26,27 +26,27 @@ def dematel_method(dataset, labels, size_x = 10, size_y = 10):
     D_plus_R   = D + R # Most Importante Criteria
     D_minus_R  = D - R # +Influencer Criteria, - Influenced Criteria
     weights    = D_plus_R/np.sum(D_plus_R)
-    print('QUADRANT I has the Most Important Criteria (Prominence: High, Relation: High)') 
-    print('QUADRANT II has Important Criteira that can be Improved by Other Criteria (Prominence: Low, Relation: High)') 
-    print('QUADRANT III has Criteria that are not Important (Prominence: Low, Relation: Low)')
-    print('QUADRANT IV has Important Criteria that cannot be Improved by Other Criteria (Prominence: High, Relation: Low)')
-    print('')
+    # QUADRANT I has the Most Important Criteria (Prominence: High, Relation: High)
+    # QUADRANT II has Important Criteira that can be Improved by Other Criteria (Prominence: Low, Relation: High)
+    # QUADRANT III has Criteria that are not Important (Prominence: Low, Relation: Low)
+    # QUADRANT IV has Important Criteria that cannot be Improved by Other Criteria (Prominence: High, Relation: Low)
     plt.figure(figsize = [size_x, size_y])
     plt.style.use('ggplot')
     outputStringBuffer = ""
+    quadrants = {}
     for i in range(0, dataset.shape[0]):
         if (D_minus_R[i] >= 0 and D_plus_R[i] >= np.mean(D_plus_R)):
             plt.text(D_plus_R[i],  D_minus_R[i], labels[i], size = 12, ha = 'center', va = 'center', bbox = dict(boxstyle = 'round', ec = (0.0, 0.0, 0.0), fc = (0.7, 1.0, 0.7),)) 
-            outputStringBuffer += labels[i]+': Quadrant I'+'\n'
+            quadrants[labels[i]] = 1
         elif (D_minus_R[i] >= 0 and D_plus_R[i] < np.mean(D_plus_R)):
             plt.text(D_plus_R[i],  D_minus_R[i], labels[i], size = 12, ha = 'center', va = 'center', bbox = dict(boxstyle = 'round', ec = (0.0, 0.0, 0.0), fc = (1.0, 1.0, 0.7),))
-            outputStringBuffer += labels[i]+': Quadrant II'+'\n'
+            quadrants[labels[i]] = 2
         elif (D_minus_R[i] < 0 and D_plus_R[i] < np.mean(D_plus_R)):
             plt.text(D_plus_R[i],  D_minus_R[i], labels[i], size = 12, ha = 'center', va = 'center', bbox = dict(boxstyle = 'round', ec = (0.0, 0.0, 0.0), fc = (1.0, 0.7, 0.7),)) 
-            outputStringBuffer += labels[i]+': Quadrant III'+'\n'
+            quadrants[labels[i]] = 3
         else:
             plt.text(D_plus_R[i],  D_minus_R[i], labels[i], size = 12, ha = 'center', va = 'center', bbox = dict(boxstyle = 'round', ec = (0.0, 0.0, 0.0), fc = (0.7, 0.7, 1.0),)) 
-            outputStringBuffer += labels[i]+': Quadrant IV'+'\n'
+            quadrants[labels[i]] = 4
     axes = plt.gca()
     xmin = np.amin(D_plus_R)
     if (xmin > 0):
@@ -68,7 +68,7 @@ def dematel_method(dataset, labels, size_x = 10, size_y = 10):
     plt.ylabel('Relation (D - R)')
     plt.show()
     outputStringBuffer += '\n'
-    return D_plus_R, D_minus_R, weights, outputStringBuffer
+    return D_plus_R, D_minus_R, weights, quadrants
 
 def process_node(comparisons, node, parentId = None):
     if isinstance(node, AhpTree):
@@ -126,13 +126,14 @@ def process_dematel(path, outPath):
 
     #print(labels)
 
-    D_plus_R, D_minus_R, weights, outputStringBuffer = dematel_method(pairedComparisonMatrix, list(labels), numberOfCriteria, numberOfCriteria)
+    D_plus_R, D_minus_R, weights, quadrants = dematel_method(pairedComparisonMatrix, list(labels), numberOfCriteria, numberOfCriteria)
+    resultObject = {
+        "quadrants": quadrants,
+        "D_PLUS_R": D_plus_R.tolist(),
+        "D_MINUS_R": D_minus_R.tolist(),
+        "WEIGHTS": weights.tolist(),
+
+    }
     with open(outPath, 'w') as out:
-        out.write(outputStringBuffer)
-        out.write('D_PLUS_R:\n')
-        out.write(str(D_plus_R) + '\n')
-        out.write('D_MINUS_R:\n')
-        out.write(str(D_minus_R) + '\n')
-        out.write('WEIGHTS:\n')
-        out.write(str(weights) + '\n')
+        out.write(jsonpickle.encode(resultObject, make_refs=False, indent=4))
     
