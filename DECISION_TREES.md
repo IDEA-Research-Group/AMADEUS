@@ -60,3 +60,427 @@ E.g. the alternative matrix for the above file will be interpreted as follows:
 | A0          | 1        | 1        | 0        | 0        | 0        |
 | A1          | 1        | 0        | 1        | 0        | 0        |
 | A2          | 0        | 0        | 1        | 1        | 1        |
+
+### Usage example. CVE-2008-1678
+The following is the AFM definition for CVE-2008-1678:
+```
+# vul_description: Memory leak in the zlib_stateful_init function in crypto/comp/c_zlib.c in libssl in OpenSSL 0.9.8f through 0.9.8h allows remote attackers to cause a denial of service (memory consumption) via multiple calls, as demonstrated by initial SSL client handshakes to the Apache HTTP Server mod_ssl that specify a compression algorithm.
+
+%Relationships 
+CVE_2008_1678: types sources exploits openssl;
+
+types: application;
+sources: nvd;
+
+exploits: [direct] [indirect];
+openssl: openssl_openssl;
+
+openssl_openssl: openssl_openssl_version;
+
+openssl_openssl_version: [1,1] {openssl_openssl_version_0__9__8g openssl_openssl_version_0__9__8f openssl_openssl_version_0__9__8h};
+
+
+
+%Constraints 
+openssl_openssl REQUIRES application;
+```
+
+After setting the `ROOT_PATH` and `FILE_NAME` values from the `decision_tree_processor.py` file and running it, these files will be generated:
+
+CVE-2008-1678-afm.json
+```json
+{
+    "CVE_2008_1678": {
+        "types": "application",
+        "sources": "nvd",
+        "exploits": [
+            "direct",
+            "indirect"
+        ],
+        "openssl": {
+            "openssl_openssl": {
+                "openssl_openssl_version": [
+                    "openssl_openssl_version_0__9__8g",
+                    "openssl_openssl_version_0__9__8f",
+                    "openssl_openssl_version_0__9__8h"
+                ]
+            }
+        }
+    }
+}
+```
+
+CVE-2008-1678-ahp.json
+Output will be similar to the following:
+```json
+{
+    "py/object": "ahp_structure.AhpTree",
+    "algorithm": "ahp",
+    "version": 1,
+    "nodes": {
+        "children": [
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "CVE_2008_1678",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "types",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "application",
+                                "children": [],
+                                "comparisons": {}
+                            }
+                        ],
+                        "comparisons": {}
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "sources",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "nvd",
+                                "children": [],
+                                "comparisons": {}
+                            }
+                        ],
+                        "comparisons": {
+                            "types": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "exploits",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "direct",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "indirect",
+                                "children": [],
+                                "comparisons": {
+                                    "direct": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "types": 1,
+                            "sources": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "openssl",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "openssl_openssl",
+                                "children": [
+                                    {
+                                        "py/object": "ahp_structure.AhpNode",
+                                        "id": "openssl_openssl_version",
+                                        "children": [
+                                            {
+                                                "py/object": "ahp_structure.AhpNode",
+                                                "id": "openssl_openssl_version_0__9__8g",
+                                                "children": [],
+                                                "comparisons": {}
+                                            },
+                                            {
+                                                "py/object": "ahp_structure.AhpNode",
+                                                "id": "openssl_openssl_version_0__9__8f",
+                                                "children": [],
+                                                "comparisons": {
+                                                    "openssl_openssl_version_0__9__8g": 1
+                                                }
+                                            },
+                                            {
+                                                "py/object": "ahp_structure.AhpNode",
+                                                "id": "openssl_openssl_version_0__9__8h",
+                                                "children": [],
+                                                "comparisons": {
+                                                    "openssl_openssl_version_0__9__8g": 1,
+                                                    "openssl_openssl_version_0__9__8f": 1
+                                                }
+                                            }
+                                        ],
+                                        "comparisons": {}
+                                    }
+                                ],
+                                "comparisons": {}
+                            }
+                        ],
+                        "comparisons": {
+                            "types": 1,
+                            "sources": 1,
+                            "exploits": 1
+                        }
+                    }
+                ],
+                "comparisons": {}
+            }
+        ]
+    }
+}
+```
+
+CVE-2008-1678-dematel.json
+Output will be similar to the following:
+```json
+{
+    "py/object": "ahp_structure.AhpTree",
+    "algorithm": "ahp",
+    "version": 1,
+    "nodes": {
+        "children": [
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "types",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "application",
+                        "children": [],
+                        "comparisons": {}
+                    }
+                ],
+                "comparisons": {
+                    "sources": 0,
+                    "exploits": 1,
+                    "openssl": 0
+                }
+            },
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "sources",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "nvd",
+                        "children": [],
+                        "comparisons": {}
+                    }
+                ],
+                "comparisons": {
+                    "types": 1,
+                    "exploits": 1,
+                    "openssl": 1
+                }
+            },
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "exploits",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "direct",
+                        "children": [],
+                        "comparisons": {
+                            "indirect": 0
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "indirect",
+                        "children": [],
+                        "comparisons": {
+                            "direct": 0
+                        }
+                    }
+                ],
+                "comparisons": {
+                    "types": 0,
+                    "sources": 1,
+                    "openssl": 1
+                }
+            },
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "openssl",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "openssl_openssl",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "openssl_openssl_version",
+                                "children": [
+                                    {
+                                        "py/object": "ahp_structure.AhpNode",
+                                        "id": "openssl_openssl_version_0__9__8g",
+                                        "children": [],
+                                        "comparisons": {
+                                            "openssl_openssl_version_0__9__8f": 0,
+                                            "openssl_openssl_version_0__9__8h": 0
+                                        }
+                                    },
+                                    {
+                                        "py/object": "ahp_structure.AhpNode",
+                                        "id": "openssl_openssl_version_0__9__8f",
+                                        "children": [],
+                                        "comparisons": {
+                                            "openssl_openssl_version_0__9__8g": 3,
+                                            "openssl_openssl_version_0__9__8h": 0
+                                        }
+                                    },
+                                    {
+                                        "py/object": "ahp_structure.AhpNode",
+                                        "id": "openssl_openssl_version_0__9__8h",
+                                        "children": [],
+                                        "comparisons": {
+                                            "openssl_openssl_version_0__9__8g": 0,
+                                            "openssl_openssl_version_0__9__8f": 1
+                                        }
+                                    }
+                                ],
+                                "comparisons": {}
+                            }
+                        ],
+                        "comparisons": {}
+                    }
+                ],
+                "comparisons": {
+                    "types": 0,
+                    "sources": 0,
+                    "exploits": 0
+                }
+            }
+        ]
+    }
+}
+```
+
+The program will pause after generating the AHP JSON file, and also after generating the DEMATEL JSON file. The user will be prompted to tweak the weights. Once the user is happy with the weights, press RETURN/ENTER to continue generating the following files:
+
+
+CVE-2008-1678-ahp-weights.json
+Output for the weights set above:
+```json
+{
+    "output_weights": {
+        "application": 0.25,
+        "nvd": 0.25,
+        "indirect": 0.125,
+        "direct": 0.125,
+        "openssl_openssl_version_0__9__8h": 0.0833,
+        "openssl_openssl_version_0__9__8g": 0.0833,
+        "openssl_openssl_version_0__9__8f": 0.0833
+    }
+}
+```
+
+CVE-2008-1678-dematel-output.json
+Output for the weights set above:
+```json
+{
+    "quadrants": {
+        "openssl_openssl_version_0__9__8g": 4,
+        "sources": 2,
+        "openssl": 2,
+        "types": 2,
+        "openssl_openssl_version_0__9__8f": 1,
+        "exploits": 2,
+        "openssl_openssl_version_0__9__8h": 1
+    },
+    "D_PLUS_R": [
+        1.3333333333333333,
+        0.0,
+        0.0,
+        0.0,
+        1.3333333333333333,
+        0.0,
+        0.6666666666666666
+    ],
+    "D_MINUS_R": [
+        -1.3333333333333333,
+        0.0,
+        0.0,
+        0.0,
+        0.6666666666666667,
+        0.0,
+        0.6666666666666666
+    ],
+    "WEIGHTS": [
+        0.4,
+        0.0,
+        0.0,
+        0.0,
+        0.4,
+        0.0,
+        0.2
+    ]
+}
+```
+
+Lastly, if an alternatives file **created by the user** exists at the specified location (defined by `{ROOT_PATH}/CVE-2008-1678-alternatives.json`), the following file will be generated:
+
+Alternatives file created by the user
+CVE-2008-1678-alternatives.json
+```json
+[
+    ["openssl_openssl_version_0__9__8g"],
+    ["openssl_openssl_version_0__9__8h"]
+]
+```
+
+CVE-2008-1678-rank-output.json
+```json
+{
+    "ranks": {
+        "wsm": {
+            "RATE": {
+                "A0": 0.0833,
+                "A1": 0.0833
+            },
+            "RANK": {
+                "A0": 1.0,
+                "A1": 2.0
+            }
+        },
+        "topsis": {
+            "D+": {
+                "A0": 0.0833,
+                "A1": 0.0833
+            },
+            "D-": {
+                "A0": 0.0833,
+                "A1": 0.0833
+            },
+            "RATE": {
+                "A0": 0.5,
+                "A1": 0.5
+            },
+            "RANK": {
+                "A0": 1.0,
+                "A1": 2.0
+            }
+        },
+        "vikor": {
+            "S": {
+                "A0": 0.0833,
+                "A1": 0.0833
+            },
+            "P": {
+                "A0": 0.0833,
+                "A1": 0.0833
+            },
+            "RATE": {
+                "A0": null,
+                "A1": null
+            },
+            "RANK": {
+                "A0": 1.0,
+                "A1": 2.0
+            }
+        }
+    }
+}
+```
