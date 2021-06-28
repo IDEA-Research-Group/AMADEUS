@@ -81,6 +81,7 @@ def process_ahp(ahpJsonFilePath, ahpWeightsOutPath):
     '''
 
     # TODO document this method, it seems to work but it's ugly
+    # TODO it doesn't seem to multiply weights correctly. See model tfm5
     finalComparisons = {}
     for key, item in comparisons.items():
         if item['parent'] == 'root':

@@ -1,0 +1,57 @@
+{
+    "tfm6": {
+        "key_change_method": [
+            "rsa",
+            "dhe",
+            "ecdhe"
+        ],
+        "authentication_method": [
+            "ecdsa",
+            "rsa_auth"
+        ],
+        "cipher_algorithm": [
+            "aes_128_cbc",
+            "aes_256_cbc",
+            "aes_128_gcm",
+            "aes_256_gcm",
+            "aes_128_ccm",
+            "aes_128_ccm_8",
+            "camellia_128_cbc",
+            "camellia_256_cbc",
+            "camellia_128_gcm",
+            "camellia_256_gcm",
+            "chacha20_poly1305"
+        ],
+        "mac_algorithm": [
+            "sha256",
+            "sha384",
+            "sha512"
+        ],
+        "protocol_version": [
+            "v1_2",
+            "v1_3"
+        ],
+        "digital_signature_type": [
+            "srp",
+            "psk"
+        ],
+        "certificate_type": [
+            "x509",
+            "openpgp"
+        ],
+        "key_size": [
+            "s_2048",
+            "s_3072",
+            "s_4096",
+            "s_6149",
+            "s_8192"
+        ],
+        "curve_key_function": [
+            "secp256",
+            "secp384r1",
+            "x448",
+            "x22519",
+            "secp512r1"
+        ]
+    }
+}

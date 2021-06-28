@@ -1,0 +1,181 @@
+{
+    "py/object": "ahp_structure.AhpTree",
+    "algorithm": "ahp",
+    "version": 1,
+    "nodes": {
+        "children": [
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "tfm5",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "client_auth",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "true",
+                                "children": [],
+                                "comparisons": {
+                                    "want": 0,
+                                    "false": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "want",
+                                "children": [],
+                                "comparisons": {
+                                    "true": 0,
+                                    "false": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "false",
+                                "children": [],
+                                "comparisons": {
+                                    "true": 0,
+                                    "want": 0
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "keystore_type": 1,
+                            "trust_type": 4,
+                            "protocol_version": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "keystore_type",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "k_jks",
+                                "children": [],
+                                "comparisons": {
+                                    "k_pkcs12": 0,
+                                    "k_pkcs11": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "k_pkcs12",
+                                "children": [],
+                                "comparisons": {
+                                    "k_jks": 0,
+                                    "k_pkcs11": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "k_pkcs11",
+                                "children": [],
+                                "comparisons": {
+                                    "k_jks": 0,
+                                    "k_pkcs12": 0
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "client_auth": 1,
+                            "trust_type": 1,
+                            "protocol_version": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "trust_type",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "t_jks",
+                                "children": [],
+                                "comparisons": {
+                                    "t_pkcs12": 0,
+                                    "t_pkcs11": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "t_pkcs12",
+                                "children": [],
+                                "comparisons": {
+                                    "t_jks": 0,
+                                    "t_pkcs11": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "t_pkcs11",
+                                "children": [],
+                                "comparisons": {
+                                    "t_jks": 0,
+                                    "t_pkcs12": 0
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "client_auth": 3,
+                            "keystore_type": 1,
+                            "protocol_version": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "protocol_version",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "v_1",
+                                "children": [],
+                                "comparisons": {
+                                    "v_1_1": 0,
+                                    "v_1_2": 0,
+                                    "v_1_3": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "v_1_1",
+                                "children": [],
+                                "comparisons": {
+                                    "v_1": 0,
+                                    "v_1_2": 0,
+                                    "v_1_3": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "v_1_2",
+                                "children": [],
+                                "comparisons": {
+                                    "v_1": 0,
+                                    "v_1_1": 0,
+                                    "v_1_3": 0
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "v_1_3",
+                                "children": [],
+                                "comparisons": {
+                                    "v_1": 0,
+                                    "v_1_1": 0,
+                                    "v_1_2": 0
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "client_auth": 2,
+                            "keystore_type": 2,
+                            "trust_type": 2
+                        }
+                    }
+                ],
+                "comparisons": {}
+            }
+        ]
+    }
+}

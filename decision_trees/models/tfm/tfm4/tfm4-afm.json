@@ -1,0 +1,29 @@
+{
+    "tfm4": {
+        "precio": [
+            "precio_250",
+            "preecio_400",
+            "precio_300",
+            "precio_80",
+            "precio_200"
+        ],
+        "capacidad": [
+            "capacidad_30",
+            "capacidad_45",
+            "capacidad_50",
+            "capacidad_11",
+            "capacidad_6"
+        ],
+        "ruido": [
+            "ruido_bajo",
+            "ruido_medio",
+            "ruido_alto",
+            "ruido_muy_alto"
+        ],
+        "garantia": [
+            "garantia_1",
+            "garantia_2",
+            "garantia_3"
+        ]
+    }
+}

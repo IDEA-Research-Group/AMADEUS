@@ -1,0 +1,12 @@
+[
+    ["true","k_jks","t_pkcs11","v1_1"],
+    ["true","k_pkcs11","t_pkcs12","v1_3"],
+    ["true","k_kcs12","t_jks","v1_2"],
+    ["want","k_pkcs11","t_pkcs12","v1_2"],
+    ["want","k_pkcs12","t_jks","v1_1"],
+    ["want","k_jks","t_pkcs11","v1_3"],
+    ["false","k_jks","v1_2"],
+    ["false","k_pkcs12","v1_2"],
+    ["false","k_pkcs11","v1_1"],
+    ["false","k_pkcs12","v1_3"]
+]

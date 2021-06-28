@@ -1,0 +1,7 @@
+[
+    ["precio_250","capacidad_30","ruido_bajo","garantia_2"],
+    ["precio_400","capacidad_45","ruido_alto", "garantia_3"],
+    ["precio_300", "capacidad_50","ruido_bajo","garantia_2"],
+    ["precio_80","capacidad_11","ruido_muy_alto","garantia_1"],
+    ["precio_200", "capacidad_6","ruido_medio","garantia_2"]
+]

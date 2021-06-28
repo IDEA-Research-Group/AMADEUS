@@ -1,0 +1,444 @@
+{
+    "py/object": "ahp_structure.AhpTree",
+    "algorithm": "ahp",
+    "version": 1,
+    "nodes": {
+        "children": [
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "tfm6",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "key_change_method",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "rsa",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "dhe",
+                                "children": [],
+                                "comparisons": {
+                                    "rsa": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "ecdhe",
+                                "children": [],
+                                "comparisons": {
+                                    "rsa": 1,
+                                    "dhe": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {}
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "authentication_method",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "ecdsa",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "rsa_auth",
+                                "children": [],
+                                "comparisons": {
+                                    "ecdsa": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "key_change_method": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "cipher_algorithm",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "aes_128_cbc",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "aes_256_cbc",
+                                "children": [],
+                                "comparisons": {
+                                    "aes_128_cbc": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "aes_128_gcm",
+                                "children": [],
+                                "comparisons": {
+                                    "aes_128_cbc": 1,
+                                    "aes_256_cbc": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "aes_256_gcm",
+                                "children": [],
+                                "comparisons": {
+                                    "aes_128_cbc": 1,
+                                    "aes_256_cbc": 1,
+                                    "aes_128_gcm": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "aes_128_ccm",
+                                "children": [],
+                                "comparisons": {
+                                    "aes_128_cbc": 1,
+                                    "aes_256_cbc": 1,
+                                    "aes_128_gcm": 1,
+                                    "aes_256_gcm": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "aes_128_ccm_8",
+                                "children": [],
+                                "comparisons": {
+                                    "aes_128_cbc": 1,
+                                    "aes_256_cbc": 1,
+                                    "aes_128_gcm": 1,
+                                    "aes_256_gcm": 1,
+                                    "aes_128_ccm": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "camellia_128_cbc",
+                                "children": [],
+                                "comparisons": {
+                                    "aes_128_cbc": 1,
+                                    "aes_256_cbc": 1,
+                                    "aes_128_gcm": 1,
+                                    "aes_256_gcm": 1,
+                                    "aes_128_ccm": 1,
+                                    "aes_128_ccm_8": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "camellia_256_cbc",
+                                "children": [],
+                                "comparisons": {
+                                    "aes_128_cbc": 1,
+                                    "aes_256_cbc": 1,
+                                    "aes_128_gcm": 1,
+                                    "aes_256_gcm": 1,
+                                    "aes_128_ccm": 1,
+                                    "aes_128_ccm_8": 1,
+                                    "camellia_128_cbc": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "camellia_128_gcm",
+                                "children": [],
+                                "comparisons": {
+                                    "aes_128_cbc": 1,
+                                    "aes_256_cbc": 1,
+                                    "aes_128_gcm": 1,
+                                    "aes_256_gcm": 1,
+                                    "aes_128_ccm": 1,
+                                    "aes_128_ccm_8": 1,
+                                    "camellia_128_cbc": 1,
+                                    "camellia_256_cbc": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "camellia_256_gcm",
+                                "children": [],
+                                "comparisons": {
+                                    "aes_128_cbc": 1,
+                                    "aes_256_cbc": 1,
+                                    "aes_128_gcm": 1,
+                                    "aes_256_gcm": 1,
+                                    "aes_128_ccm": 1,
+                                    "aes_128_ccm_8": 1,
+                                    "camellia_128_cbc": 1,
+                                    "camellia_256_cbc": 1,
+                                    "camellia_128_gcm": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "chacha20_poly1305",
+                                "children": [],
+                                "comparisons": {
+                                    "aes_128_cbc": 1,
+                                    "aes_256_cbc": 1,
+                                    "aes_128_gcm": 1,
+                                    "aes_256_gcm": 1,
+                                    "aes_128_ccm": 1,
+                                    "aes_128_ccm_8": 1,
+                                    "camellia_128_cbc": 1,
+                                    "camellia_256_cbc": 1,
+                                    "camellia_128_gcm": 1,
+                                    "camellia_256_gcm": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "key_change_method": 1,
+                            "authentication_method": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "mac_algorithm",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "sha256",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "sha384",
+                                "children": [],
+                                "comparisons": {
+                                    "sha256": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "sha512",
+                                "children": [],
+                                "comparisons": {
+                                    "sha256": 1,
+                                    "sha384": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "key_change_method": 1,
+                            "authentication_method": 1,
+                            "cipher_algorithm": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "protocol_version",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "v1_2",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "v1_3",
+                                "children": [],
+                                "comparisons": {
+                                    "v1_2": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "key_change_method": 1,
+                            "authentication_method": 1,
+                            "cipher_algorithm": 1,
+                            "mac_algorithm": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "digital_signature_type",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "srp",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "psk",
+                                "children": [],
+                                "comparisons": {
+                                    "srp": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "key_change_method": 1,
+                            "authentication_method": 1,
+                            "cipher_algorithm": 1,
+                            "mac_algorithm": 1,
+                            "protocol_version": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "certificate_type",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "x509",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "openpgp",
+                                "children": [],
+                                "comparisons": {
+                                    "x509": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "key_change_method": 1,
+                            "authentication_method": 1,
+                            "cipher_algorithm": 1,
+                            "mac_algorithm": 1,
+                            "protocol_version": 1,
+                            "digital_signature_type": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "key_size",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "s_2048",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "s_3072",
+                                "children": [],
+                                "comparisons": {
+                                    "s_2048": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "s_4096",
+                                "children": [],
+                                "comparisons": {
+                                    "s_2048": 1,
+                                    "s_3072": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "s_6149",
+                                "children": [],
+                                "comparisons": {
+                                    "s_2048": 1,
+                                    "s_3072": 1,
+                                    "s_4096": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "s_8192",
+                                "children": [],
+                                "comparisons": {
+                                    "s_2048": 1,
+                                    "s_3072": 1,
+                                    "s_4096": 1,
+                                    "s_6149": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "key_change_method": 1,
+                            "authentication_method": 1,
+                            "cipher_algorithm": 1,
+                            "mac_algorithm": 1,
+                            "protocol_version": 1,
+                            "digital_signature_type": 1,
+                            "certificate_type": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "curve_key_function",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "secp256",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "secp384r1",
+                                "children": [],
+                                "comparisons": {
+                                    "secp256": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "x448",
+                                "children": [],
+                                "comparisons": {
+                                    "secp256": 1,
+                                    "secp384r1": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "x22519",
+                                "children": [],
+                                "comparisons": {
+                                    "secp256": 1,
+                                    "secp384r1": 1,
+                                    "x448": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "secp512r1",
+                                "children": [],
+                                "comparisons": {
+                                    "secp256": 1,
+                                    "secp384r1": 1,
+                                    "x448": 1,
+                                    "x22519": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "key_change_method": 1,
+                            "authentication_method": 1,
+                            "cipher_algorithm": 1,
+                            "mac_algorithm": 1,
+                            "protocol_version": 1,
+                            "digital_signature_type": 1,
+                            "certificate_type": 1,
+                            "key_size": 1
+                        }
+                    }
+                ],
+                "comparisons": {}
+            }
+        ]
+    }
+}

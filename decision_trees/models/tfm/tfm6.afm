@@ -1,0 +1,14 @@
+%Relationships
+tfm6: key_change_method authentication_method cipher_algorithm mac_algorithm protocol_version digital_signature_type certificate_type key_size curve_key_function
+
+key_change_method: [1,1] {rsa dhe ecdhe};
+authentication_method: [1,1] {ecdsa rsa_auth};
+cipher_algorithm: [1,1] {aes_128_cbc aes_256_cbc aes_128_gcm aes_256_gcm aes_128_ccm aes_128_ccm_8 camellia_128_cbc camellia_256_cbc camellia_128_gcm camellia_256_gcm chacha20_poly1305};
+mac_algorithm: [1,1] {sha256 sha384 sha512};
+protocol_version: [1,1] {v1_2 v1_3};
+digital_signature_type: [1,1] {srp psk};
+certificate_type: [1,1] {x509 openpgp};
+key_size: [1,1] {s_2048 s_3072 s_4096 s_6149 s_8192};
+curve_key_function: [1,1] {secp256 secp384r1 x448 x22519 secp512r1};
+
+%Constraints

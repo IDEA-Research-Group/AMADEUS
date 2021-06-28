@@ -1,0 +1,25 @@
+{
+    "tfm5": {
+        "client_auth": [
+            "true",
+            "want",
+            "false"
+        ],
+        "keystore_type": [
+            "k_jks",
+            "k_pkcs12",
+            "k_pkcs11"
+        ],
+        "trust_type": [
+            "t_jks",
+            "t_pkcs12",
+            "t_pkcs11"
+        ],
+        "protocol_version": [
+            "v_1",
+            "v_1_1",
+            "v_1_2",
+            "v_1_3"
+        ]
+    }
+}

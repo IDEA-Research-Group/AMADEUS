@@ -1,0 +1,155 @@
+{
+    "py/object": "ahp_structure.AhpTree",
+    "algorithm": "ahp",
+    "version": 1,
+    "nodes": {
+        "children": [
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "tfm5",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "client_auth",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "true",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "want",
+                                "children": [],
+                                "comparisons": {
+                                    "true": 0.5
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "false",
+                                "children": [],
+                                "comparisons": {
+                                    "true": 0.25,
+                                    "want": 0.5
+                                }
+                            }
+                        ],
+                        "comparisons": {}
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "keystore_type",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "k_jks",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "k_pkcs12",
+                                "children": [],
+                                "comparisons": {
+                                    "k_jks": 2
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "k_pkcs11",
+                                "children": [],
+                                "comparisons": {
+                                    "k_jks": 0.5,
+                                    "k_pkcs12": 0.25
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "client_auth": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "trust_type",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "t_jks",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "t_pkcs12",
+                                "children": [],
+                                "comparisons": {
+                                    "t_jks": 2
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "t_pkcs11",
+                                "children": [],
+                                "comparisons": {
+                                    "t_jks": 0.5,
+                                    "t_pkcs12": 0.25
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "client_auth": 1,
+                            "keystore_type": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "protocol_version",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "v_1",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "v_1_1",
+                                "children": [],
+                                "comparisons": {
+                                    "v_1": 2
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "v_1_2",
+                                "children": [],
+                                "comparisons": {
+                                    "v_1": 4,
+                                    "v_1_1": 2
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "v_1_3",
+                                "children": [],
+                                "comparisons": {
+                                    "v_1": 6,
+                                    "v_1_1": 4,
+                                    "v_1_2": 2
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "client_auth": 0.5,
+                            "keystore_type": 2,
+                            "trust_type": 0.5
+                        }
+                    }
+                ],
+                "comparisons": {}
+            }
+        ]
+    }
+}

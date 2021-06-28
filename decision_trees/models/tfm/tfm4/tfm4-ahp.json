@@ -1,0 +1,197 @@
+{
+    "py/object": "ahp_structure.AhpTree",
+    "algorithm": "ahp",
+    "version": 1,
+    "nodes": {
+        "children": [
+            {
+                "py/object": "ahp_structure.AhpNode",
+                "id": "tfm4",
+                "children": [
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "precio",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "precio_250",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "preecio_400",
+                                "children": [],
+                                "comparisons": {
+                                    "precio_250": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "precio_300",
+                                "children": [],
+                                "comparisons": {
+                                    "precio_250": 1,
+                                    "preecio_400": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "precio_80",
+                                "children": [],
+                                "comparisons": {
+                                    "precio_250": 1,
+                                    "preecio_400": 1,
+                                    "precio_300": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "precio_200",
+                                "children": [],
+                                "comparisons": {
+                                    "precio_250": 1,
+                                    "preecio_400": 1,
+                                    "precio_300": 1,
+                                    "precio_80": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {}
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "capacidad",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "capacidad_30",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "capacidad_45",
+                                "children": [],
+                                "comparisons": {
+                                    "capacidad_30": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "capacidad_50",
+                                "children": [],
+                                "comparisons": {
+                                    "capacidad_30": 1,
+                                    "capacidad_45": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "capacidad_11",
+                                "children": [],
+                                "comparisons": {
+                                    "capacidad_30": 1,
+                                    "capacidad_45": 1,
+                                    "capacidad_50": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "capacidad_6",
+                                "children": [],
+                                "comparisons": {
+                                    "capacidad_30": 1,
+                                    "capacidad_45": 1,
+                                    "capacidad_50": 1,
+                                    "capacidad_11": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "precio": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "ruido",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "ruido_bajo",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "ruido_medio",
+                                "children": [],
+                                "comparisons": {
+                                    "ruido_bajo": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "ruido_alto",
+                                "children": [],
+                                "comparisons": {
+                                    "ruido_bajo": 1,
+                                    "ruido_medio": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "ruido_muy_alto",
+                                "children": [],
+                                "comparisons": {
+                                    "ruido_bajo": 1,
+                                    "ruido_medio": 1,
+                                    "ruido_alto": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "precio": 1,
+                            "capacidad": 1
+                        }
+                    },
+                    {
+                        "py/object": "ahp_structure.AhpNode",
+                        "id": "garantia",
+                        "children": [
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "garantia_1",
+                                "children": [],
+                                "comparisons": {}
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "garantia_2",
+                                "children": [],
+                                "comparisons": {
+                                    "garantia_1": 1
+                                }
+                            },
+                            {
+                                "py/object": "ahp_structure.AhpNode",
+                                "id": "garantia_3",
+                                "children": [],
+                                "comparisons": {
+                                    "garantia_1": 1,
+                                    "garantia_2": 1
+                                }
+                            }
+                        ],
+                        "comparisons": {
+                            "precio": 1,
+                            "capacidad": 1,
+                            "ruido": 1
+                        }
+                    }
+                ],
+                "comparisons": {}
+            }
+        ]
+    }
+}

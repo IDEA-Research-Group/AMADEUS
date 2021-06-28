@@ -17,7 +17,7 @@ y muestre el gráfico DEMATEL
 '''
 
 ROOT_PATH = "./models/tfm/"
-FILE_NAME = "tfm3"
+FILE_NAME = "tfm5"
 AFM_EXTENSION = ".afm"
 AFM_JSON_EXTENSION = "-afm.json"
 AHP_EXTENSION = "-ahp.json"

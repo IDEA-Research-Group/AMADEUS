@@ -1,0 +1,21 @@
+{
+    "output_weights": {
+        "garantia_3": 0.0833,
+        "garantia_1": 0.0833,
+        "garantia_2": 0.0833,
+        "ruido_muy_alto": 0.0625,
+        "ruido_bajo": 0.0625,
+        "ruido_medio": 0.0625,
+        "ruido_alto": 0.0625,
+        "precio_200": 0.05,
+        "precio_250": 0.05,
+        "preecio_400": 0.05,
+        "precio_300": 0.05,
+        "precio_80": 0.05,
+        "capacidad_6": 0.05,
+        "capacidad_30": 0.05,
+        "capacidad_45": 0.05,
+        "capacidad_50": 0.05,
+        "capacidad_11": 0.05
+    }
+}
