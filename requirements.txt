@@ -9,3 +9,5 @@ ujson==4.0.2
 famapy==0.2.0
 famapy-fm==0.2.0
 famapy-sat==0.2.0
+antlr-ast==0.8.1
+antlr4-python3-runtime==4.7.2

@@ -1,14 +1,13 @@
 import sys
+import antlr4
+from astLogic.propositionalLexer import propositionalLexer
+from astLogic.propositionalParser import propositionalParser
 
 from famapy.core.exceptions import DuplicatedFeature
 from famapy.core.transformations import TextToModel
-from famapy.metamodels.fm_metamodel.models.feature_model import (Constraint,
-                                                                 Feature,
+from famapy.metamodels.fm_metamodel.models.feature_model import (Feature,
                                                                  FeatureModel,
                                                                  Relation)
-
-''' It is not yet implemented in the latest release of FaMa-Py '''
-from utils.ast import AST
 
 
 class AFMTransformation(TextToModel):
@@ -17,12 +16,10 @@ class AFMTransformation(TextToModel):
     def get_source_extension() -> str:
         return 'afm'
 
-    def __init__(self, path, file):
-        self.file = file
+    def __init__(self, path):
         self.path = path
         self.name_feature = {}
         self.parents = []
-        self.ctc_counter = 0
 
     def transform(self):
         with open(self.path, 'r') as lines:
@@ -40,40 +37,34 @@ class AFMTransformation(TextToModel):
             words = relation.split(' ')
             self.parse_features(words, feature_model)
 
-        self.file.write("\n")
-        self.file.write("Number of ctc: " + str(len(constraints)) + "\n")
-        self.file.write("\n")
-        n_ctc = 0
         for constraint in constraints:
-            n_ctc+=1
             constraint = constraint.replace(';', '')
             ctc = self.parse_ctc(constraint)
-            if ctc:
-                feature_model.ctcs.append(ctc)
-        x = n_ctc - self.ctc_counter
-        self.file.write("Number of conflictive ctc: " + str (x) + "\n")
-
+            feature_model.ctcs.append(ctc)
         return feature_model
 
-    def parse_ctc(self, ctc: str) -> Constraint:
-        constraint = None
-        ctc = (ctc.replace('AND', 'and')
-               .replace('OR', 'or')
-               .replace('NOT', 'not')
-               .replace('IMPLIES', 'implies')
-               .replace('REQUIRES', 'requires')
-               .replace('EXCLUDES', 'excludes'))
-        try:
-            constraint = Constraint(
-                'Ctc-' + str(self.ctc_counter), 
-                AST(ctc)
-            )
-            self.ctc_counter += 1
-        except:
-            self.file.write(ctc)
-            self.file.write("\n")
-            self.file.write("\n")
-        return constraint
+    def parse_ctc(self, ctc: str):
+        tree = None
+
+        words = ctc.split(' ')
+        final_ctc = ''
+        aux = False
+        for word in words:
+            if word == 'NOT' or word == '(NOT':
+                final_ctc = final_ctc + ' (' + word + ' ('
+                aux = True
+            elif aux:
+                final_ctc = final_ctc + word + ')) '
+                aux = False
+            else:
+                final_ctc = final_ctc + " " + word
+        final_ctc = final_ctc[1:]
+        
+        lexer = propositionalLexer(antlr4.InputStream(final_ctc))
+        stream = antlr4.CommonTokenStream(lexer)
+        parser = propositionalParser(stream)
+        tree = parser.formula()
+        return tree
 
     def parse_features(self, words: list[str], model: FeatureModel) -> Feature:
         name = words[0].replace(':', '')

@@ -1,11 +1,12 @@
 grammar propositional;
 
 formula
-   : NOT ? '(' formula ')'
-   | '(' formula ')' ((IMPLIES | REQUIRES | EXCLUDES | AND | OR | NOT) formula ) *
-   | '(' formula ')' ((IMPLIES | REQUIRES | EXCLUDES | AND | OR | NOT) FEATURE ) *
-   | FEATURE ((IMPLIES | REQUIRES | EXCLUDES | AND | OR | NOT) formula ) *
-   | FEATURE ((IMPLIES | REQUIRES | EXCLUDES | AND | OR | NOT) FEATURE ) *
+   : '(' formula ')'
+   | '(' formula ')' ((IMPLIES | REQUIRES | EXCLUDES | AND | OR) NOT ? formula ) *
+   | '(' formula ')' ((IMPLIES | REQUIRES | EXCLUDES | AND | OR) NOT ? FEATURE ) *
+   | FEATURE ((IMPLIES | REQUIRES | EXCLUDES | AND | OR) NOT ? formula ) *
+   | FEATURE ((IMPLIES | REQUIRES | EXCLUDES | AND | OR) NOT ? FEATURE ) *
+   | NOT ? '(' formula ')'
    ;
 
 IMPLIES
@@ -33,7 +34,7 @@ NOT
    ;
 
 FEATURE
-   : ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_')
+   : ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_') +
    ;
 
 

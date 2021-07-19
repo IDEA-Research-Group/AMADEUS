@@ -1,6 +1,7 @@
 import sys
 import copy
 from typing import Any
+import antlr4
 
 from famapy.core.models import VariabilityModel
 from famapy.core.transformations import ModelToModel
@@ -112,74 +113,75 @@ class FmToPysat(ModelToModel):
         return result
 
     def combinate(self, number, name, cnfs_left, cnfs_rigth):
-        if number > 0 and name == 'and':
+        if number > 0 and name == 'AND':
             result = self.and_combinator(cnfs_left, cnfs_rigth)
-        elif number > 0 and name in ('or', 'requires', 'excludes', 'implies'):
+        elif number > 0 and name in ('OR', 'REQUIRES', 'EXCLUDES', 'IMPLIES'):
             result = self.or_combinator(cnfs_left, cnfs_rigth)
-        elif number < 0 and name == 'and':
+        elif number < 0 and name == 'AND':
             result = self.or_combinator(cnfs_left, cnfs_rigth)
-        elif number < 0 and name in ('or', 'requires', 'excludes', 'implies'):
+        elif number < 0 and name in ('OR', 'REQUIRES', 'EXCLUDES', 'IMPLIES'):
             result = self.and_combinator(cnfs_left, cnfs_rigth)
         return result
 
-    def get_var(self, ctc, node, name, number):
-        childs = ctc.ast.get_childs(node)
-        if name == 'not':
-            var = self.destination_model.variables.get(
-                ctc.ast.get_childs(node)[0].get_name()
-            )
-            if var:
-                result = [[-var * number]]
-            else:
-                cnfs = self.ast_iterator(ctc, childs[0], number * -1)
-                result = cnfs
-        else:
-            var = self.destination_model.variables.get(node.get_name())
-            result = [[var * number]]
+    def get_var(self, name, number):
+        var = self.destination_model.variables.get(name)
+        result = [[var * number]]
         return result
 
-    def ast_iterator(self, ctc, node, number: int):
+    @staticmethod
+    def get_root(child_names):
+        for name in child_names:
+            if name in ('NOT', 'AND', 'OR', 'REQUIRES', 'IMPLIES', 'EXCLUDES'):
+                return name
+
+    @staticmethod
+    def clean(childs):
+        cleaned_childs = []
+        for child in childs:
+            if child.getText() not in ('(', ')', 'NOT', 'AND', 'OR', 'REQUIRES', 'IMPLIES', 'EXCLUDES'):
+                cleaned_childs.append(child)
+        return cleaned_childs
+
+    def ast_iterator(self, child, number: int):
         '''
         La variable number se utiliza para seguir las leyes de Morgan expuestas a continuación.
         Reglas de las leyes de Morgan:
             A <=> B      = (A => B) AND (B => A)
             A  => B      = NOT(A) OR  B
-            NOT(A AND B) = NOT(A) OR  NOT(B) 
-            NOT(A OR  B) = NOT(A) AND NOT(B) 
+            NOT(A AND B) = NOT(A) OR  NOT(B)
+            NOT(A OR  B) = NOT(A) AND NOT(B)
         '''
-        name = node.get_name()
-        childs = ctc.ast.get_childs(node)
+        if not isinstance(child, antlr4.tree.Tree.TerminalNode):
+            childs = [child_obj for child_obj in child.getChildren()]
+            child_names = [child_name.getText() for child_name in childs]
+            cleaned_childs = self.clean(childs)
+            name = self.get_root(child_names)
+            if len(cleaned_childs) == 1:
+                aux = -1 if childs[0].getText() == 'NOT' else 1
+                return self.ast_iterator(cleaned_childs[0], number * aux)
+        else:
+            name = child.getText()
+
         result = []
 
-        if name in ('and', 'or'):
-            cnfs_left = self.ast_iterator(ctc, childs[0], number)
-            cnfs_rigth = self.ast_iterator(ctc, childs[1], number)
-        elif name in ('requires', 'implies'):
-            cnfs_left = self.ast_iterator(ctc, childs[0], number * -1)
-            cnfs_rigth = self.ast_iterator(ctc, childs[1], number)
-        elif name == 'excludes':
-            cnfs_left = self.ast_iterator(ctc, childs[0], number * -1)
-            cnfs_rigth = self.ast_iterator(ctc, childs[1], number * -1)
+        if name in ('AND', 'OR'):
+            cnfs_left = self.ast_iterator(cleaned_childs[0], number)
+            cnfs_rigth = self.ast_iterator(cleaned_childs[1], number)
+        elif name in ('REQUIRES', 'IMPLIES'):
+            cnfs_left = self.ast_iterator(cleaned_childs[0], number * -1)
+            cnfs_rigth = self.ast_iterator(cleaned_childs[1], number)
+        elif name == 'EXCLUDES':
+            cnfs_left = self.ast_iterator(cleaned_childs[0], number * -1)
+            cnfs_rigth = self.ast_iterator(cleaned_childs[1], number * -1)
         else:
-            result = self.get_var(ctc, node, name, number)
+            result = self.get_var(name, number)
 
         if not result:
             result = self.combinate(number, name, cnfs_left, cnfs_rigth)
-
         return result
 
     def add_constraint(self, ctc):
-        node = ctc.ast.get_root()
-        name = node.get_name()
-
-        if (
-            name in ('and', 'or', 'requires', 'excludes', 'implies', 'not')
-            or self.destination_model.variables.get(name)
-        ):
-            cnfs = self.ast_iterator(ctc, node, 1)
-        else:
-            print('This FM contains non supported elements', file=sys.stderr)
-
+        cnfs = self.ast_iterator(ctc, 1)
         self.ctc_cnf.extend(cnfs)
 
     def transform(self):
