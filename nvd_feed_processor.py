@@ -45,7 +45,8 @@ def open_redis():
         ]
 
     print('\nDownloading and unziping json feeds')
-    os.mkdir('./downloads/')
+    if not os.path.isdir('./downloads/'):
+        os.mkdir('./downloads/')
     tam = len(urls)
     dl = 0
     for url in urls:
