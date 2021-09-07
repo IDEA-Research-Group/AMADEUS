@@ -1,5 +1,3 @@
-from famapy.metamodels.pysat_metamodel.operations.glucose3_products import \
-    Glucose3Products
 from famapy.metamodels.pysat_metamodel.operations.glucose3_valid_configuration import \
     Glucose3ValidConfiguration
 from famapy.metamodels.pysat_metamodel.operations.glucose3_filter import Glucose3Filter
@@ -7,9 +5,10 @@ from famapy.metamodels.pysat_metamodel.operations.glucose3_products_number impor
     Glucose3ProductsNumber
 from famapy.core.models.configuration import Configuration
 
-''' It is not yet implemented in the latest release of FaMa-Py '''
+''' It's a extension of FaMaPy implementations '''
 from utils.fm_to_pysat import FmToPysat
 from utils.afm_transformation import AFMTransformation
+from utils.products_operation import Glucose3Products
 
 
 def get_configuration(fm, names):
