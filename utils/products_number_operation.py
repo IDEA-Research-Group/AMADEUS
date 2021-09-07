@@ -1,35 +1,30 @@
 from pysat.solvers import Glucose3
 import time
 
-from famapy.core.operations import Products
+from famapy.core.operations import ProductsNumber
 from famapy.metamodels.pysat_metamodel.models.pysat_model import PySATModel
 
 
-class Glucose3Products(Products):
+class Glucose3ProductsNumber(ProductsNumber):
 
     def __init__(self):
-        self.products = []
+        self.products_number = 0
 
-    def get_products(self):
-        return self.products
+    def get_products_number(self):
+        return self.products_number
 
     def get_result(self):
-        return self.get_products()
+        return self.get_products_number()
 
     def execute(self, model, seconds = None):
         glucose = Glucose3()
-
         for clause in model.get_all_clauses():  # AC es conjunto de conjuntos
             glucose.add_clause(clause)  # añadimos la constraint
 
         i = time.time()
 
-        for solutions in glucose.enum_models():
-            product = list()
-            for variable in solutions:
-                if variable > 0:
-                    product.append(model.features.get(variable))
-            self.products.append(product)
+        for _ in glucose.enum_models():
+            self.products_number += 1
 
             if seconds:
                 j = time.time() - i

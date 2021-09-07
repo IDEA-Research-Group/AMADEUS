@@ -121,10 +121,16 @@ def save_times_in_csv(keyword, cve_times):
         writer.writerows(x for x in cve_times)
     print('Saved csv with times')
 
+def check_seconds(seconds):
+    regex = re.compile(r'[0-9.]+')
+    if not regex.match(seconds) or regex.match(seconds).group() is not seconds:
+        parser.error('The second argument must be a integer')
+    return float(seconds)
+
 def check_config(config):
     configuration_names = config.split(":")
     regex = re.compile(r'[a-zA-Z0-9_:^]+')
-    if regex.match(c).group() is not c:
+    if not regex.match(config) or regex.match(config).group() is not config:
         parser.error('You must respect the configuration pattern [a-zA-Z0-9_:^] \nExample: a:7:C or 9:^b:^D, the ^ implies it is a none selected feature')
     for name in configuration_names:
         if name.count('^') == 1 and not name.startswith('^'):
@@ -144,8 +150,8 @@ if __name__ == '__main__':
     parser.add_argument('-e', action = 'store_true', help = 'If the results from databases must be an EXACT match of the keywords or just contain them')
     parser.add_argument('-a', action = 'store_true', help = 'Launches NMAP to perform an automatic search of vulnerabilities')
     parser.add_argument('-t', '--target', nargs = 1, help = 'CIDR block or host target of the automatic analysis')
-    parser.add_argument('-p', '--products', nargs = 1, help = 'The feature model path to perfom the products operation')
-    parser.add_argument('-pn', '--productsnumber', nargs = 1, help = 'The feature model path to perfom the products number operation')
+    parser.add_argument('-p', '--products', nargs = '*', help = 'The feature model path to perfom the products operation, and the optional time for execute the operation')
+    parser.add_argument('-pn', '--productsnumber', nargs = '*', help = 'The feature model path to perfom the products number operation, and the optional time for execute the operation')
     parser.add_argument('-vc', '--validconfig', nargs = 2, help = 'The feature model path and a configuration to perfom the valid configuration operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it is a none selected feature')
     parser.add_argument('-f', '--filter', nargs = 2, help = 'The feature model path and a configuration to perfom the filter operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it is a none selected feature')
     parser_results = parser.parse_args()
@@ -189,24 +195,40 @@ if __name__ == '__main__':
         exit()
 
     if parser_results.products:
-        p = parser_results.products[0].strip()
-        products(p)
+        path = parser_results.products[0].strip()
+        try:
+            seconds = parser_results.productsnumber[1].strip()
+        except:
+            seconds = None
+        if seconds:
+            seconds_checked = check_seconds(seconds)
+        else:
+            seconds_checked = None
+        products(path, seconds_checked)
 
     if parser_results.productsnumber:
-        p = parser_results.productsnumber[0].strip()
-        products_number(p)
+        path = parser_results.productsnumber[0].strip()
+        try:
+            seconds = parser_results.productsnumber[1].strip()
+        except:
+            seconds = None
+        if seconds:
+            seconds_checked = check_seconds(seconds)
+        else:
+            seconds_checked = None
+        products_number(path, seconds_checked)
 
     if parser_results.filter:
-        p = parser_results.filter[0].strip()
-        c = parser_results.filter[1].strip()
-        configuration_names = check_config(c)
-        filter(p, configuration_names)
+        path = parser_results.filter[0].strip()
+        configuration = parser_results.filter[1].strip()
+        configuration_checked = check_config(configuration)
+        filter(path, configuration_checked)
 
     if parser_results.validconfig:
-        p = parser_results.validconfig[0].strip()
-        c = parser_results.validconfig[1].strip()
-        configuration_names = check_config(c)
-        valid_configuration(p, configuration_names)
+        path = parser_results.validconfig[0].strip()
+        configuration = parser_results.validconfig[1].strip()
+        configuration_checked = check_config(configuration)
+        valid_configuration(path, configuration_checked)
 
     # If the user wants to perfom a manual search
     if parser_results.keyword: 
