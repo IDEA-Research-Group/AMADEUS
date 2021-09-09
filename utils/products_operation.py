@@ -22,7 +22,7 @@ class Glucose3Products(Products):
         for clause in model.get_all_clauses():  # AC es conjunto de conjuntos
             glucose.add_clause(clause)  # añadimos la constraint
 
-        i = time.time()
+        begin = time.time()
 
         for solutions in glucose.enum_models():
             product = list()
@@ -31,9 +31,9 @@ class Glucose3Products(Products):
                     product.append(model.features.get(variable))
             self.products.append(product)
 
-            if seconds:
-                j = time.time() - i
-                if j > seconds:
+            if seconds or seconds == 0.0:
+                now = time.time() - begin
+                if now > seconds:
                     return self
 
         glucose.delete()

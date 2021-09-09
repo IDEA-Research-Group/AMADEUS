@@ -122,9 +122,11 @@ def save_times_in_csv(keyword, cve_times):
     print('Saved csv with times')
 
 def check_seconds(seconds):
-    regex = re.compile(r'[0-9.]+')
+    regex = re.compile(r'(?:[0-9]+)?(?:[.])?(?:[0-9]+)?')
     if not regex.match(seconds) or regex.match(seconds).group() is not seconds:
-        parser.error('The second argument must be a integer')
+        parser.error('The second argument must be a number')
+    if seconds.__contains__('.') and len(seconds) == 1:
+        parser.error('The second argument must be a number')
     return float(seconds)
 
 def check_config(config):

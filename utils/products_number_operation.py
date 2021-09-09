@@ -21,14 +21,14 @@ class Glucose3ProductsNumber(ProductsNumber):
         for clause in model.get_all_clauses():  # AC es conjunto de conjuntos
             glucose.add_clause(clause)  # añadimos la constraint
 
-        i = time.time()
+        begin = time.time()
 
         for _ in glucose.enum_models():
             self.products_number += 1
 
-            if seconds:
-                j = time.time() - i
-                if j > seconds:
+            if seconds or seconds == 0.0:
+                now = time.time() - begin
+                if now > seconds:
                     return self
 
         glucose.delete()
