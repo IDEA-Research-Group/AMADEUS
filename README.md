@@ -54,19 +54,19 @@ optional arguments:
 
 	CIDR block or host target of the automatic analysis
 
--p PRODUCTS, --products PRODUCTS
+-p MODELPATH SECONDS, --products MODELPATH SECONDS
 
-    The feature model path to perfom the products operation
+    The feature model path to perfom the products operation, and the optional time for execute the operation for models with a high computational complexity
 
--pn PRODUCTSNUMBER, --productsnumber PRODUCTSNUMBER
+-pn MODELPATH SECONDS, --productsnumber MODELPATH SECONDS
 
-    The feature model path to perfom the products number operation
+    The feature model path to perfom the products number operation, and the optional time for execute the operation for models with a high computational complexity
 
--vc VALIDCONFIG VALIDCONFIG, --validconfig VALIDCONFIG VALIDCONFIG
+-vc MODELPATH CONFIGURATION, --validconfig MODELPATH CONFIGURATION
 
     The feature model path and a configuration to perfom the valid configuration operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it is a none selected feature
 
--f FILTER FILTER, --filter FILTER FILTER
+-f MODELPATH CONFIGURATION, --filter MODELPATH CONFIGURATION
 
     The feature model path and a configuration to perfom the filter operation. Configuration pattern [a-zA-Z0-9_:^]. Example: a:7:C or 9:^b:^D, the ^ implies it is a none selected feature
 ```
