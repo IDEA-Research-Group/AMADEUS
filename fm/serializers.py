@@ -229,11 +229,6 @@ class FamaSerializer:
                     super_value = self.sanitize_out_string(super_value, ignoreStartingWithNumber=True)
             else:
                 super_value = self.sanitize(productSanit)
-                for char in super_value:
-                    if char.isdigit():
-                        pos = super_value.index(char)
-                        super_value = super_value[0:pos] + super_value[pos:].replace("_","__")
-                        break
             
 
             if restrictionNode.isLeaf:
@@ -271,9 +266,9 @@ class FamaSerializer:
                         # Generate requirements for the rest of attributes (standard attr)
                         sanitVal = val if val == '*' else self.sanitize_out_string(val)
                         if sanitVal.__contains__("_"):
-                            sanitVal = sanitVal[1:]
-                            sanitVal = sanitVal.replace("_","__")
-                        aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), sanitVal))
+                            aux.append("{}_{}_{}{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), sanitVal))
+                        else:
+                            aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), sanitVal))
                         need_brackets = True
 
                 need_brackets = depth <= 1 and need_brackets
@@ -390,11 +385,11 @@ class FamaSerializer:
         '''
         Sanitizes a string and makes it FM tree ready
         '''
-        # TODO Sanitize CVE-2018-0579 and CVE-2019-14682
         # Replace underscore with DOUBLE underscore (fixes CVEs such as CVE_2014_7958)
         string = string.replace('_','__')
         # Remove illegal characters. Also remove commas that aren't part of [1,1] relationships, or colons that aren't followed by space
-        string = re.sub(r'[^A-z0-9\[\]{},:;\n ]|\\|(,(?!1\]))|(:(?! ))', '_', string)
+        string = re.sub(r'[^A-z0-9\[\]{}.,:;\n ]|\\|(,(?!1\]))|(:(?! ))', '_', string)
+        string = string.replace('.', '__')
         # Check string doesnt start with number (fixes CVEs such as CVE_2014_3882)
         if not ignoreStartingWithNumber and re.match(r'^[0-9]', string):
             string = "_" + string
