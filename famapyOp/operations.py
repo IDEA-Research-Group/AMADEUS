@@ -38,7 +38,15 @@ def products(path, seconds = None):
     print('The attack vectors of the model are -> ' + str(operation.products))
 
 def products_number(path, seconds = None):
-    result = transform(path)
+    print(path)
+    try:
+        result = transform(path)
+    except:
+        file = open("error_cves.txt", "a")
+        file.write(path+"\n")
+        print("There's an error in " + path)
+        return ""
+
     operation = Glucose3ProductsNumber()
     operation.execute(result[1], seconds)
     print('The number of attack vectors of the model are -> ' + str(operation.products_number))

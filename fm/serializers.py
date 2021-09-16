@@ -265,7 +265,7 @@ class FamaSerializer:
                     else:
                         # Generate requirements for the rest of attributes (standard attr)
                         sanitVal = val if val == '*' else self.sanitize_out_string(val)
-                        if sanitVal.__contains__("_"):
+                        if sanitVal.__contains__("_") and not any(c.isalpha() for c in sanitVal):
                             aux.append("{}_{}_{}{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), sanitVal))
                         else:
                             aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), sanitVal))
