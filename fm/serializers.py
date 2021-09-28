@@ -44,7 +44,6 @@ class FamaSerializer:
     def __init__(self, cve: CVE):
         
         # First, we need to check the arguments
-
         if not cve or type(cve) is not CVE:
             raise ValueError("CVE must be a valid CVE object")
 
@@ -65,7 +64,6 @@ class FamaSerializer:
         self.direct_exploits_ids = ""
         self.direct_exploits = ""
         self.indirect_exploits = ""
-        #self.indirect_exploits = ""
         self.rcs = ""
         self.vendors = ""
         self.vendors_products = ""
@@ -200,7 +198,7 @@ class FamaSerializer:
             temp = list()
             for j, alt in enumerate(alternatives):
                 if i != j:
-                    temp.append("NOT " + alt)
+                    temp.append('NOT ' + alt)
                 else:
                     temp.append(alt)
             unrolled.append('(' + ' AND '.join(temp) + ')')
@@ -258,17 +256,22 @@ class FamaSerializer:
                         
                         aux.append(rcs)
                     elif attr == 'exploit':
-                        # aux.append("{}_{}_{}_{}".format(val.get_vendor()[0],val.get_product()[0],'version',self.sanitize(val.get_version()[0])))
                         aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit,'version',self.sanitize(self.sanitize_out_string(val.get_version()[0], ignoreStartingWithNumber=True))))
                     elif attr == 'type':
                         aux.append(val)
                     else:
                         # Generate requirements for the rest of attributes (standard attr)
                         sanitVal = val if val == '*' else self.sanitize_out_string(val)
-                        if sanitVal.__contains__("_"):
+                        if sanitVal.__contains__("_") and not any(c.isalpha() for c in sanitVal):
                             aux.append("{}_{}_{}{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), sanitVal))
                         else:
-                            aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), sanitVal))
+                            if productSanit.startswith("_"):
+                                aux.append("{}{}_{}_{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), sanitVal))
+                            else:
+                                if self.rcs:
+                                    aux.append("rc0_" + "{}_{}_{}_{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), sanitVal))
+                                else:
+                                    aux.append("{}_{}_{}_{}".format(vendorSanit, productSanit, self.sanitize_out_string(attr[:-1]), sanitVal))
                         need_brackets = True
 
                 need_brackets = depth <= 1 and need_brackets
@@ -283,36 +286,51 @@ class FamaSerializer:
                         res = super_value + VALUE_IMPL_CONNECTOR + res
                     else:
                         #if VALUE_REQ_CONNECTOR == ' REQUIRES ' and 'AND' in res:
-
                         res = super_value + VALUE_REQ_CONNECTOR + res
+
                 elif depth > 0:
                     res = super_value
                 if depth == 0:
-                    res = vendorSanit + "_" + res
+                    if res.startswith('_') or vendorSanit.endswith('__'):
+                        res = vendorSanit + res
+                    else:
+                        res = vendorSanit + '_' + res
 
                 return res
 
             else:
-
                 split_attr = self.sanitize_out_string(restrictionNode.xorAttributeSubNodes[:-1])
                 aux = list()
                 
                 for sn in restrictionNode.subNodes:
                     if len(sn.requirements) == 0:
                         # Explore all the subnodes recursively
-                        aux.append('{}_{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
+                        if productSanit.startswith("_"):
+                            aux.append('{}{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
+                        else:
+                            if self.rcs:
+                                aux.append('rc0_' + '{}_{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
+                            else:
+                                result = self.serialize_constraints(vendor, product, sn, depth=depth+1)
+                                if result.startswith('__'):
+                                    aux.append('{}_{}_{}'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
+                                else:
+                                    aux.append('{}_{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, sn, depth=depth+1))
                     else:
                         for req in sn.requirements:
                             newnode = RestrictionNode(sn.value,sn.subNodes,sn.xorAttributeSubNodes,[req])
                             # Explore all the subnodes recursively
-                            aux.append('{}_{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, newnode, depth=depth+1))
-
-                    
-
+                            if productSanit.startswith("_"):
+                                aux.append('{}{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, newnode, depth=depth+1))
+                            else:
+                                if self.rcs:
+                                    aux.append('rc0_' + '{}_{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, newnode, depth=depth+1))
+                                else:
+                                    aux.append('{}_{}_{}_'.format(vendorSanit, productSanit, split_attr) + self.serialize_constraints(vendor, product, newnode, depth=depth+1))
+                            
                 if depth == 0:
-                    res = self.LINE_TERMINATOR.join(self.sanitize(k) for k in aux) 
+                    res = self.LINE_TERMINATOR.join(self.sanitize(k) for k in aux)
                 elif depth == 1:
-
                     res = super_value
                     # TODO Validate that this xor unrolling works
                     '''
@@ -327,11 +345,8 @@ class FamaSerializer:
                     '''
                     res += " IMPLIES " + self.unroll_xor(aux)
                 else:
-                    #res = ' XOR '.join(aux)
                     res = self.unroll_xor(aux)
-
                 return res
-
         return res    
 
     def __tree_add_vendors_to_root(self, vendors: Union[Iterable, object]) -> None:
@@ -385,8 +400,8 @@ class FamaSerializer:
         '''
         Sanitizes a string and makes it FM tree ready
         '''
-        # Replace underscore with DOUBLE underscore (fixes CVEs such as CVE_2014_7958)
-        string = string.replace('_','__')
+        # This replaces fixes CVEs such as CVE_2014_7958, CVE-2018-9864 and CVE-2007-1878
+        string = string.replace('_','__').replace('-_','_').replace('_-','_')
         # Remove illegal characters. Also remove commas that aren't part of [1,1] relationships, or colons that aren't followed by space
         string = re.sub(r'[^A-z0-9\[\]{}.,:;\n ]|\\|(,(?!1\]))|(:(?! ))', '_', string)
         string = string.replace('.', '__')
