@@ -124,7 +124,6 @@ class FmToPysat(ModelToModel):
         return result
 
     def get_var(self, name, number):
-        # print(name)
         var = self.destination_model.variables.get(name)
         result = [[var * number]]
         return result
