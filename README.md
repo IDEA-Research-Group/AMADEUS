@@ -174,3 +174,7 @@ With the command ```python main.py -f fm/models/CVE-2020-29238.afm CVE_2020_2923
 In the last place, to close AMADEUS we can use this command ```python main.py --close```:
 
 ![AMADEUS Step 3](./docs/images/step3.png)
+
+### CONTRIBUTING
+
+![Read code of contribution guides](./contributing.md)
