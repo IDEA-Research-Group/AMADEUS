@@ -1,6 +1,6 @@
 # AMADEUS-Exploit: AutoMAteD vUlnerabilitieS and Exploits Management
 
-AMADEUS is a framework solution to enable and help the automatic analysis and testing of cybersecurity vulnerabilities of configuration systems based on feature models. AMADEUS can automatically analyse the organisation infrastructure determining the vulnerabilities and exploits by querying vulnerability and exploits repositories.
+AMADEUS-Exploit is a framework solution to enable and help the automatic analysis and testing of cybersecurity vulnerabilities of configuration systems based on feature models. AMADEUS can automatically analyse the organisation infrastructure determining the vulnerabilities and exploits by querying vulnerability and exploits repositories.
 
 ## Setting up
 
