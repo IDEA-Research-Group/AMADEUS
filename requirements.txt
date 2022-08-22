@@ -5,7 +5,7 @@ requests==2.24.0
 redis==3.5.3
 redisearch==2.0.0
 jsonpickle==2.0.0
-ujson==5.2.0
+ujson==5.4.0
 famapy==0.2.0
 famapy-fm==0.2.0
 famapy-sat==0.2.0
